@@ -8,8 +8,23 @@ from pprint import pprint
 # import utils
 from utils.utils import convert_time_to_str
 
-# model
-from models import InvoiceWKMasterModel, InvoiceWKDetailModel
+# schemas (pydantic models)
+from schemas import InvoiceWKMasterModel, InvoiceWKDetailModel
+
+# database
+from database.database import get_db_session
+from database.models import (
+    InvoiceWKMasterDBModel,
+    InvoiceWKDetailDBModel,
+    InvoiceMasterDBModel,
+    InvoiceDetailDBModel,
+)
+
+# crud
+from crud import create_invoice_wk_master
+
+# pydantic and orm converters
+from utils.orm_pydantic_convert import orm_to_pydantic, pydantic_to_orm
 
 from fastapi.responses import Response
 from datetime import timedelta, datetime
@@ -25,7 +40,6 @@ from fastapi import FastAPI, status, Depends, Request, HTTPException
 
 app = FastAPI()
 
-
 ROOT_URL = "/api/v1"
 
 
@@ -33,34 +47,28 @@ ROOT_URL = "/api/v1"
 async def generate_invoice_work_manage_for_invoice_wk_master(
     request: Request, response: Response, invoice_wk_master_data: InvoiceWKMasterModel
 ):
-    # check type
-    if not isinstance(invoice_wk_master_data, InvoiceWKMasterModel):
-        return {"status": "error", "message": "invoice_wk_master_data is not InvoiceWKMasterModel type"}
-    invoice_wk_master_data_dict = invoice_wk_master_data.dict()
-    invoice_wk_master_data_dict["IssueDate"] = invoice_wk_master_data_dict[
-        "IssueDate"
-    ].astimezone()
-    invoice_wk_master_data_dict["IssueDate"] = convert_time_to_str(
-        invoice_wk_master_data_dict["IssueDate"]
-    )
 
-    invoice_wk_master_data_dict["InvoiceDueDate"] = invoice_wk_master_data_dict[
-        "InvoiceDueDate"
-    ].astimezone()
-    invoice_wk_master_data_dict["InvoiceDueDate"] = convert_time_to_str(
-        invoice_wk_master_data_dict["InvoiceDueDate"]
+    # convert invoice_wk_master_data to orm model
+    invoice_wk_master_data = pydantic_to_orm(
+        invoice_wk_master_data, InvoiceWKMasterDBModel
     )
+    pprint(invoice_wk_master_data)
 
-    # print datetime time zone info
-    print(
-        invoice_wk_master_data_dict["IssueDate"],
-        type(invoice_wk_master_data_dict["IssueDate"]),
-    )
-    print(
-        invoice_wk_master_data_dict["InvoiceDueDate"],
-        type(invoice_wk_master_data_dict["InvoiceDueDate"]),
-    )
+    # save invoice_wk_master_data to database
+    db = next(get_db_session())
+    create_invoice_wk_master(db, invoice_wk_master_data)
     return {"message": "invoice_work_manage_for_invoice_wk_master function works"}
+
+
+@app.get(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKMaster")
+async def get_invoice_work_manage_for_invoice_wk_master(
+    request: Request, response: Response
+):
+    db = next(get_db_session())
+    data = db.query(InvoiceWKMasterDBModel).all()
+    # convert data to pydantic model
+    data = [orm_to_pydantic(item, InvoiceWKMasterModel) for item in data]
+    return data
 
 
 @app.post(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKDetail")
