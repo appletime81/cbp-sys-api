@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Float
-from .database import Base
+from .engine import Base
 
 
 class InvoiceWKMasterDBModel(Base):
