@@ -7,6 +7,8 @@ DB_URL = "mysql+pymysql://root@localhost:3306/cbp-db"
 
 engine = create_engine(DB_URL)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, expire_on_commit=False)
+SessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
+)
 
 Base = declarative_base()

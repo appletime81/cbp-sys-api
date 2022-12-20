@@ -12,6 +12,7 @@ from schemas import (
     InvoiceDetailModel,
 )
 
+
 # ------------------------------ InvoiceWKMaster ------------------------------
 def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterModel):
     db_invoice_wk_master = InvoiceWKMasterDBModel(
@@ -35,12 +36,14 @@ def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterMode
     db.refresh(db_invoice_wk_master)
 
 
+def get_all_invoice_wk_master(db: Session):
+    return db.query(InvoiceWKMasterDBModel).all()
+
+
 # -----------------------------------------------------------------------------
 
 # ------------------------------ InvoiceWKDetail ------------------------------
-def create_invoice_wk_detail(
-    db: Session, invoice_wk_detail: InvoiceWKDetailModel
-):
+def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailModel):
     db_invoice_wk_detail = InvoiceWKDetailDBModel(
         WKDetailID=invoice_wk_detail.WKDetailID,
         WKMasterID=invoice_wk_detail.WKMasterID,
@@ -52,9 +55,14 @@ def create_invoice_wk_detail(
     db.add(db_invoice_wk_detail)
     db.commit()
     try:
+
         db.refresh(db_invoice_wk_detail)
     except Exception as e:
         print(e)
+
+
+def get_all_invoice_wk_detail(db: Session):
+    return db.query(InvoiceWKDetailDBModel).all()
 
 
 # -----------------------------------------------------------------------------

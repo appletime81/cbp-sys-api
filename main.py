@@ -63,7 +63,7 @@ async def generate_invoice_work_manage_for_invoice_wk_master(
 async def get_invoice_work_manage_for_invoice_wk_master(
     request: Request, response: Response, db: Session = Depends(get_db)
 ):
-    data = db.query(InvoiceWKMasterDBModel).all()
+    data = get_all_invoice_wk_master(db)
     # convert data to pydantic model
     data = [orm_to_pydantic(item, InvoiceWKMasterModel) for item in data]
     return data
@@ -95,7 +95,7 @@ async def generate_invoice_work_manage_for_invoice_wk_detail(
 async def generate_invoice_work_manage_for_invoice_wk_detail(
     request: Request, response: Response, db: Session = Depends(get_db)
 ):
-    data = db.query(InvoiceWKDetailDBModel).all()
+    data = get_all_invoice_wk_detail(db)
     # convert data to pydantic model
     data = [orm_to_pydantic(item, InvoiceWKDetailModel) for item in data]
     return data
