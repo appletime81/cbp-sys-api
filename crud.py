@@ -6,15 +6,15 @@ from database.models import (
     InvoiceDetailDBModel,
 )
 from schemas import (
-    InvoiceWKMasterModel,
-    InvoiceWKDetailModel,
-    InvoiceMasterModel,
-    InvoiceDetailModel,
+    InvoiceWKMasterSchema,
+    InvoiceWKDetailSchema,
+    InvoiceMasterSchema,
+    InvoiceDetailSchema,
 )
 
 
 # ------------------------------ InvoiceWKMaster ------------------------------
-def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterModel):
+def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterSchema):
     db_invoice_wk_master = InvoiceWKMasterDBModel(
         InvoiceNo=invoice_wk_master.InvoiceNo,
         Description=invoice_wk_master.Description,
@@ -34,16 +34,39 @@ def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterMode
     db.add(db_invoice_wk_master)
     db.commit()
     db.refresh(db_invoice_wk_master)
+    return db_invoice_wk_master
 
 
 def get_all_invoice_wk_master(db: Session):
     return db.query(InvoiceWKMasterDBModel).all()
 
 
+def get_invoice_wk_master_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceWKMasterDBModel).filter_by(**condition).first()
+
+
 # -----------------------------------------------------------------------------
 
+# ------------------------------ InvoiceMaster ------------------------------
+def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
+    db_invoice_master = InvoiceMasterDBModel(
+        WKMasterID=invoice_master.WKMasterID,
+        InvoiceNo=invoice_master.InvoiceNo,
+        PartyID=invoice_master.PartyID,
+        SupplyID=invoice_master.SupplyID,
+        SubmarineCable=invoice_master.SubmarineCable,
+        ContractType=invoice_master.ContractType,
+        IssueDate=invoice_master.IssueDate,
+        InvoiceDueDate=invoice_master.InvoiceDueDate,
+        Status=invoice_master.Status,
+    )
+    db.add(db_invoice_master)
+    db.commit()
+    db.refresh(db_invoice_master)
+
+
 # ------------------------------ InvoiceWKDetail ------------------------------
-def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailModel):
+def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailSchema):
     db_invoice_wk_detail = InvoiceWKDetailDBModel(
         WKDetailID=invoice_wk_detail.WKDetailID,
         WKMasterID=invoice_wk_detail.WKMasterID,

@@ -24,7 +24,7 @@ from utils.orm_pydantic_convert import orm_to_pydantic, pydantic_to_orm
 from fastapi.responses import Response
 from datetime import timedelta, datetime
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, status, Depends, Request, HTTPException
+from fastapi import FastAPI, status, Depends, Request, HTTPException, Body
 
 app = FastAPI()
 
@@ -39,78 +39,78 @@ def get_db():
         db.close()
 
 
-# ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail Generate------------------------------
-@app.post(f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail&InvoiceMaster&InvoiceDetail")
+# ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail ------------------------------
+
+
+@app.post(
+    f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail&InvoiceMaster&InvoiceDetail"
+)
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
-        request: Request,
-        db: Session = Depends(get_db),
+    request: Request,
+    invoice_data: dict = Body(...),
+    db: Session = Depends(get_db),
 ):
-    # get request body
-    body = await request.json()
-    pprint(body)
+    # ---------------- handle InvoiceWKMaster ----------------
+    InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
+
+    # convert dict to pydantic model
+    InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
+
+    # insert data to database
+    create_invoice_wk_master(db, InvoiceWKMasterPydanticData)
+
+    # get InvoiceWKMasterID
+    justAddedInvoiceWKMaster = get_invoice_wk_master_with_condition(
+        db, InvoiceWKMasterDictData
+    )
+    WKMasterID = justAddedInvoiceWKMaster.WKMasterID
+    print("WKMasterID: ", WKMasterID)
+
+    # --------------------------------------------------------
+
+    # ---------------- handle InvoiceMaster ----------------
+    InvoiceMasterPydanticData = InvoiceMasterSchema(
+        WKMasterID=WKMasterID,
+        InvoiceNo=InvoiceWKMasterDictData["InvoiceNo"],
+        PartyID=InvoiceWKMasterDictData["PartyID"],
+        SupplyID=InvoiceWKMasterDictData["SupplyID"],
+        SubmarineCable=InvoiceWKMasterDictData["SubmarineCable"],
+        ContractType=InvoiceWKMasterDictData["ContractType"],
+        IssueDate=InvoiceWKMasterDictData["IssueDate"],
+        InvoiceDueDate=InvoiceWKMasterDictData["InvoiceDueDate"],
+        Status=InvoiceWKMasterDictData["Status"],
+    )
+
+    # insert data to database
+    create_invoice_master(db, InvoiceMasterPydanticData)
+
+    # --------------------------------------------------------
+
+    # ---------------- handle InvoiceWKDetail ----------------
+    InvoiceWKDetailDictData = invoice_data["InvoiceWKDetail"]
+
+    # genrate all complete InvoiceWKDetail data
+    for item in InvoiceWKDetailDictData:
+        item["WKMasterID"] = WKMasterID
+
+        # convert dict to pydantic model
+        InvoiceWKDetailPydanticData = InvoiceWKDetailSchema(**item)
+
+        # convert pydantic model to orm model
+        InvoiceWKDetailOrmData = pydantic_to_orm(
+            InvoiceWKDetailPydanticData, InvoiceWKDetailDBModel
+        )
+
+        # insert data to database
+        create_invoice_wk_detail(db, InvoiceWKDetailOrmData)
+    # --------------------------------------------------------
     return {"message": "success"}
 
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------
+@app.get(f"{ROOT_URL}/getInvoiceWKMaster")
+async def getInvoiceWKMaster(request: Request, db: Session = Depends(get_db)):
+    InvoiceWKMasterData = get_all_invoice_wk_master(db)
+    return InvoiceWKMasterData
 
 
-# ------------------------------ InvoiceWKMaster ------------------------------
-@app.post(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKMaster")
-async def generate_invoice_work_manage_for_invoice_wk_master(
-        request: Request,
-        response: Response,
-        invoice_wk_master_data: InvoiceWKMasterModel,
-        db: Session = Depends(get_db),
-):
-    # convert invoice_wk_master_data to orm model
-    invoice_wk_master_data = pydantic_to_orm(
-        invoice_wk_master_data, InvoiceWKMasterDBModel
-    )
-    pprint(invoice_wk_master_data)
-
-    # save invoice_wk_master_data to database
-    create_invoice_wk_master(db, invoice_wk_master_data)
-    return {"message": "invoice_work_manage_for_invoice_wk_master function works"}
-
-
-@app.get(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKMaster")
-async def get_invoice_work_manage_for_invoice_wk_master(
-        request: Request, response: Response, db: Session = Depends(get_db)
-):
-    data = get_all_invoice_wk_master(db)
-    # convert data to pydantic model
-    data = [orm_to_pydantic(item, InvoiceWKMasterModel) for item in data]
-    return data
-
-
-# -----------------------------------------------------------------------------
-
-# ------------------------------ InvoiceWKDetail ------------------------------
-@app.post(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKDetail")
-async def generate_invoice_work_manage_for_invoice_wk_detail(
-        request: Request,
-        response: Response,
-        invoice_wk_detail_data: InvoiceWKDetailModel,
-        db: Session = Depends(get_db),
-):
-    # convert invoice_wk_detail_data to orm model
-    invoice_wk_detail_data = pydantic_to_orm(
-        invoice_wk_detail_data, InvoiceWKDetailDBModel
-    )
-
-    # save invoice_wk_detail_data to database
-    create_invoice_wk_detail(db, invoice_wk_detail_data)
-
-    return {"message": "invoice_work_manage_for_invoice_wk_detail function works"}
-
-
-@app.get(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKDetail")
-async def generate_invoice_work_manage_for_invoice_wk_detail(
-        request: Request, response: Response, db: Session = Depends(get_db)
-):
-    data = get_all_invoice_wk_detail(db)
-    # convert data to pydantic model
-    data = [orm_to_pydantic(item, InvoiceWKDetailModel) for item in data]
-    return data
-
-# -----------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------------------

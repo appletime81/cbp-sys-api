@@ -4,7 +4,7 @@ from typing import Union, Optional, List, Dict
 from bson.objectid import ObjectId
 
 
-class InvoiceWKMasterModel(BaseModel):
+class InvoiceWKMasterSchema(BaseModel):
     """
     WKMasterID   int NOT NULL AUTO_INCREMENT,
     InvoiceNo    varchar(20),
@@ -24,7 +24,7 @@ class InvoiceWKMasterModel(BaseModel):
     PRIMARY KEY(WKMasterID)
     """
 
-    WKMasterID: int
+    WKMasterID: Optional[int]
     InvoiceNo: str
     Description: str
     SupplyID: str
@@ -41,7 +41,7 @@ class InvoiceWKMasterModel(BaseModel):
     TotalAmount: float
 
 
-class InvoiceWKDetailModel(BaseModel):
+class InvoiceWKDetailSchema(BaseModel):
     """
     WKDetailID   int NOT NULL AUTO_INCREMENT,
     WKMasterID   int NOT NULL,
@@ -52,15 +52,15 @@ class InvoiceWKDetailModel(BaseModel):
     PRIMARY KEY(WKDetailID)
     """
 
-    WKDetailID: int
-    WKMasterID: int
+    WKDetailID: Optional[int]
+    WKMasterID: Optional[int]
     BillMilestone: str
-    FeeType: str
-    FeeItem: str
+    FeeType: Optional[str]
+    FeeItem: Optional[str]
     FeeAmount: float
 
 
-class InvoiceMasterModel(BaseModel):
+class InvoiceMasterSchema(BaseModel):
     """
     InvMasterID    int NOT NULL AUTO_INCREMENT,
     WKMasterID     int,
@@ -75,7 +75,7 @@ class InvoiceMasterModel(BaseModel):
     PRIMARY KEY(InvMasterID)
     """
 
-    InvMasterID: int
+    InvMasterID: Optional[int]
     WKMasterID: int
     InvoiceNo: str
     PartyID: str
@@ -87,7 +87,7 @@ class InvoiceMasterModel(BaseModel):
     Status: str
 
 
-class InvoiceDetailModel(BaseModel):
+class InvoiceDetailSchema(BaseModel):
     """
     InvDetailID     int NOT NULL AUTO_INCREMENT,
     InvMasterID     int NOT NULL,
@@ -106,44 +106,3 @@ class InvoiceDetailModel(BaseModel):
     Liability: float
     FeeAmountPost: float
     Difference: float
-
-
-class InvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetailModel(BaseModel):
-    '''
-    {
-        "InvoiceWKMaster":
-            {
-                "InvoiceNo": "發票號碼",
-                "Description": "空值",
-                "SupplyID": "供應商",
-                "SubmarineCable": "海纜名稱",
-                "WorkTitle": "海纜作業",
-                "ContractType": "合約種類",
-                "IssueDate": "發票日期(datetime)",
-                "InvoiceDueDate": "發票到期日(datetime)",
-                "PartyID": "會員代號(是否須分攤: 1.否->要填, 2. 是->空值)",
-                "Status": "新增發票->暫存(TEMP)，回傳字串TEMP",
-                "IsPro": "是否為Pro-forma(bool)",
-                "IsRecharge": "是否為短繳補收(bool)",
-                "IsLiability": "是否需攤分(bool)",
-                "TotalAmount": "總金額(float)"
-            },
-        "InvoiceWKDetail":
-            [
-                {
-                    "BillMilestone": "記帳段號",
-                    "FeeType": "收費種類",
-                    "FeeAmount": "費用金額(float)"
-                },
-                {
-                    "BillMilestone": "記帳段號",
-                    "FeeType": "收費種類",
-                    "FeeAmount": "費用金額(float)"
-                }
-            ]
-
-    }
-    '''
-
-    InvoiceWKMaster: InvoiceWKMasterModel
-    InvoiceWKDetail: List[InvoiceWKDetailModel]
