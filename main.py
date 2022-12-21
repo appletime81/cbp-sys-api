@@ -89,7 +89,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     # ---------------- handle InvoiceWKDetail ----------------
     InvoiceWKDetailDictData = invoice_data["InvoiceWKDetail"]
 
-    # genrate all complete InvoiceWKDetail data
+    # generate all complete InvoiceWKDetail data
     for item in InvoiceWKDetailDictData:
         item["WKMasterID"] = WKMasterID
 
