@@ -39,15 +39,29 @@ def get_db():
         db.close()
 
 
+# ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail Generate------------------------------
+@app.post(f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail&InvoiceMaster&InvoiceDetail")
+async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
+        request: Request,
+        db: Session = Depends(get_db),
+):
+    # get request body
+    body = await request.json()
+    pprint(body)
+    return {"message": "success"}
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------
+
+
 # ------------------------------ InvoiceWKMaster ------------------------------
 @app.post(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKMaster")
 async def generate_invoice_work_manage_for_invoice_wk_master(
-    request: Request,
-    response: Response,
-    invoice_wk_master_data: InvoiceWKMasterModel,
-    db: Session = Depends(get_db),
+        request: Request,
+        response: Response,
+        invoice_wk_master_data: InvoiceWKMasterModel,
+        db: Session = Depends(get_db),
 ):
-
     # convert invoice_wk_master_data to orm model
     invoice_wk_master_data = pydantic_to_orm(
         invoice_wk_master_data, InvoiceWKMasterDBModel
@@ -61,7 +75,7 @@ async def generate_invoice_work_manage_for_invoice_wk_master(
 
 @app.get(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKMaster")
 async def get_invoice_work_manage_for_invoice_wk_master(
-    request: Request, response: Response, db: Session = Depends(get_db)
+        request: Request, response: Response, db: Session = Depends(get_db)
 ):
     data = get_all_invoice_wk_master(db)
     # convert data to pydantic model
@@ -74,12 +88,11 @@ async def get_invoice_work_manage_for_invoice_wk_master(
 # ------------------------------ InvoiceWKDetail ------------------------------
 @app.post(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKDetail")
 async def generate_invoice_work_manage_for_invoice_wk_detail(
-    request: Request,
-    response: Response,
-    invoice_wk_detail_data: InvoiceWKDetailModel,
-    db: Session = Depends(get_db),
+        request: Request,
+        response: Response,
+        invoice_wk_detail_data: InvoiceWKDetailModel,
+        db: Session = Depends(get_db),
 ):
-
     # convert invoice_wk_detail_data to orm model
     invoice_wk_detail_data = pydantic_to_orm(
         invoice_wk_detail_data, InvoiceWKDetailDBModel
@@ -93,12 +106,11 @@ async def generate_invoice_work_manage_for_invoice_wk_detail(
 
 @app.get(f"{ROOT_URL}/InvoiceWorkManage/InvoiceWKDetail")
 async def generate_invoice_work_manage_for_invoice_wk_detail(
-    request: Request, response: Response, db: Session = Depends(get_db)
+        request: Request, response: Response, db: Session = Depends(get_db)
 ):
     data = get_all_invoice_wk_detail(db)
     # convert data to pydantic model
     data = [orm_to_pydantic(item, InvoiceWKDetailModel) for item in data]
     return data
-
 
 # -----------------------------------------------------------------------------
