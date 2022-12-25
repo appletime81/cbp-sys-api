@@ -53,18 +53,24 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     # ---------------- handle InvoiceWKMaster ----------------
     InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
 
-    # convert dict to pydantic model
-    InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
-
-    # insert data to database
-    create_invoice_wk_master(db, InvoiceWKMasterPydanticData)
-
-    # get InvoiceWKMasterID
-    justAddedInvoiceWKMaster = get_invoice_wk_master_with_condition(
-        db, InvoiceWKMasterDictData
+    # call f"{ROOT_URL}/InvoiceWKMaster" to create InvoiceWKMaster
+    InvoiceWKMasterResponse = await InvoiceWKMaster(
+        request=request,
+        invoice_wk_master=InvoiceWKMasterDictData,
+        db=db,
     )
-    WKMasterID = justAddedInvoiceWKMaster.WKMasterID
-    print("WKMasterID: ", WKMasterID)
+    # # convert dict to pydantic model
+    # InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
+
+    # # insert data to database
+    # create_invoice_wk_master(db, InvoiceWKMasterPydanticData)
+
+    # # get InvoiceWKMasterID
+    # justAddedInvoiceWKMaster = get_invoice_wk_master_with_condition(
+    #     db, InvoiceWKMasterDictData
+    # )
+    # WKMasterID = justAddedInvoiceWKMaster.WKMasterID
+    # print("WKMasterID: ", WKMasterID)
 
     # --------------------------------------------------------
 
@@ -111,6 +117,25 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 async def getInvoiceWKMaster(request: Request, db: Session = Depends(get_db)):
     InvoiceWKMasterData = get_all_invoice_wk_master(db)
     return InvoiceWKMasterData
+
+
+@app.post(f"{ROOT_URL}/InvoiceWKMaster")
+async def InvoiceWKMaster(
+    request: Request,
+    InvoiceWKMasterPydanticData: InvoiceWKMasterSchema,
+    db: Session = Depends(get_db),
+):
+    create_invoice_wk_master(db, InvoiceWKMasterPydanticData)
+
+    # convert pydantic model to dict
+    InvoiceWKMasterDictData = InvoiceWKMasterPydanticData.dict()
+
+    # get InvoiceWKMasterID
+    justAddedInvoiceWKMaster = get_invoice_wk_master_with_condition(
+        db, InvoiceWKMasterDictData
+    )
+    WKMasterID = justAddedInvoiceWKMaster.WKMasterID
+    return WKMasterID
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------
