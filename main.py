@@ -113,9 +113,10 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     return {"message": "success"}
 
 
-@app.get(f"{ROOT_URL}/getInvoiceWKMaster")
-async def getInvoiceWKMaster(request: Request, db: Session = Depends(get_db)):
-    InvoiceWKMasterData = get_all_invoice_wk_master(db)
+@app.get(f"{ROOT_URL}/InvoiceWKMaster/" + "{InvoiceWKMasterCondition}")
+async def getInvoiceWKMaster(request: Request, InvoiceWKMasterCondition: str, db: Session = Depends(get_db)):
+    if InvoiceWKMasterCondition == "all":
+        InvoiceWKMasterData = get_all_invoice_wk_master(db)
     return InvoiceWKMasterData
 
 
@@ -135,7 +136,7 @@ async def InvoiceWKMaster(
         db, InvoiceWKMasterDictData
     )
     WKMasterID = justAddedInvoiceWKMaster.WKMasterID
-    return WKMasterID
+    return {"WKMasterID": WKMasterID}
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------
