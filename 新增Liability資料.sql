@@ -1,0 +1,43 @@
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',1,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',2,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',3,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',4,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',5,0.0793650794,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',6,7.0634920635,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',7,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',8,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',9,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM0',10,7.1428571429,'2022-12-27 14:30:00',null,null);
+
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',1,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',2,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',3,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',4,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',5,0.0793650794,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',6,7.0634920635,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',7,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',8,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',9,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9a',10,7.1428571429,'2022-12-27 14:30:00',null,null);
+
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',1,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',2,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',3,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',4,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',5,0.0793650794,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',6,7.0634920635,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',7,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',8,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',9,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM9b',10,7.1428571429,'2022-12-27 14:30:00',null,null);
+
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',1,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',2,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',3,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',4,28.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',5,0.0793650794,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',6,7.0634920635,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',7,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',8,3.5714285714,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',9,7.1428571429,'2022-12-27 14:30:00',null,null);
+insert into liability (BillMilestone,PartyID,LBRatio,CreateDate,ModifyNote,EndDate) values('BM12',10,7.1428571429,'2022-12-27 14:30:00',null,null);

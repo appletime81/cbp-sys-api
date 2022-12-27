@@ -1,0 +1,19 @@
+{
+  "InvoiceWKMaster(發票工作主檔)": {
+    "WKMasterID": "工作主檔ID(NOT NULL AUTO_INCREMENT (PK))",
+    "InvoiceNo": "發票號碼",
+    "Description": "空值",
+    "SupplyID": "供應商",
+    "SubmarineCable": "海纜名稱",
+    "WorkTitle": "海纜作業",
+    "ContractType": "合約種類",
+    "IssueDate": "發票日期",
+    "InvoiceDueDate": "發票到期日",
+    "PartyID": "會員代號",
+    "Status": "處理狀態(COMPLETE(完成)、VALIDATED (暫存)、BILLING(立帳))",
+    "IsPro": "是否為Pro-forma",
+    "IsRecharge": "是否為短繳補收",
+    "IsLiability": "是否需攤分",
+    "TotalAmount": "總金額"
+  }
+}

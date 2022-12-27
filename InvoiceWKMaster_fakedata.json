@@ -1,32 +1,26 @@
 {
-	"InvoiceWKMaster": 
-	{
-		"InvoiceNo": "發票號碼",
-		"Description": "空值",
-		"SupplyID": "供應商",
-		"SubmarineCable": "海纜名稱",
-		"WorkTitle": "海纜作業",
-		"ContractType": "合約種類",
-		"IssueDate": "2022-12-21 13:58:15",
-		"InvoiceDueDate": "2022-12-21 13:58:15",
-		"PartyID": "123",
-		"Status": "TEMP",
-		"IsPro": true,
-		"IsRecharge": true,
-		"IsLiability": true,
-		"TotalAmount": 87.8
-	},
-	"InvoiceWKDetail":
-		[
-			{
-				"BillMilestone": "記帳段號",
-				"FeeType": "收費種類",
-				"FeeAmount": 87.3
-			},
-			{
-				"BillMilestone": "記帳段號",
-				"FeeType": "收費種類",
-				"FeeAmount": 87.4
-			}
-		]
+  "InvoiceWKMaster": {
+    "InvoiceNo": 500514,
+    "Description": "NEW CROSS PACIFIC",
+    "SupplierID": "CIENA",
+    "SubmarineCable": "NCP",
+    "WorkTitle": "Upgrade",
+    "ContractType": "SC",
+    "IssueDate": "2021-12-10 00:00:00",
+    "InvoiceDueDate": "2022-02-08 00:00:00",
+    "PartyID": "CHT",
+    "Status": "VALIDATED",
+    "IsPro": 0,
+    "IsRecharge": 0,
+    "IsLiability": 0,
+    "TotalAmount": 86939.00
+  },
+  "InvoiceWKDetail": [
+    {
+      "BillMilestone": "BM0",
+      "FeeType": "SCFEE",
+      "FeeAmount": 86939.00,
+      "FeeItem": "BM0: Contract Agreement"
+    }
+  ]
 }

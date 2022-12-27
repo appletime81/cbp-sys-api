@@ -27,7 +27,7 @@ class InvoiceWKMasterSchema(BaseModel):
     WKMasterID: Optional[int]
     InvoiceNo: str
     Description: str
-    SupplyID: str
+    SupplierID: str
     SubmarineCable: str
     WorkTitle: str
     ContractType: str
@@ -39,7 +39,7 @@ class InvoiceWKMasterSchema(BaseModel):
     IsRecharge: bool
     IsLiability: bool
     TotalAmount: float
-
+    CreateDate: Optional[datetime]
 
 class InvoiceWKDetailSchema(BaseModel):
     """

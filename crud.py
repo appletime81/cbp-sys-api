@@ -18,7 +18,7 @@ def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterSche
     db_invoice_wk_master = InvoiceWKMasterDBModel(
         InvoiceNo=invoice_wk_master.InvoiceNo,
         Description=invoice_wk_master.Description,
-        SupplyID=invoice_wk_master.SupplyID,
+        SupplierID=invoice_wk_master.SupplierID,
         SubmarineCable=invoice_wk_master.SubmarineCable,
         WorkTitle=invoice_wk_master.WorkTitle,
         ContractType=invoice_wk_master.ContractType,
@@ -30,6 +30,7 @@ def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterSche
         IsRecharge=invoice_wk_master.IsRecharge,
         IsLiability=invoice_wk_master.IsLiability,
         TotalAmount=invoice_wk_master.TotalAmount,
+        CreateDate=invoice_wk_master.CreateDate,
     )
     db.add(db_invoice_wk_master)
     db.commit()

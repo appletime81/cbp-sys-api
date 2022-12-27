@@ -50,24 +50,29 @@ FeeAmountPost   decimal(12,2),
 Difference      decimal(3,2),
 PRIMARY KEY(InvDetailID)
 
+# ----------------------------------------------------------------------------------------------
+
+
 CREATE TABLE InvoiceWKMaster (
- WKMasterID  int NOT NULL AUTO_INCREMENT,
- InvoiceNo   varchar(20),
- Description  varchar(128),
- SupplyID  varchar(6),
- SubmarineCable varchar(10),
- WorkTitle   varchar(50),
- ContractType varchar(20),
- IssueDate   datetime,
- InvoiceDueDate datetime,
- PartyID   varchar(6),
- Status   varchar(20),
- IsPro    TINYINT(1),
- IsRecharge  TINYINT(1),
- IsLiability  TINYINT(1),
- TotalAmount  decimal(65,2),
- PRIMARY KEY(WKMasterID)
+  WKMasterID   int NOT NULL AUTO_INCREMENT,
+  InvoiceNo    varchar(20),
+  Description   varchar(128),
+  SupplierID    varchar(6),
+  SubmarineCable varchar(10),
+  WorkTitle    varchar(50),
+  ContractType  varchar(20),
+  IssueDate    datetime,
+  InvoiceDueDate datetime,
+  PartyID     varchar(6),
+  Status     varchar(20),
+  IsPro      TINYINT(1),
+  IsRecharge   TINYINT(1),
+  IsLiability   TINYINT(1),
+  TotalAmount   decimal(65,2),
+  CreateDate    datetime,
+  PRIMARY KEY(WKMasterID)
 );
+
 
 CREATE TABLE InvoiceWKDetail (
   WKDetailID   int NOT NULL AUTO_INCREMENT,
@@ -79,30 +84,35 @@ CREATE TABLE InvoiceWKDetail (
   PRIMARY KEY(WKDetailID)
 );
 
+
 CREATE TABLE InvoiceMaster (
-  InvMasterID   int NOT NULL AUTO_INCREMENT,
-  WKMasterID   int,
-  InvoiceNo    varchar(20),
-  PartyID       varchar(6),
-  SupplyID    varchar(6),
+  InvMasterID    int NOT NULL AUTO_INCREMENT,
+  WKMasterID     int,
+  InvoiceNo      varchar(20),
+  PartyName      varchar(100),
+  SupplyID       varchar(6),
   SubmarineCable varchar(10),
-  ContractType  varchar(20),
-  IssueDate    datetime,
+  ContractType   varchar(20),
+  IssueDate      datetime,
   InvoiceDueDate datetime,
-  Status     varchar(20),
+  Status         varchar(20),
+  IsPro          TINYINT(1),
   PRIMARY KEY(InvMasterID)
 );
 
+
 CREATE TABLE InvoiceDetail (
-  InvDetailID  int NOT NULL AUTO_INCREMENT,
-  InvMasterID   int NOT NULL,
-  FeeItem     varchar(100),
-  FeeAmountPre   decimal(12,2),
+  InvDetailID     int NOT NULL AUTO_INCREMENT,
+  InvMasterID     int NOT NULL,
+  BillMilestone   varchar(20),
+  FeeItem         varchar(100),
+  FeeAmountPre    decimal(12,2),
   Liability       decimal(13,10),
   FeeAmountPost   decimal(12,2),
   Difference      decimal(3,2),
   PRIMARY KEY(InvDetailID)
 );
+
 
 CREATE TABLE Liability (
   LBRawID       int NOT NULL AUTO_INCREMENT,
@@ -114,3 +124,23 @@ CREATE TABLE Liability (
   EndDate         datetime,
   PRIMARY KEY(LBRawID)
 );
+
+CREATE TABLE Liability (
+  LBRawID        int NOT NULL AUTO_INCREMENT,
+  BillMilestone  varchar(20),
+  PartyName      varchar(100),
+  LBRatio        decimal(13,10),
+  CreateDate     datetime,
+  ModifyNote     varchar(128),
+  EndDate        datetime,
+  PRIMARY KEY(LBRawID)
+);
+
+CREATE TABLE parties (
+	PartyName varchar(100) NOT NUL,
+	Address   varchar(512) DEFAULT NULL,
+	Contact   varchar(20) DEFAULT NULL,
+	Email     varchar(50) DEFAULT NULL,
+	Tel       varchar(20) DEFAULT NULL,
+	PRIMARY KEY (PartyName)
+)

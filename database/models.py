@@ -8,7 +8,7 @@ class InvoiceWKMasterDBModel(Base):
     WKMasterID  int NOT NULL AUTO_INCREMENT,
     InvoiceNo   varchar(20),
     Description  varchar(128),
-    SupplyID  varchar(6),
+    SupplierID  varchar(6),
     SubmarineCable varchar(10),
     WorkTitle   varchar(50),
     ContractType varchar(20),
@@ -20,13 +20,14 @@ class InvoiceWKMasterDBModel(Base):
     IsRecharge  TINYINT(1),
     IsLiability  TINYINT(1),
     TotalAmount  decimal(65,2),
+    CreateDate    datetime,
     PRIMARY KEY(WKMasterID)
     """
 
     WKMasterID = Column(Integer, primary_key=True, index=True)
     InvoiceNo = Column(String(20))
     Description = Column(String(128))
-    SupplyID = Column(String(6))
+    SupplierID = Column(String(6))
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
     ContractType = Column(String(20))
@@ -38,6 +39,7 @@ class InvoiceWKMasterDBModel(Base):
     IsRecharge = Column(Boolean)
     IsLiability = Column(Boolean)
     TotalAmount = Column(Float)
+    CreateDate = Column(String(20))
 
 
 class InvoiceWKDetailDBModel(Base):
