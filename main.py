@@ -5,6 +5,7 @@ import uuid
 import copy
 from pprint import pprint
 
+# import service(業務邏輯)
 import service
 
 # import utils
