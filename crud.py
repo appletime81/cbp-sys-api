@@ -4,6 +4,7 @@ from database.models import (
     InvoiceWKDetailDBModel,
     InvoiceMasterDBModel,
     InvoiceDetailDBModel,
+    LiabilityDBModel
 )
 from schemas import (
     InvoiceWKMasterSchema,
@@ -24,7 +25,7 @@ def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterSche
         ContractType=invoice_wk_master.ContractType,
         IssueDate=invoice_wk_master.IssueDate,
         InvoiceDueDate=invoice_wk_master.InvoiceDueDate,
-        PartyID=invoice_wk_master.PartyID,
+        PartyName=invoice_wk_master.PartyName,
         Status=invoice_wk_master.Status,
         IsPro=invoice_wk_master.IsPro,
         IsRecharge=invoice_wk_master.IsRecharge,
@@ -51,10 +52,11 @@ def get_invoice_wk_master_with_condition(db: Session, condition: dict):
 # ------------------------------ InvoiceMaster ------------------------------
 def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
     db_invoice_master = InvoiceMasterDBModel(
+        InvMasterID=invoice_master.InvMasterID,
         WKMasterID=invoice_master.WKMasterID,
         InvoiceNo=invoice_master.InvoiceNo,
-        PartyID=invoice_master.PartyID,
-        SupplyID=invoice_master.SupplyID,
+        PartyName=invoice_master.PartyName,
+        SupplierID=invoice_master.SupplierID,
         SubmarineCable=invoice_master.SubmarineCable,
         ContractType=invoice_master.ContractType,
         IssueDate=invoice_master.IssueDate,
@@ -71,15 +73,16 @@ def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailSche
     db_invoice_wk_detail = InvoiceWKDetailDBModel(
         WKDetailID=invoice_wk_detail.WKDetailID,
         WKMasterID=invoice_wk_detail.WKMasterID,
+        InvoiceNo=invoice_wk_detail.InvoiceNo,
+        SupplierID=invoice_wk_detail.SupplierID,
+        SubmarineCable=invoice_wk_detail.SubmarineCable,
         BillMilestone=invoice_wk_detail.BillMilestone,
-        FeeType=invoice_wk_detail.FeeType,
         FeeItem=invoice_wk_detail.FeeItem,
         FeeAmount=invoice_wk_detail.FeeAmount,
     )
     db.add(db_invoice_wk_detail)
     db.commit()
     try:
-
         db.refresh(db_invoice_wk_detail)
     except Exception as e:
         print(e)
@@ -90,3 +93,9 @@ def get_all_invoice_wk_detail(db: Session):
 
 
 # -----------------------------------------------------------------------------
+
+# ------------------------------ Liability ------------------------------
+
+def get_liability_with_condition(db: Session, condition: dict):
+    return db.query(LiabilityDBModel).filter_by(**condition).first()
+# -----------------------------------------------------------------------

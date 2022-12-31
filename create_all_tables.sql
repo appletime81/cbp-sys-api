@@ -1,6 +1,3 @@
-# InvoiceWKMaster(發票工作主檔)
-
-```sql
 CREATE TABLE InvoiceWKMaster
 (
     WKMasterID     int NOT NULL AUTO_INCREMENT,
@@ -21,11 +18,7 @@ CREATE TABLE InvoiceWKMaster
     CreateDate     datetime,
     PRIMARY KEY (WKMasterID)
 );
-```
 
-# InvoiceWKDetail(發票工作明細檔)
-
-```sql
 CREATE TABLE InvoiceWKDetail
 (
     WKDetailID     int NOT NULL AUTO_INCREMENT,
@@ -39,11 +32,6 @@ CREATE TABLE InvoiceWKDetail
     PRIMARY KEY (WKDetailID)
 );
 
-```
-
-# InvoiceMaster(發票主檔)
-
-```sql
 CREATE TABLE InvoiceMaster
 (
     InvMasterID    int NOT NULL AUTO_INCREMENT,
@@ -60,12 +48,6 @@ CREATE TABLE InvoiceMaster
     PRIMARY KEY (InvMasterID)
 );
 
-
-```
-
-# InvoiceDetail(發票明細檔)
-
-```sql
 CREATE TABLE InvoiceDetail
 (
     InvDetailID    int NOT NULL AUTO_INCREMENT,
@@ -85,12 +67,6 @@ CREATE TABLE InvoiceDetail
     PRIMARY KEY (InvDetailID)
 );
 
-
-```
-
-# Liability
-
-```sql
 CREATE TABLE Liability
 (
     LBRawID       int NOT NULL AUTO_INCREMENT,
@@ -102,6 +78,3 @@ CREATE TABLE Liability
     EndDate       datetime,
     PRIMARY KEY (LBRawID)
 );
-
-```
-

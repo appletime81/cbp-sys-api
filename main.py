@@ -34,9 +34,7 @@ app = FastAPI()
 
 ROOT_URL = "/api/v1"
 
-app.include_router(
-    service.router, prefix=ROOT_URL, tags=["service"]
-)
+app.include_router(service.router, prefix=ROOT_URL, tags=["service"])
 
 
 # ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail ------------------------------
@@ -46,26 +44,55 @@ app.include_router(
     f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail&InvoiceMaster&InvoiceDetail"
 )
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
-        request: Request,
-        invoice_data: dict = Body(...),
-        db: Session = Depends(get_db),
+    request: Request,
+    invoice_data: dict = Body(...),
+    db: Session = Depends(get_db),
 ):
     # ---------------- handle InvoiceWKMaster ----------------
-    if not invoice_data["IsPro"]:
-        # 建立發票工作主檔
-        InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
-        InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(datetime.now())
-        InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)  # convert dict to pydantic model
-        create_invoice_wk_master_response = await service.InvoiceWKMaster(
+    InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
+
+    # IsPro: False, IsLiable: True
+    if not InvoiceWKMasterDictData.get("IsPro") and InvoiceWKMasterDictData.get(
+        "IsLiability"
+    ):
+        # 1. create InvoiceWKMaster
+        InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
+            datetime.now()
+        )  # add CreateDate
+        InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
+        AddInvoiceWKMasterResponse = await service.addInvoiceWKMaster(
             request, InvoiceWKMasterPydanticData, db
         )
-        # 建立發票工作明細檔
-        WKMasterID = create_invoice_wk_master_response["WKMasterID"]
+        WKMasterID = AddInvoiceWKMasterResponse["WKMasterID"]
+        print(f"WKMasterID: {WKMasterID}")
 
+        # 2. create InvoiceWKDetail
+        InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
+        newInvoiceWKDetailDictDataList = []
+        for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+            InvoiceWKDetailDictData.update(
+                {
+                    "WKMasterID": WKMasterID,
+                    "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
+                    "SupplierID": InvoiceWKMasterDictData["SupplierID"],
+                    "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
+                }
+            )
+            newInvoiceWKDetailDictDataList.append(InvoiceWKDetailDictData)
+        for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
+            InvoiceWKDetailPydanticData = InvoiceWKDetailSchema(
+                **InvoiceWKDetailDictData
+            )
+            AddInvoiceWKDetailResponse = await service.addInvoiceWKDetail(
+                request, InvoiceWKDetailPydanticData, db
+            )
+            print(f"AddInvoiceWKDetailResponse: {AddInvoiceWKDetailResponse}")
 
-    if invoice_data["IsPro"]:
-        pass
-
-
+        # 3. create InvoiceMaster
+        # 3.1 get all BillMilestone, not duplicate
+        BillMilestoneList = []
+        for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
+            BillMilestoneList.append(InvoiceWKDetailDictData["BillMilestone"])
+        BillMilestoneList = list(set(BillMilestoneList))
 
     return {"message": "success"}
