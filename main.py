@@ -133,4 +133,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             InvoiceMasterDictDataList.append(InvoiceMasterDictData)
         pprint(InvoiceMasterDictDataList)
 
+        # 4. create InvoiceDetail
+
     return {"message": "success"}

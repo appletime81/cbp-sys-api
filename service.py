@@ -62,6 +62,7 @@ async def addInvoiceWKDetail(
     db: Session = Depends(get_db),
 ):
     create_invoice_wk_detail(db, InvoiceWKDetailPydanticData)
+    get_all_invoice_wk_detail(db)
     return {"message": "InvoiceWKDetail successfully created"}
 
 
