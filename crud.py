@@ -93,7 +93,11 @@ def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailSche
 
 
 def get_all_invoice_wk_detail(db: Session, condition: dict):
-    return db.query(InvoiceWKDetailDBModel).filter_by(**condition).all()
+    return db.query(InvoiceWKDetailDBModel).all()
+
+
+def get_invoice_wk_detail_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceWKDetailDBModel).filter_by(**condition).first()
 
 
 # -----------------------------------------------------------------------------

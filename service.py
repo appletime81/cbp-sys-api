@@ -43,6 +43,8 @@ async def addInvoiceWKMaster(
     return {"message": "InvoiceWKMaster successfully created", "WKMasterID": WKMasterID}
 
 
+# -----------------------------------------------------------------------------
+
 # ------------------------------ InvoiceWKDetail ------------------------------
 # 查詢發票工作明細檔
 @router.get("/InvoiceWKDetail/{InvoiceWKDetailCondition}")
@@ -62,8 +64,14 @@ async def addInvoiceWKDetail(
     db: Session = Depends(get_db),
 ):
     create_invoice_wk_detail(db, InvoiceWKDetailPydanticData)
-    get_all_invoice_wk_detail(db)
-    return {"message": "InvoiceWKDetail successfully created"}
+    InvoiceWKDetailDictData = InvoiceWKDetailPydanticData.dict()
+    InvoiceWKDetailDictData.pop("WKDetailID")
+    InvoiceWKDetail = get_invoice_wk_detail_with_condition(db, InvoiceWKDetailDictData)
+    InvoiceWKDetailDictDataWKDetailID = InvoiceWKDetail.WKDetailID
+    return {
+        "message": "InvoiceWKDetail successfully created",
+        "WKDetailID": InvoiceWKDetailDictDataWKDetailID,
+    }
 
 
 # -----------------------------------------------------------------------------
@@ -96,7 +104,10 @@ async def addInvoiceMaster(
     # get InvoiceMasterID
     InvoiceMasterData = get_invoice_master_with_condition(db, InvoiceMasterDictData)
     InvoiceMasterId = InvoiceMasterData.InvMasterID
-    return {"message": "InvoiceMaster successfully created", "InvMasterID": InvoiceMasterId}
+    return {
+        "message": "InvoiceMaster successfully created",
+        "InvMasterID": InvoiceMasterId,
+    }
 
 
 # ---------------------------------------------------------------------------

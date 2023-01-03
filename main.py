@@ -45,16 +45,16 @@ app.include_router(service.router, prefix=ROOT_URL, tags=["service"])
     f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail&InvoiceMaster&InvoiceDetail"
 )
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
-        request: Request,
-        invoice_data: dict = Body(...),
-        db: Session = Depends(get_db),
+    request: Request,
+    invoice_data: dict = Body(...),
+    db: Session = Depends(get_db),
 ):
     # ---------------- handle InvoiceWKMaster ----------------
     InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
 
     # IsPro: False, IsLiable: True
     if not InvoiceWKMasterDictData.get("IsPro") and InvoiceWKMasterDictData.get(
-            "IsLiability"
+        "IsLiability"
     ):
         # 1. create InvoiceWKMaster
         InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
@@ -80,14 +80,18 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 }
             )
             newInvoiceWKDetailDictDataList.append(InvoiceWKDetailDictData)
-        for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
+        for i, InvoiceWKDetailDictData in enumerate(newInvoiceWKDetailDictDataList):
             InvoiceWKDetailPydanticData = InvoiceWKDetailSchema(
                 **InvoiceWKDetailDictData
             )
-            AddInvoiceWKDetailResponse = await service.addInvoiceWKDetail(
+            addInvoiceWKDetailResponse = await service.addInvoiceWKDetail(
                 request, InvoiceWKDetailPydanticData, db
             )
-            print(f"AddInvoiceWKDetailResponse: {AddInvoiceWKDetailResponse}")
+            newInvoiceWKDetailDictDataList[i][
+                "WKDetailID"
+            ] = addInvoiceWKDetailResponse["WKDetailID"]
+            # print(f"AddInvoiceWKDetailResponse: {addInvoiceWKDetailResponse}")
+        pprint(newInvoiceWKDetailDictDataList)
 
         # 3. create InvoiceMaster
         # 3.1 get all BillMilestone, not duplicate
@@ -129,7 +133,9 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             AddInvoiceMasterResponse = await service.addInvoiceMaster(
                 request, InvoiceMasterPydanticData, db
             )
-            InvoiceMasterDictData["InvMasterID"] = AddInvoiceMasterResponse["InvMasterID"]
+            InvoiceMasterDictData["InvMasterID"] = AddInvoiceMasterResponse[
+                "InvMasterID"
+            ]
             InvoiceMasterDictDataList.append(InvoiceMasterDictData)
         pprint(InvoiceMasterDictDataList)
 
