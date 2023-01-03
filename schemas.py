@@ -62,3 +62,13 @@ class InvoiceDetailSchema(BaseModel):
     LBRatio: float
     FeeAmountPost: float
     Difference: float
+
+
+class LiabilitySchema(BaseModel):
+    LBRawID: int
+    BillMilestone: str
+    PartyName: str
+    LBRatio: float
+    CreateDate: datetime
+    ModifyNote: str
+    EndDate: datetime

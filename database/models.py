@@ -68,7 +68,7 @@ class InvoiceDetailDBModel(Base):
 
 class LiabilityDBModel(Base):
     __tablename__ = "Liability"
-    LiabilityID = Column(Integer, primary_key=True, index=True)
+    LBRawID = Column(Integer, primary_key=True, index=True)
     BillMilestone = Column(String(20))
     PartyName = Column(String(100))
     LBRatio = Column(Float)

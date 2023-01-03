@@ -4,7 +4,7 @@ from database.models import (
     InvoiceWKDetailDBModel,
     InvoiceMasterDBModel,
     InvoiceDetailDBModel,
-    LiabilityDBModel
+    LiabilityDBModel,
 )
 from schemas import (
     InvoiceWKMasterSchema,
@@ -68,6 +68,10 @@ def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
     db.refresh(db_invoice_master)
 
 
+def get_invoice_master_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceMasterDBModel).filter_by(**condition).first()
+
+
 # ------------------------------ InvoiceWKDetail ------------------------------
 def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailSchema):
     db_invoice_wk_detail = InvoiceWKDetailDBModel(
@@ -96,6 +100,9 @@ def get_all_invoice_wk_detail(db: Session):
 
 # ------------------------------ Liability ------------------------------
 
+
 def get_liability_with_condition(db: Session, condition: dict):
-    return db.query(LiabilityDBModel).filter_by(**condition).first()
+    return db.query(LiabilityDBModel).filter_by(**condition)
+
+
 # -----------------------------------------------------------------------
