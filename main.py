@@ -140,6 +140,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         # pprint(InvoiceMasterDictDataList)
 
         # 4. create InvoiceDetail
+        InvoiceDetailDictDataList = []
         for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
             for InvoiceMasterDictData in InvoiceMasterDictDataList:
                 InvoiceDetailDictData = {}
@@ -173,5 +174,10 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 InvoiceDetailDictData["BillMilestone"] = BillMilestone
                 InvoiceDetailDictData["FeeItem"] = FeeItem
                 InvoiceDetailDictData["FeeAmountPre"] = FeeAmount
+                InvoiceDetailDictData["LBRatio"] = LiabilityDatas.first().LBRatio
+                InvoiceDetailDictData["FeeAmountPost"] =  
+
+                # dict to pydantic
+                InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
 
     return {"message": "success"}
