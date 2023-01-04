@@ -137,8 +137,41 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 "InvMasterID"
             ]
             InvoiceMasterDictDataList.append(InvoiceMasterDictData)
-        pprint(InvoiceMasterDictDataList)
+        # pprint(InvoiceMasterDictDataList)
 
         # 4. create InvoiceDetail
+        for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
+            for InvoiceMasterDictData in InvoiceMasterDictDataList:
+                InvoiceDetailDictData = {}
+                PartyName = InvoiceMasterDictData["PartyName"]
+                WKMasterID = InvoiceWKDetailDictData["WKMasterID"]
+                WKDetailID = InvoiceWKDetailDictData["WKDetailID"]
+                InvoiceNo = InvoiceWKDetailDictData["InvoiceNo"]
+                SupplierID = InvoiceWKDetailDictData["SupplierID"]
+                SubmarineCable = InvoiceWKDetailDictData["SubmarineCable"]
+                BillMilestone = InvoiceWKDetailDictData["BillMilestone"]
+                FeeItem = InvoiceWKDetailDictData["FeeItem"]
+                FeeAmount = InvoiceWKDetailDictData["FeeAmount"]
+                getLiabilityCondition = (
+                    f"BillMilestone={BillMilestone}&PartyName={PartyName}"
+                )
+                LiabilityDatas = await service.getLiability(
+                    request, getLiabilityCondition, db
+                )
+                print(
+                    LiabilityDatas.first().BillMilestone,
+                    FeeItem,
+                    PartyName,
+                    type(LiabilityDatas.first().LBRatio),
+                    LiabilityDatas.first().LBRatio,
+                )
+                InvoiceDetailDictData["WKMasterID"] = WKMasterID
+                InvoiceDetailDictData["WKDetailID"] = WKDetailID
+                InvoiceDetailDictData["InvoiceNo"] = InvoiceNo
+                InvoiceDetailDictData["SupplierID"] = SupplierID
+                InvoiceDetailDictData["SubmarineCable"] = SubmarineCable
+                InvoiceDetailDictData["BillMilestone"] = BillMilestone
+                InvoiceDetailDictData["FeeItem"] = FeeItem
+                InvoiceDetailDictData["FeeAmountPre"] = FeeAmount
 
     return {"message": "success"}
