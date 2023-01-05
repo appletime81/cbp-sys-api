@@ -52,8 +52,8 @@ async def getInvoiceWKDetail(
     request: Request, InvoiceWKDetailCondition: str, db: Session = Depends(get_db)
 ):
     if InvoiceWKDetailCondition == "all":
-        InvoiceWKDetailData = get_all_invoice_wk_detail(db)
-    return InvoiceWKDetailData
+        InvoiceWKDetailDatas = get_all_invoice_wk_detail(db)
+    return InvoiceWKDetailDatas
 
 
 # 新增發票工作明細檔
@@ -83,9 +83,8 @@ async def getInvoiceMaster(
     request: Request, InvoiceMasterCondition: str, db: Session = Depends(get_db)
 ):
     if InvoiceMasterCondition == "all":
-        pass
-        # InvoiceMasterData = get_all_invoice_master(db)
-    # return InvoiceMasterData
+        InvoiceMasterDataList = get_all_invoice_master(db)
+    return InvoiceMasterDataList
 
 
 # 新增發票主檔
@@ -132,6 +131,20 @@ async def addInvoiceDetail(
         "message": "InvoiceDetail successfully created",
         "InvDetailID": InvDetailID,
     }
+
+
+@router.get("/InvoiceDetail/{InvoiceDetailCondition}")
+async def getInvoiceDetail(
+    request: Request, InvoiceDetailCondition: str, db: Session = Depends(get_db)
+):
+    if InvoiceDetailCondition == "all":
+        InvoiceDetailDataList = get_all_invoice_detail_with_condition(db)
+    else:
+        InvoiceDetailConditionDict = convert_url_condition_to_dict(InvoiceDetailCondition)
+        InvoiceDetailDataList = get_invoice_detail_with_condition(
+            db, InvoiceDetailConditionDict
+        )
+    return InvoiceDetailDataList
 
 
 # ---------------------------------------------------------------------------

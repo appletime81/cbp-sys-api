@@ -2,7 +2,7 @@
   "InvoiceWKMaster": {
     "InvoiceNo": "DT0170168-1",
     "Description": "COMMERCIAL INVOICE for SJC2 CABLE SYSTEM[ % of Contract Price=BM9a 3.96%,BM12 5.00% ",
-    "SupplierID": "NEC",
+    "SupplierName": "NEC",
     "SubmarineCable": "SJC2",
     "WorkTitle": "Construction",
     "ContractType": "SC",

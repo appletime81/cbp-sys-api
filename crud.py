@@ -19,7 +19,7 @@ def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterSche
     db_invoice_wk_master = InvoiceWKMasterDBModel(
         InvoiceNo=invoice_wk_master.InvoiceNo,
         Description=invoice_wk_master.Description,
-        SupplierID=invoice_wk_master.SupplierID,
+        SupplierName=invoice_wk_master.SupplierName,
         SubmarineCable=invoice_wk_master.SubmarineCable,
         WorkTitle=invoice_wk_master.WorkTitle,
         ContractType=invoice_wk_master.ContractType,
@@ -54,7 +54,7 @@ def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailSche
         WKDetailID=invoice_wk_detail.WKDetailID,
         WKMasterID=invoice_wk_detail.WKMasterID,
         InvoiceNo=invoice_wk_detail.InvoiceNo,
-        SupplierID=invoice_wk_detail.SupplierID,
+        SupplierName=invoice_wk_detail.SupplierName,
         SubmarineCable=invoice_wk_detail.SubmarineCable,
         BillMilestone=invoice_wk_detail.BillMilestone,
         FeeItem=invoice_wk_detail.FeeItem,
@@ -68,7 +68,7 @@ def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailSche
         print(e)
 
 
-def get_all_invoice_wk_detail(db: Session, condition: dict):
+def get_all_invoice_wk_detail(db: Session):
     return db.query(InvoiceWKDetailDBModel).all()
 
 
@@ -86,7 +86,7 @@ def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
         WKMasterID=invoice_master.WKMasterID,
         InvoiceNo=invoice_master.InvoiceNo,
         PartyName=invoice_master.PartyName,
-        SupplierID=invoice_master.SupplierID,
+        SupplierName=invoice_master.SupplierName,
         SubmarineCable=invoice_master.SubmarineCable,
         ContractType=invoice_master.ContractType,
         IssueDate=invoice_master.IssueDate,
@@ -102,6 +102,10 @@ def get_invoice_master_with_condition(db: Session, condition: dict):
     return db.query(InvoiceMasterDBModel).filter_by(**condition).first()
 
 
+def get_all_invoice_master(db: Session):
+    return db.query(InvoiceMasterDBModel).all()
+
+
 # ---------------------------------------------------------------------------
 
 
@@ -113,7 +117,7 @@ def create_invoice_detail(db: Session, invoice_detail: InvoiceDetailSchema):
         WKDetailID=invoice_detail.WKDetailID,
         InvoiceNo=invoice_detail.InvoiceNo,
         PartyName=invoice_detail.PartyName,
-        SupplierID=invoice_detail.SupplierID,
+        SupplierName=invoice_detail.SupplierName,
         SubmarineCable=invoice_detail.SubmarineCable,
         BillMilestone=invoice_detail.BillMilestone,
         FeeItem=invoice_detail.FeeItem,
@@ -129,6 +133,14 @@ def create_invoice_detail(db: Session, invoice_detail: InvoiceDetailSchema):
 
 def get_invoice_detail_with_condition(db: Session, condition: dict):
     return db.query(InvoiceDetailDBModel).filter_by(**condition).first()
+
+
+def get_all_invoice_detail(db: Session):
+    return db.query(InvoiceDetailDBModel).all()
+
+
+def get_all_invoice_detail_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceDetailDBModel).filter_by(**condition).all()
 
 
 # ---------------------------------------------------------------------------

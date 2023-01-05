@@ -3,33 +3,15 @@ import io
 import json
 import uuid
 import copy
-from pprint import pprint
-from urllib.parse import urlparse
-
-# import service(業務邏輯)
 import service
 
-# import utils
+from crud import *
+from pprint import pprint
+from get_db import get_db
+from datetime import datetime
+from fastapi import FastAPI, status, Depends, Request, Body
 from utils.utils import convert_time_to_str, cal_fee_amount_post
 
-# schemas (pydantic models)
-from schemas import *
-
-# database
-from database.engine import *
-from database.models import *
-
-# crud
-from crud import *
-
-# pydantic and orm converters
-from utils.orm_pydantic_convert import orm_to_pydantic, pydantic_to_orm
-
-from fastapi.responses import Response
-from datetime import timedelta, datetime
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, status, Depends, Request, HTTPException, Body
-from get_db import get_db
 
 app = FastAPI()
 
@@ -39,8 +21,6 @@ app.include_router(service.router, prefix=ROOT_URL, tags=["service"])
 
 
 # ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail ------------------------------
-
-
 @app.post(
     f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail&InvoiceMaster&InvoiceDetail"
 )
@@ -71,7 +51,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 {
                     "WKMasterID": WKMasterID,
                     "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
-                    "SupplierID": InvoiceWKMasterDictData["SupplierID"],
+                    "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                     "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
                 }
             )
@@ -113,7 +93,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                     "WKMasterID": WKMasterID,
                     "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
                     "PartyName": PartyName,
-                    "SupplierID": InvoiceWKMasterDictData["SupplierID"],
+                    "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                     "ContractType": InvoiceWKMasterDictData["ContractType"],
                     "IssueDate": InvoiceWKMasterDictData["IssueDate"],
                     "InvoiceDueDate": InvoiceWKMasterDictData["InvoiceDueDate"],
@@ -141,7 +121,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 WKMasterID = InvoiceWKDetailDictData["WKMasterID"]
                 WKDetailID = InvoiceWKDetailDictData["WKDetailID"]
                 InvoiceNo = InvoiceWKDetailDictData["InvoiceNo"]
-                SupplierID = InvoiceWKDetailDictData["SupplierID"]
+                SupplierName = InvoiceWKDetailDictData["SupplierName"]
                 SubmarineCable = InvoiceWKDetailDictData["SubmarineCable"]
                 BillMilestone = InvoiceWKDetailDictData["BillMilestone"]
                 FeeItem = InvoiceWKDetailDictData["FeeItem"]
@@ -159,7 +139,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 InvoiceDetailDictData["WKDetailID"] = WKDetailID
                 InvoiceDetailDictData["InvoiceNo"] = InvoiceNo
                 InvoiceDetailDictData["PartyName"] = PartyName
-                InvoiceDetailDictData["SupplierID"] = SupplierID
+                InvoiceDetailDictData["SupplierName"] = SupplierName
                 InvoiceDetailDictData["SubmarineCable"] = SubmarineCable
                 InvoiceDetailDictData["BillMilestone"] = BillMilestone
                 InvoiceDetailDictData["FeeItem"] = FeeItem
@@ -200,7 +180,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 {
                     "WKMasterID": WKMasterID,
                     "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
-                    "SupplierID": InvoiceWKMasterDictData["SupplierID"],
+                    "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                     "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
                 }
             )
@@ -224,7 +204,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 "WKMasterID": WKMasterID,
                 "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
                 "PartyName": InvoiceWKMasterDictData["PartyName"],
-                "SupplierID": InvoiceWKMasterDictData["SupplierID"],
+                "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                 "ContractType": InvoiceWKMasterDictData["ContractType"],
                 "IssueDate": InvoiceWKMasterDictData["IssueDate"],
                 "InvoiceDueDate": InvoiceWKMasterDictData["InvoiceDueDate"],
@@ -249,7 +229,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             WKMasterID = InvoiceWKDetailDictData["WKMasterID"]
             WKDetailID = InvoiceWKDetailDictData["WKDetailID"]
             InvoiceNo = InvoiceWKDetailDictData["InvoiceNo"]
-            SupplierID = InvoiceWKDetailDictData["SupplierID"]
+            SupplierName = InvoiceWKDetailDictData["SupplierName"]
             SubmarineCable = InvoiceWKDetailDictData["SubmarineCable"]
             BillMilestone = InvoiceWKDetailDictData["BillMilestone"]
             FeeItem = InvoiceWKDetailDictData["FeeItem"]
@@ -260,7 +240,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             InvoiceDetailDictData["WKDetailID"] = WKDetailID
             InvoiceDetailDictData["InvoiceNo"] = InvoiceNo
             InvoiceDetailDictData["PartyName"] = PartyName
-            InvoiceDetailDictData["SupplierID"] = SupplierID
+            InvoiceDetailDictData["SupplierName"] = SupplierName
             InvoiceDetailDictData["SubmarineCable"] = SubmarineCable
             InvoiceDetailDictData["BillMilestone"] = BillMilestone
             InvoiceDetailDictData["FeeItem"] = FeeItem
@@ -282,3 +262,22 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             InvoiceDetailDictDataList.append(InvoiceDetailDictData)
 
     return {"message": "success"}
+
+
+# -------------------------------------------------------------------------------------------------------------------------------------
+
+
+# ------------------------------ BillMaster and  BillDetail ------------------------------
+@app.post(
+    f"{ROOT_URL}/generateBillMaster&BillDetail",
+)
+async def generateBillMasterAndBillDetail(
+    request: Request,
+    invoice_data: dict = Body(...),
+    db: Session = Depends(get_db),
+):
+    WKMasterID = invoice_data["WKMasterID"]
+    
+
+
+# ----------------------------------------------------------------------------------------

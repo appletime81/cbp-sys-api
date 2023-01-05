@@ -8,7 +8,7 @@ class InvoiceWKMasterSchema(BaseModel):
     WKMasterID: Optional[int]
     InvoiceNo: str
     Description: str
-    SupplierID: str
+    SupplierName: str
     SubmarineCable: str
     WorkTitle: str
     ContractType: str
@@ -27,7 +27,7 @@ class InvoiceWKDetailSchema(BaseModel):
     WKDetailID: Optional[int]
     WKMasterID: Optional[int]
     InvoiceNo: str
-    SupplierID: str
+    SupplierName: str
     SubmarineCable: str
     BillMilestone: str
     FeeItem: Optional[str]
@@ -39,7 +39,7 @@ class InvoiceMasterSchema(BaseModel):
     WKMasterID: int
     InvoiceNo: str
     PartyName: str
-    SupplierID: str
+    SupplierName: str
     SubmarineCable: str
     ContractType: str
     IssueDate: datetime
@@ -54,7 +54,7 @@ class InvoiceDetailSchema(BaseModel):
     WKDetailID: int
     InvoiceNo: str
     PartyName: str
-    SupplierID: str
+    SupplierName: str
     SubmarineCable: str
     BillMilestone: str
     FeeItem: str
