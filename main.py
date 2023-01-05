@@ -185,5 +185,13 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
                 # dict to pydantic
                 InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
+                addInvoiceDetailResponse = await service.addInvoiceDetail(
+                    request, InvoiceDetailPydanticData, db
+                )
+                InvoiceDetailDictData["InvDetailID"] = addInvoiceDetailResponse[
+                    "InvDetailID"
+                ]
+                InvoiceDetailDictDataList.append(InvoiceDetailDictData)
+        pprint(InvoiceDetailDictDataList)
 
     return {"message": "success"}

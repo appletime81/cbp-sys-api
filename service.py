@@ -122,8 +122,15 @@ async def addInvoiceDetail(
 ):
     create_invoice_detail(db, InvoiceDetailPydanticData)
 
+    # get insert data's ID
+    InvoiceDetailDictData = InvoiceDetailPydanticData.dict()
+    InvoiceDetailDictData.pop("InvDetailID")
+    InvDetailID = get_invoice_detail_with_condition(
+        db, InvoiceDetailDictData
+    ).InvDetailID
     return {
         "message": "InvoiceDetail successfully created",
+        "InvDetailID": InvDetailID,
     }
 
 

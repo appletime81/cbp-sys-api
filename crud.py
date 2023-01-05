@@ -127,6 +127,10 @@ def create_invoice_detail(db: Session, invoice_detail: InvoiceDetailSchema):
     db.refresh(db_invoice_detail)
 
 
+def get_invoice_detail_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceDetailDBModel).filter_by(**condition).first()
+
+
 # ---------------------------------------------------------------------------
 
 # ------------------------------ Liability ------------------------------
