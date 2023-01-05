@@ -12,3 +12,8 @@ def convert_url_condition_to_dict(url_condition):
         url_condition = url_condition.split("=")
         url_condition_dict.update({url_condition[0]: url_condition[1]})
     return url_condition_dict
+
+
+def cal_fee_amount_post(ratio: float, fee_amount_pre: float):
+    fee_amount_post = float(format(fee_amount_pre * ratio, ".2f"))
+    return fee_amount_post

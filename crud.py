@@ -48,30 +48,6 @@ def get_invoice_wk_master_with_condition(db: Session, condition: dict):
 
 
 # -----------------------------------------------------------------------------
-
-# ------------------------------ InvoiceMaster ------------------------------
-def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
-    db_invoice_master = InvoiceMasterDBModel(
-        InvMasterID=invoice_master.InvMasterID,
-        WKMasterID=invoice_master.WKMasterID,
-        InvoiceNo=invoice_master.InvoiceNo,
-        PartyName=invoice_master.PartyName,
-        SupplierID=invoice_master.SupplierID,
-        SubmarineCable=invoice_master.SubmarineCable,
-        ContractType=invoice_master.ContractType,
-        IssueDate=invoice_master.IssueDate,
-        InvoiceDueDate=invoice_master.InvoiceDueDate,
-        Status=invoice_master.Status,
-    )
-    db.add(db_invoice_master)
-    db.commit()
-    db.refresh(db_invoice_master)
-
-
-def get_invoice_master_with_condition(db: Session, condition: dict):
-    return db.query(InvoiceMasterDBModel).filter_by(**condition).first()
-
-
 # ------------------------------ InvoiceWKDetail ------------------------------
 def create_invoice_wk_detail(db: Session, invoice_wk_detail: InvoiceWKDetailSchema):
     db_invoice_wk_detail = InvoiceWKDetailDBModel(
@@ -101,6 +77,57 @@ def get_invoice_wk_detail_with_condition(db: Session, condition: dict):
 
 
 # -----------------------------------------------------------------------------
+
+
+# ------------------------------ InvoiceMaster ------------------------------
+def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
+    db_invoice_master = InvoiceMasterDBModel(
+        InvMasterID=invoice_master.InvMasterID,
+        WKMasterID=invoice_master.WKMasterID,
+        InvoiceNo=invoice_master.InvoiceNo,
+        PartyName=invoice_master.PartyName,
+        SupplierID=invoice_master.SupplierID,
+        SubmarineCable=invoice_master.SubmarineCable,
+        ContractType=invoice_master.ContractType,
+        IssueDate=invoice_master.IssueDate,
+        InvoiceDueDate=invoice_master.InvoiceDueDate,
+        Status=invoice_master.Status,
+    )
+    db.add(db_invoice_master)
+    db.commit()
+    db.refresh(db_invoice_master)
+
+
+def get_invoice_master_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceMasterDBModel).filter_by(**condition).first()
+
+
+# ---------------------------------------------------------------------------
+
+
+# ------------------------------ InvoiceDetail ------------------------------
+def create_invoice_detail(db: Session, invoice_detail: InvoiceDetailSchema):
+    db_invoice_detail = InvoiceDetailDBModel(
+        InvMasterID=invoice_detail.InvMasterID,
+        WKMasterID=invoice_detail.WKMasterID,
+        WKDetailID=invoice_detail.WKDetailID,
+        InvoiceNo=invoice_detail.InvoiceNo,
+        PartyName=invoice_detail.PartyName,
+        SupplierID=invoice_detail.SupplierID,
+        SubmarineCable=invoice_detail.SubmarineCable,
+        BillMilestone=invoice_detail.BillMilestone,
+        FeeItem=invoice_detail.FeeItem,
+        FeeAmountPre=invoice_detail.FeeAmountPre,
+        LBRatio=invoice_detail.LBRatio,
+        FeeAmountPost=invoice_detail.FeeAmountPost,
+        Difference=invoice_detail.Difference,
+    )
+    db.add(db_invoice_detail)
+    db.commit()
+    db.refresh(db_invoice_detail)
+
+
+# ---------------------------------------------------------------------------
 
 # ------------------------------ Liability ------------------------------
 

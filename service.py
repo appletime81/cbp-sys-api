@@ -112,6 +112,23 @@ async def addInvoiceMaster(
 
 # ---------------------------------------------------------------------------
 
+# ------------------------------ InvoiceDetail ------------------------------
+# 建立InvoiceDetail
+@router.post("/InvoiceDetail/", status_code=status.HTTP_201_CREATED)
+async def addInvoiceDetail(
+    request: Request,
+    InvoiceDetailPydanticData: InvoiceDetailSchema,
+    db: Session = Depends(get_db),
+):
+    create_invoice_detail(db, InvoiceDetailPydanticData)
+
+    return {
+        "message": "InvoiceDetail successfully created",
+    }
+
+
+# ---------------------------------------------------------------------------
+
 # ------------------------------ Liability ------------------------------
 # 查詢Liability
 @router.get("/Liability/{LiabilityCondition}")

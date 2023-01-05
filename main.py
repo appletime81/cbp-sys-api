@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import service
 
 # import utils
-from utils.utils import convert_time_to_str
+from utils.utils import convert_time_to_str, cal_fee_amount_post
 
 # schemas (pydantic models)
 from schemas import *
@@ -144,6 +144,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
             for InvoiceMasterDictData in InvoiceMasterDictDataList:
                 InvoiceDetailDictData = {}
+                InvMasterID = InvoiceMasterDictData["InvMasterID"]
                 PartyName = InvoiceMasterDictData["PartyName"]
                 WKMasterID = InvoiceWKDetailDictData["WKMasterID"]
                 WKDetailID = InvoiceWKDetailDictData["WKDetailID"]
@@ -159,23 +160,28 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 LiabilityDatas = await service.getLiability(
                     request, getLiabilityCondition, db
                 )
-                print(
-                    LiabilityDatas.first().BillMilestone,
-                    FeeItem,
-                    PartyName,
-                    type(LiabilityDatas.first().LBRatio),
-                    LiabilityDatas.first().LBRatio,
-                )
+                # print(
+                #     LiabilityDatas.first().BillMilestone,
+                #     FeeItem,
+                #     PartyName,
+                #     type(LiabilityDatas.first().LBRatio),
+                #     LiabilityDatas.first().LBRatio,
+                # )
+                InvoiceDetailDictData["InvMasterID"] = InvMasterID
                 InvoiceDetailDictData["WKMasterID"] = WKMasterID
                 InvoiceDetailDictData["WKDetailID"] = WKDetailID
                 InvoiceDetailDictData["InvoiceNo"] = InvoiceNo
+                InvoiceDetailDictData["PartyName"] = PartyName
                 InvoiceDetailDictData["SupplierID"] = SupplierID
                 InvoiceDetailDictData["SubmarineCable"] = SubmarineCable
                 InvoiceDetailDictData["BillMilestone"] = BillMilestone
                 InvoiceDetailDictData["FeeItem"] = FeeItem
                 InvoiceDetailDictData["FeeAmountPre"] = FeeAmount
                 InvoiceDetailDictData["LBRatio"] = LiabilityDatas.first().LBRatio
-                InvoiceDetailDictData["FeeAmountPost"] =  
+                InvoiceDetailDictData["FeeAmountPost"] = cal_fee_amount_post(
+                    LiabilityDatas.first().LBRatio, FeeAmount
+                )
+                InvoiceDetailDictData["Difference"] = 0
 
                 # dict to pydantic
                 InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
