@@ -49,13 +49,10 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
-    # ---------------- handle InvoiceWKMaster ----------------
     InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
 
-    # IsPro: False, IsLiable: True
-    if not InvoiceWKMasterDictData.get("IsPro") and InvoiceWKMasterDictData.get(
-        "IsLiability"
-    ):
+    # IsLiable: True
+    if InvoiceWKMasterDictData.get("IsLiability"):
         # 1. create InvoiceWKMaster
         InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
             datetime.now()
@@ -65,7 +62,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             request, InvoiceWKMasterPydanticData, db
         )
         WKMasterID = AddInvoiceWKMasterResponse["WKMasterID"]
-        print(f"WKMasterID: {WKMasterID}")
 
         # 2. create InvoiceWKDetail
         InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
@@ -90,8 +86,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             newInvoiceWKDetailDictDataList[i][
                 "WKDetailID"
             ] = addInvoiceWKDetailResponse["WKDetailID"]
-            # print(f"AddInvoiceWKDetailResponse: {addInvoiceWKDetailResponse}")
-        pprint(newInvoiceWKDetailDictDataList)
 
         # 3. create InvoiceMaster
         # 3.1 get all BillMilestone, not duplicate
@@ -110,7 +104,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             for LiabilityData in LiabilityDatas:
                 PartyNameList.append(LiabilityData.PartyName)
         PartyNameList = list(set(PartyNameList))
-        pprint(PartyNameList)
 
         # add InvoiceMaster by every PartyName
         for PartyName in PartyNameList:
@@ -130,14 +123,13 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 }
             )
             InvoiceMasterPydanticData = InvoiceMasterSchema(**InvoiceMasterDictData)
-            AddInvoiceMasterResponse = await service.addInvoiceMaster(
+            addInvoiceMasterResponse = await service.addInvoiceMaster(
                 request, InvoiceMasterPydanticData, db
             )
-            InvoiceMasterDictData["InvMasterID"] = AddInvoiceMasterResponse[
+            InvoiceMasterDictData["InvMasterID"] = addInvoiceMasterResponse[
                 "InvMasterID"
             ]
             InvoiceMasterDictDataList.append(InvoiceMasterDictData)
-        # pprint(InvoiceMasterDictDataList)
 
         # 4. create InvoiceDetail
         InvoiceDetailDictDataList = []
@@ -154,19 +146,14 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 BillMilestone = InvoiceWKDetailDictData["BillMilestone"]
                 FeeItem = InvoiceWKDetailDictData["FeeItem"]
                 FeeAmount = InvoiceWKDetailDictData["FeeAmount"]
+
                 getLiabilityCondition = (
                     f"BillMilestone={BillMilestone}&PartyName={PartyName}"
                 )
                 LiabilityDatas = await service.getLiability(
                     request, getLiabilityCondition, db
                 )
-                # print(
-                #     LiabilityDatas.first().BillMilestone,
-                #     FeeItem,
-                #     PartyName,
-                #     type(LiabilityDatas.first().LBRatio),
-                #     LiabilityDatas.first().LBRatio,
-                # )
+
                 InvoiceDetailDictData["InvMasterID"] = InvMasterID
                 InvoiceDetailDictData["WKMasterID"] = WKMasterID
                 InvoiceDetailDictData["WKDetailID"] = WKDetailID
@@ -193,5 +180,105 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 ]
                 InvoiceDetailDictDataList.append(InvoiceDetailDictData)
         pprint(InvoiceDetailDictDataList)
+
+    if not InvoiceWKMasterDictData.get("IsLiability"):
+        # 1. create InvoiceWKMaster
+        InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
+            datetime.now()
+        )  # add CreateDate
+        InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
+        AddInvoiceWKMasterResponse = await service.addInvoiceWKMaster(
+            request, InvoiceWKMasterPydanticData, db
+        )
+        WKMasterID = AddInvoiceWKMasterResponse["WKMasterID"]
+
+        # 2. create InvoiceWKDetail
+        InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
+        newInvoiceWKDetailDictDataList = []
+        for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+            InvoiceWKDetailDictData.update(
+                {
+                    "WKMasterID": WKMasterID,
+                    "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
+                    "SupplierID": InvoiceWKMasterDictData["SupplierID"],
+                    "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
+                }
+            )
+            newInvoiceWKDetailDictDataList.append(InvoiceWKDetailDictData)
+        for i, InvoiceWKDetailDictData in enumerate(newInvoiceWKDetailDictDataList):
+            InvoiceWKDetailPydanticData = InvoiceWKDetailSchema(
+                **InvoiceWKDetailDictData
+            )
+            addInvoiceWKDetailResponse = await service.addInvoiceWKDetail(
+                request, InvoiceWKDetailPydanticData, db
+            )
+            newInvoiceWKDetailDictDataList[i][
+                "WKDetailID"
+            ] = addInvoiceWKDetailResponse["WKDetailID"]
+
+        # 3. create InvoiceMaster
+        InvoiceMasterDictDataList = []
+        InvoiceMasterDictData = {}
+        InvoiceMasterDictData.update(
+            {
+                "WKMasterID": WKMasterID,
+                "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
+                "PartyName": InvoiceWKMasterDictData["PartyName"],
+                "SupplierID": InvoiceWKMasterDictData["SupplierID"],
+                "ContractType": InvoiceWKMasterDictData["ContractType"],
+                "IssueDate": InvoiceWKMasterDictData["IssueDate"],
+                "InvoiceDueDate": InvoiceWKMasterDictData["InvoiceDueDate"],
+                "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
+                "Status": InvoiceWKMasterDictData["Status"],
+                "IsPro": InvoiceWKMasterDictData["IsPro"],
+            }
+        )
+        InvoiceMasterPydanticData = InvoiceMasterSchema(**InvoiceMasterDictData)
+        addInvoiceMasterResponse = await service.addInvoiceMaster(
+            request, InvoiceMasterPydanticData, db
+        )
+        InvoiceMasterDictData["InvMasterID"] = addInvoiceMasterResponse["InvMasterID"]
+        InvoiceMasterDictDataList.append(InvoiceMasterDictData)
+
+        # 4. create InvoiceDetail
+        InvoiceDetailDictDataList = []
+        for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
+            InvoiceDetailDictData = {}
+            InvMasterID = InvoiceMasterDictData["InvMasterID"]
+            PartyName = InvoiceWKMasterDictData["PartyName"]
+            WKMasterID = InvoiceWKDetailDictData["WKMasterID"]
+            WKDetailID = InvoiceWKDetailDictData["WKDetailID"]
+            InvoiceNo = InvoiceWKDetailDictData["InvoiceNo"]
+            SupplierID = InvoiceWKDetailDictData["SupplierID"]
+            SubmarineCable = InvoiceWKDetailDictData["SubmarineCable"]
+            BillMilestone = InvoiceWKDetailDictData["BillMilestone"]
+            FeeItem = InvoiceWKDetailDictData["FeeItem"]
+            FeeAmount = InvoiceWKDetailDictData["FeeAmount"]
+
+            InvoiceDetailDictData["InvMasterID"] = InvMasterID
+            InvoiceDetailDictData["WKMasterID"] = WKMasterID
+            InvoiceDetailDictData["WKDetailID"] = WKDetailID
+            InvoiceDetailDictData["InvoiceNo"] = InvoiceNo
+            InvoiceDetailDictData["PartyName"] = PartyName
+            InvoiceDetailDictData["SupplierID"] = SupplierID
+            InvoiceDetailDictData["SubmarineCable"] = SubmarineCable
+            InvoiceDetailDictData["BillMilestone"] = BillMilestone
+            InvoiceDetailDictData["FeeItem"] = FeeItem
+            InvoiceDetailDictData["FeeAmountPre"] = FeeAmount
+            InvoiceDetailDictData["LBRatio"] = 100
+            InvoiceDetailDictData["FeeAmountPost"] = cal_fee_amount_post(
+                InvoiceDetailDictData["LBRatio"], FeeAmount
+            )
+            InvoiceDetailDictData["Difference"] = 0
+
+            # dict to pydantic
+            InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
+            addInvoiceDetailResponse = await service.addInvoiceDetail(
+                request, InvoiceDetailPydanticData, db
+            )
+            InvoiceDetailDictData["InvDetailID"] = addInvoiceDetailResponse[
+                "InvDetailID"
+            ]
+            InvoiceDetailDictDataList.append(InvoiceDetailDictData)
 
     return {"message": "success"}
