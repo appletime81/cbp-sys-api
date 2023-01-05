@@ -48,7 +48,7 @@ class InvoiceMasterSchema(BaseModel):
 
 
 class InvoiceDetailSchema(BaseModel):
-    InvDetailID: int
+    InvDetailID: Optional[int]
     InvMasterID: int
     WKMasterID: int
     WKDetailID: int
