@@ -1,0 +1,2 @@
+_sa_instance_state,WKDetailID,InvDetailID,PartyName,SubmarineCable,BillMilestone,FeeAmountPre,FeeAmountPost,InvMasterID,WKMasterID,InvoiceNo,SupplierName,FeeItem,LBRatio,Difference
+<sqlalchemy.orm.state.InstanceState object at 0x7f8967d40370>,1,1,CHT,SJC2,BM9a,1288822.32,1288822.32,1,1,DT0170168-1,NEC,BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment,100.0,0.0

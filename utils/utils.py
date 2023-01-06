@@ -1,3 +1,6 @@
+import pandas as pd
+from typing import List, Dict
+
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
@@ -24,3 +27,9 @@ def convert_dict_condition_to_url(dict_condition):
 def cal_fee_amount_post(ratio: float, fee_amount_pre: float):
     fee_amount_post = float(format(fee_amount_pre * ratio / 100, ".2f"))
     return fee_amount_post
+
+
+def dflist_to_df(list_data: List[pd.DataFrame]):
+    df = pd.concat(list_data, axis=0, ignore_index=True)
+    df = df.drop(columns=["_sa_instance_state"])
+    return df

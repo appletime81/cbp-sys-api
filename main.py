@@ -12,11 +12,13 @@ from get_db import get_db
 from datetime import datetime
 from fastapi import FastAPI, Depends, Request, Body
 from utils.utils import (
+    dflist_to_df,
     convert_time_to_str,
     cal_fee_amount_post,
     convert_dict_condition_to_url,
 )
 
+pd.set_option("display.max_columns", None)
 
 app = FastAPI()
 
@@ -285,6 +287,24 @@ async def generateBillMasterAndBillDetail(
     dict_condition = {"WKMasterID": WKMasterID}
     url_condition = convert_dict_condition_to_url(dict_condition)
     InvoiceDetailDataList = await service.getInvoiceDetail(request, url_condition, db)
+    dfInvoiceDetailDataList = [
+        pd.DataFrame(InvoiceDetailData.__dict__, index=[0])
+        for InvoiceDetailData in InvoiceDetailDataList
+    ]
+
+    dfInvoiceDetailData = dflist_to_df(dfInvoiceDetailDataList)
+
+    # groupby PartName
+    dfInvoiceDetailDataGroupByPartyName = (
+        dfInvoiceDetailData.groupby(["PartyName"])["BillMilestone"]
+        .apply(list)
+        .reset_index(name="BillMilestoneList")
+    )
+    # print(dfInvoiceDetailDataGroupByPartyName)
+    for index, row in dfInvoiceDetailDataGroupByPartyName.iterrows():
+        print(index)
+        print(row["PartyName"])
+        pprint(row["BillMilestoneList"])
 
     return InvoiceDetailDataList
 

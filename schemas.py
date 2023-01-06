@@ -64,6 +64,16 @@ class InvoiceDetailSchema(BaseModel):
     Difference: float
 
 
+class BillMaster(BaseModel):
+    BillMasterID: Optional[int]
+    BillNo: str
+    PartyName: str
+    CreateDate: datetime
+    DueDate: datetime
+    Status: str
+    IsPro: bool
+
+
 class LiabilitySchema(BaseModel):
     LBRawID: int
     BillMilestone: str

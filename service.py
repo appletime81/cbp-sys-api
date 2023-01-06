@@ -19,6 +19,11 @@ async def getInvoiceWKMaster(
 ):
     if InvoiceWKMasterCondition == "all":
         InvoiceWKMasterData = get_all_invoice_wk_master(db)
+    else:
+        InvoiceWKMasterCondition = convert_url_condition_to_dict(InvoiceWKMasterCondition)
+        InvoiceWKMasterData = get_invoice_wk_master_with_condition(
+            db, InvoiceWKMasterCondition
+        )
     return InvoiceWKMasterData
 
 
