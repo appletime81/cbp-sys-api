@@ -14,6 +14,13 @@ def convert_url_condition_to_dict(url_condition):
     return url_condition_dict
 
 
+def convert_dict_condition_to_url(dict_condition):
+    url_condition = ""
+    for key, value in dict_condition.items():
+        url_condition += f"{key}={value}&"
+    return url_condition[:-1]
+
+
 def cal_fee_amount_post(ratio: float, fee_amount_pre: float):
     fee_amount_post = float(format(fee_amount_pre * ratio / 100, ".2f"))
     return fee_amount_post

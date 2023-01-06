@@ -140,8 +140,10 @@ async def getInvoiceDetail(
     if InvoiceDetailCondition == "all":
         InvoiceDetailDataList = get_all_invoice_detail_with_condition(db)
     else:
-        InvoiceDetailConditionDict = convert_url_condition_to_dict(InvoiceDetailCondition)
-        InvoiceDetailDataList = get_invoice_detail_with_condition(
+        InvoiceDetailConditionDict = convert_url_condition_to_dict(
+            InvoiceDetailCondition
+        )
+        InvoiceDetailDataList = get_all_invoice_detail_with_condition(
             db, InvoiceDetailConditionDict
         )
     return InvoiceDetailDataList

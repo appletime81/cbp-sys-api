@@ -9,8 +9,12 @@ from crud import *
 from pprint import pprint
 from get_db import get_db
 from datetime import datetime
-from fastapi import FastAPI, status, Depends, Request, Body
-from utils.utils import convert_time_to_str, cal_fee_amount_post
+from fastapi import FastAPI, Depends, Request, Body
+from utils.utils import (
+    convert_time_to_str,
+    cal_fee_amount_post,
+    convert_dict_condition_to_url,
+)
 
 
 app = FastAPI()
@@ -277,7 +281,8 @@ async def generateBillMasterAndBillDetail(
     db: Session = Depends(get_db),
 ):
     WKMasterID = invoice_data["WKMasterID"]
-    
+    dict_condition = {"WKMasterID": WKMasterID}
+    url_condition = convert_dict_condition_to_url(dict_condition)
 
 
 # ----------------------------------------------------------------------------------------
