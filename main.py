@@ -4,6 +4,7 @@ import json
 import uuid
 import copy
 import service
+import pandas as pd
 
 from crud import *
 from pprint import pprint
@@ -283,6 +284,9 @@ async def generateBillMasterAndBillDetail(
     WKMasterID = invoice_data["WKMasterID"]
     dict_condition = {"WKMasterID": WKMasterID}
     url_condition = convert_dict_condition_to_url(dict_condition)
+    InvoiceDetailDataList = await service.getInvoiceDetail(request, url_condition, db)
+
+    return InvoiceDetailDataList
 
 
 # ----------------------------------------------------------------------------------------

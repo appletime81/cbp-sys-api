@@ -143,6 +143,7 @@ async def getInvoiceDetail(
         InvoiceDetailConditionDict = convert_url_condition_to_dict(
             InvoiceDetailCondition
         )
+        print(InvoiceDetailConditionDict)
         InvoiceDetailDataList = get_all_invoice_detail_with_condition(
             db, InvoiceDetailConditionDict
         )
