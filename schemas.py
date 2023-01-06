@@ -64,12 +64,12 @@ class InvoiceDetailSchema(BaseModel):
     Difference: float
 
 
-class BillMaster(BaseModel):
+class BillMasterSchema(BaseModel):
     BillMasterID: Optional[int]
-    BillNo: str
+    BillingNo: str
     PartyName: str
     CreateDate: datetime
-    DueDate: datetime
+    DueDate: Optional[datetime]
     Status: str
     IsPro: bool
 

@@ -20,7 +20,9 @@ async def getInvoiceWKMaster(
     if InvoiceWKMasterCondition == "all":
         InvoiceWKMasterData = get_all_invoice_wk_master(db)
     else:
-        InvoiceWKMasterCondition = convert_url_condition_to_dict(InvoiceWKMasterCondition)
+        InvoiceWKMasterCondition = convert_url_condition_to_dict(
+            InvoiceWKMasterCondition
+        )
         InvoiceWKMasterData = get_invoice_wk_master_with_condition(
             db, InvoiceWKMasterCondition
         )
@@ -89,6 +91,11 @@ async def getInvoiceMaster(
 ):
     if InvoiceMasterCondition == "all":
         InvoiceMasterDataList = get_all_invoice_master(db)
+    else:
+        InvoiceMasterCondition = convert_url_condition_to_dict(InvoiceMasterCondition)
+        InvoiceMasterDataList = get_invoice_master_with_condition(
+            db, InvoiceMasterCondition
+        )
     return InvoiceMasterDataList
 
 
@@ -156,6 +163,24 @@ async def getInvoiceDetail(
 
 
 # ---------------------------------------------------------------------------
+
+# ------------------------------ BillMaster ------------------------------
+@router.post("/BillMaster/", status_code=status.HTTP_201_CREATED)
+async def addBillMaster(
+    request: Request,
+    BillMasterPydanticData: BillMasterSchema,
+    db: Session = Depends(get_db),
+):
+    create_bill_master(db, BillMasterPydanticData)
+
+    # get insert data's ID
+    BillMasterDictData = BillMasterPydanticData.dict()
+    BillMasterDictData.pop("BillMasterID")
+    BillMasterID = get_bill_master_with_condition(db, BillMasterDictData).BillMasterID
+    return {"message": "BillMaster successfully created", "BillMasterID": BillMasterID}
+
+
+# ------------------------------------------------------------------------
 
 # ------------------------------ Liability ------------------------------
 # 查詢Liability

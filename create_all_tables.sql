@@ -1,3 +1,5 @@
+DROP TABLE `InvoiceDetail`, `InvoiceMaster`, `InvoiceWKDetail`, `InvoiceWKMaster`;
+
 CREATE TABLE InvoiceWKMaster
 (
     WKMasterID     int NOT NULL AUTO_INCREMENT,
@@ -66,6 +68,19 @@ CREATE TABLE InvoiceDetail
     Difference     decimal(3, 2),
     PRIMARY KEY (InvDetailID)
 );
+
+CREATE TABLE BillMaster
+(
+    BillMasterID int NOT NULL AUTO_INCREMENT,
+    BillingNo    varchar(128),
+    PartyName    varchar(100),
+    CreateDate   datetime,
+    DueDate      datetime,
+    Status       varchar(20),
+    IsPro        TINYINT(1),
+    PRIMARY KEY (BillMasterID)
+);
+
 
 CREATE TABLE Liability
 (

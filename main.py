@@ -283,30 +283,62 @@ async def generateBillMasterAndBillDetail(
     invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
+    # get condition
     WKMasterID = invoice_data["WKMasterID"]
     dict_condition = {"WKMasterID": WKMasterID}
     url_condition = convert_dict_condition_to_url(dict_condition)
+
+    # get IsPro status from InvoiceWKMaster
+    InvoiceWKMasterData = await service.getInvoiceWKMaster(
+        request, url_condition, db
+    )
+    IsPRo = InvoiceWKMasterData.IsPro
+    SubmarineCable = InvoiceWKMasterData.SubmarineCable
+
+    # get all InvoiceDetail by "InvoiceWKMasterID"
     InvoiceDetailDataList = await service.getInvoiceDetail(request, url_condition, db)
+
+    # convert InvoiceDetailDataList to dataframe format
     dfInvoiceDetailDataList = [
         pd.DataFrame(InvoiceDetailData.__dict__, index=[0])
         for InvoiceDetailData in InvoiceDetailDataList
     ]
-
     dfInvoiceDetailData = dflist_to_df(dfInvoiceDetailDataList)
 
-    # groupby PartName
+    # let dfInvoiceDetailData group by PartyName
     dfInvoiceDetailDataGroupByPartyName = (
         dfInvoiceDetailData.groupby(["PartyName"])["BillMilestone"]
         .apply(list)
         .reset_index(name="BillMilestoneList")
     )
-    # print(dfInvoiceDetailDataGroupByPartyName)
-    for index, row in dfInvoiceDetailDataGroupByPartyName.iterrows():
-        print(index)
-        print(row["PartyName"])
-        pprint(row["BillMilestoneList"])
 
-    return InvoiceDetailDataList
+    # generate BillMaster
+    BillMasterDictDataList = []
+    for index, row in dfInvoiceDetailDataGroupByPartyName.iterrows():
+        BillMasterDictData = {}
+        subBillingNoString = ""
+        for BillMilestone in row["BillMilestoneList"]:
+            subBillingNoString += f"{BillMilestone}-"
+
+        BillingNo = f'{SubmarineCable}-CBP-{row["PartyName"]}-{subBillingNoString[:-1]}'
+        PartyName = row["PartyName"]
+        CreateDate = convert_time_to_str(datetime.now())
+        Status = "Initial"
+        BillMasterDictData.update(
+            {
+                "BillingNo": BillingNo,
+                "PartyName": PartyName,
+                "CreateDate": CreateDate,
+                "Status": Status,
+                "IsPro": IsPRo,
+            }
+        )
+        BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
+        addBillMasterResponse = await service.addBillMaster(
+            request, BillMasterPydanticData, db
+        )
+
+    return {"message": "success"}
 
 
 # ----------------------------------------------------------------------------------------

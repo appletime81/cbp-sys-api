@@ -66,6 +66,17 @@ class InvoiceDetailDBModel(Base):
     Difference = Column(Float)
 
 
+class BillMasterDBModel(Base):
+    __tablename__ = "BillMaster"
+    BillMasterID = Column(Integer, primary_key=True, index=True)
+    BillingNo = Column(String(128))
+    PartyName = Column(String(100))
+    CreateDate = Column(String(20))
+    DueDate = Column(String(20))
+    Status = Column(String(20))
+    IsPro = Column(Boolean)
+
+
 class LiabilityDBModel(Base):
     __tablename__ = "Liability"
     LBRawID = Column(Integer, primary_key=True, index=True)

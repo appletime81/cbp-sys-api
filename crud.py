@@ -4,6 +4,7 @@ from database.models import (
     InvoiceWKDetailDBModel,
     InvoiceMasterDBModel,
     InvoiceDetailDBModel,
+    BillMasterDBModel,
     LiabilityDBModel,
 )
 from schemas import (
@@ -11,6 +12,7 @@ from schemas import (
     InvoiceWKDetailSchema,
     InvoiceMasterSchema,
     InvoiceDetailSchema,
+    BillMasterSchema,
 )
 
 
@@ -145,11 +147,32 @@ def get_all_invoice_detail_with_condition(db: Session, condition: dict):
 
 # ---------------------------------------------------------------------------
 
+# ------------------------------ BillMaster ------------------------------
+def create_bill_master(db: Session, bill_master: BillMasterSchema):
+    db_bill_master = BillMasterDBModel(
+        BillMasterID=bill_master.BillMasterID,
+        BillNo=bill_master.BillNo,
+        PartyName=bill_master.PartyName,
+        CreateDate=bill_master.CreateDate,
+        DueDate=bill_master.DueDate,
+        Status=bill_master.Status,
+        IsPro=bill_master.IsPro,
+    )
+    db.add(db_bill_master)
+    db.commit()
+    db.refresh(db_bill_master)
+
+
+def get_bill_master_with_condition(db: Session, condition: dict):
+    return db.query(BillMasterDBModel).filter_by(**condition).first()
+
+
+# ------------------------------------------------------------------------
+
 # ------------------------------ Liability ------------------------------
 
 
 def get_liability_with_condition(db: Session, condition: dict):
     return db.query(LiabilityDBModel).filter_by(**condition)
-
 
 # -----------------------------------------------------------------------
