@@ -1,4 +1,4 @@
-DROP TABLE `InvoiceDetail`, `InvoiceMaster`, `InvoiceWKDetail`, `InvoiceWKMaster`;
+DROP TABLE `BillMaster`, `InvoiceDetail`, `InvoiceMaster`, `InvoiceWKDetail`, `InvoiceWKMaster`;
 
 CREATE TABLE InvoiceWKMaster
 (

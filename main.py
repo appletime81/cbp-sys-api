@@ -289,9 +289,7 @@ async def generateBillMasterAndBillDetail(
     url_condition = convert_dict_condition_to_url(dict_condition)
 
     # get IsPro status from InvoiceWKMaster
-    InvoiceWKMasterData = await service.getInvoiceWKMaster(
-        request, url_condition, db
-    )
+    InvoiceWKMasterData = await service.getInvoiceWKMaster(request, url_condition, db)
     IsPRo = InvoiceWKMasterData.IsPro
     SubmarineCable = InvoiceWKMasterData.SubmarineCable
 
@@ -311,13 +309,16 @@ async def generateBillMasterAndBillDetail(
         .apply(list)
         .reset_index(name="BillMilestoneList")
     )
+    dfInvoiceDetailDataGroupByPartyName.to_csv(
+        "dfInvoiceDetailDataGroupByPartyName.csv"
+    )
 
     # generate BillMaster
     BillMasterDictDataList = []
     for index, row in dfInvoiceDetailDataGroupByPartyName.iterrows():
         BillMasterDictData = {}
         subBillingNoString = ""
-        for BillMilestone in row["BillMilestoneList"]:
+        for BillMilestone in list(set(row["BillMilestoneList"])):
             subBillingNoString += f"{BillMilestone}-"
 
         BillingNo = f'{SubmarineCable}-CBP-{row["PartyName"]}-{subBillingNoString[:-1]}'

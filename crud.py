@@ -151,7 +151,7 @@ def get_all_invoice_detail_with_condition(db: Session, condition: dict):
 def create_bill_master(db: Session, bill_master: BillMasterSchema):
     db_bill_master = BillMasterDBModel(
         BillMasterID=bill_master.BillMasterID,
-        BillNo=bill_master.BillNo,
+        BillingNo=bill_master.BillingNo,
         PartyName=bill_master.PartyName,
         CreateDate=bill_master.CreateDate,
         DueDate=bill_master.DueDate,
@@ -174,5 +174,6 @@ def get_bill_master_with_condition(db: Session, condition: dict):
 
 def get_liability_with_condition(db: Session, condition: dict):
     return db.query(LiabilityDBModel).filter_by(**condition)
+
 
 # -----------------------------------------------------------------------
