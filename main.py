@@ -285,6 +285,7 @@ async def generateBillMasterAndBillDetail(
 ):
     # get condition
     WKMasterID = invoice_data["WKMasterID"]
+    DueDate = invoice_data["DueDate"]
     dict_condition = {"WKMasterID": WKMasterID}
     url_condition = convert_dict_condition_to_url(dict_condition)
 
@@ -330,6 +331,7 @@ async def generateBillMasterAndBillDetail(
                 "BillingNo": BillingNo,
                 "PartyName": PartyName,
                 "CreateDate": CreateDate,
+                "DueDate": DueDate,
                 "Status": Status,
                 "IsPro": IsPRo,
             }

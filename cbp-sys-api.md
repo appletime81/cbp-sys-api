@@ -97,3 +97,10 @@
 # 新增帳單主檔
 
 ### POST http://127.0.0.1:8000/api/v1/generateBillMaster&BillDetail
+
+```JSON
+{
+  "WKMasterID": 1,
+  "DueDate": "2023-01-23 12:34:56"
+}
+```
