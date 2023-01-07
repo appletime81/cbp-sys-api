@@ -1,4 +1,6 @@
+from pprint import pprint
 from sqlalchemy.orm import Session
+from database.engine import engine
 from database.models import (
     InvoiceWKMasterDBModel,
     InvoiceWKDetailDBModel,
@@ -45,8 +47,37 @@ def get_all_invoice_wk_master(db: Session):
     return db.query(InvoiceWKMasterDBModel).all()
 
 
+def get_all_invoice_wk_master_by_sql(sql: str):
+    return engine.execute(sql).all()
+
+
 def get_invoice_wk_master_with_condition(db: Session, condition: dict):
     return db.query(InvoiceWKMasterDBModel).filter_by(**condition).first()
+
+
+def update_invoice_wk_master(db: Session, dict_condition: dict):
+    pprint(dict_condition)
+    db_invoice_wk_master = db.query(InvoiceWKMasterDBModel).filter_by(
+        **{"WKMasterID": dict_condition.get("WKMasterID")})
+    pprint(db_invoice_wk_master)
+    for item in db_invoice_wk_master:
+        item.WKMasterID = dict_condition.get("WKMasterID")
+        item.InvoiceNo = dict_condition.get("InvoiceNo")
+        item.Description = dict_condition.get("Description")
+        item.SupplierName = dict_condition.get("SupplierName")
+        item.SubmarineCable = dict_condition.get("SubmarineCable")
+        item.WorkTitle = dict_condition.get("WorkTitle")
+        item.ContractType = dict_condition.get("ContractType")
+        item.IssueDate = dict_condition.get("IssueDate")
+        item.InvoiceDueDate = dict_condition.get("InvoiceDueDate")
+        item.PartyName = dict_condition.get("PartyName")
+        item.Status = dict_condition.get("Status")
+        item.IsPro = dict_condition.get("IsPro")
+        item.IsRecharge = dict_condition.get("IsRecharge")
+        item.IsLiability = dict_condition.get("IsLiability")
+        item.TotalAmount = dict_condition.get("TotalAmount")
+        item.CreateDate = dict_condition.get("CreateDate")
+        db.commit()
 
 
 # -----------------------------------------------------------------------------
@@ -174,6 +205,5 @@ def get_bill_master_with_condition(db: Session, condition: dict):
 
 def get_liability_with_condition(db: Session, condition: dict):
     return db.query(LiabilityDBModel).filter_by(**condition)
-
 
 # -----------------------------------------------------------------------

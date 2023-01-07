@@ -1,11 +1,7 @@
-from fastapi import APIRouter, Request, status, Depends, Body, HTTPException
-from utils.orm_pydantic_convert import orm_to_pydantic, pydantic_to_orm
-from utils.utils import *
+from fastapi import APIRouter, Request, status, Depends, Body
 from crud import *
 from get_db import get_db
 from sqlalchemy.orm import Session
-from pprint import pprint
-from typing import Union
 from utils.utils import *
 
 router = APIRouter()
@@ -17,8 +13,21 @@ router = APIRouter()
 async def getInvoiceWKMaster(
     request: Request, InvoiceWKMasterCondition: str, db: Session = Depends(get_db)
 ):
+    table_name = "InvoiceWKMaster"
     if InvoiceWKMasterCondition == "all":
         InvoiceWKMasterData = get_all_invoice_wk_master(db)
+    elif "start" in InvoiceWKMasterCondition or "end" in InvoiceWKMasterCondition:
+        InvoiceWKMasterCondition = convert_url_condition_to_dict(
+            InvoiceWKMasterCondition
+        )
+        sql_condition = convert_dict_to_sql_condition(
+            InvoiceWKMasterCondition, table_name
+        )
+        print(sql_condition)
+
+        # get all InvoiceWKMaster by sql
+        InvoiceWKMasterData = get_all_invoice_wk_master_by_sql(sql_condition)
+        print(type(InvoiceWKMasterData[0]))
     else:
         InvoiceWKMasterCondition = convert_url_condition_to_dict(
             InvoiceWKMasterCondition
@@ -48,6 +57,20 @@ async def addInvoiceWKMaster(
     )
     WKMasterID = justAddedInvoiceWKMaster.WKMasterID
     return {"message": "InvoiceWKMaster successfully created", "WKMasterID": WKMasterID}
+
+
+@router.post(f"/updateInvoiceWKMaster")
+async def updateInvoiceWKMaster(
+    request: Request,
+    invoice_data: dict = Body(...),
+    db: Session = Depends(get_db),
+):
+    pprint(invoice_data)
+    print("-" * 50)
+    print(invoice_data.get("WKMasterID"))
+    # update InvoiceWKMaster
+    update_invoice_wk_master(db, invoice_data)
+    return {"message": "InvoiceWKMaster successfully updated"}
 
 
 # -----------------------------------------------------------------------------
