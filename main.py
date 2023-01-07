@@ -286,11 +286,15 @@ async def generateBillMasterAndBillDetail(
     # get condition
     WKMasterID = invoice_data["WKMasterID"]
     DueDate = invoice_data["DueDate"]
+    if not WKMasterID or not DueDate:  # check condition
+        return {"message": "please input WKMasterID and DueDate"}
     dict_condition = {"WKMasterID": WKMasterID}
     url_condition = convert_dict_condition_to_url(dict_condition)
 
     # get IsPro status from InvoiceWKMaster
     InvoiceWKMasterData = await service.getInvoiceWKMaster(request, url_condition, db)
+    if not InvoiceWKMasterData:  # check InvoiceWKMasterData if exist
+        return {"message": "no InvoiceWKMasterData"}
     IsPRo = InvoiceWKMasterData.IsPro
     SubmarineCable = InvoiceWKMasterData.SubmarineCable
 
@@ -340,6 +344,9 @@ async def generateBillMasterAndBillDetail(
         addBillMasterResponse = await service.addBillMaster(
             request, BillMasterPydanticData, db
         )
+        BillMasterDictData["BillMasterID"] = addBillMasterResponse["BillMasterID"]
+        BillMasterDictDataList.append(BillMasterDictData)
+    pprint(BillMasterDictDataList)
 
     return {"message": "success"}
 
