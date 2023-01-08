@@ -65,11 +65,18 @@ async def updateInvoiceWKMaster(
     invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
-    pprint(invoice_data)
-    print("-" * 50)
-    print(invoice_data.get("WKMasterID"))
-    # update InvoiceWKMaster
-    update_invoice_wk_master(db, invoice_data)
+    WKMasterID = invoice_data["WKMasterID"]
+    # Step 1: delete InvoiceWKMaster
+    InvoiceWKMasterDBModelData = get_invoice_wk_master_with_condition(
+        db, {"WKMasterID": WKMasterID}
+    )
+    delete_invoice_wk_master(db, InvoiceWKMasterDBModelData)
+
+    # Step 2: delete InvoiceWKDetail
+    InvoiceWKDetailDBModelData = get_invoice_wk_detail_with_condition(
+        db, {"WKMasterID": WKMasterID}
+    )
+    # delete_invoice_wk_detail(db, InvoiceWKDetailDBModelData)
     return {"message": "InvoiceWKMaster successfully updated"}
 
 

@@ -20,39 +20,43 @@ from schemas import (
 
 # ------------------------------ InvoiceWKMaster ------------------------------
 def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterSchema):
-    db_invoice_wk_master = InvoiceWKMasterDBModel(
-        InvoiceNo=invoice_wk_master.InvoiceNo,
-        Description=invoice_wk_master.Description,
-        SupplierName=invoice_wk_master.SupplierName,
-        SubmarineCable=invoice_wk_master.SubmarineCable,
-        WorkTitle=invoice_wk_master.WorkTitle,
-        ContractType=invoice_wk_master.ContractType,
-        IssueDate=invoice_wk_master.IssueDate,
-        InvoiceDueDate=invoice_wk_master.InvoiceDueDate,
-        PartyName=invoice_wk_master.PartyName,
-        Status=invoice_wk_master.Status,
-        IsPro=invoice_wk_master.IsPro,
-        IsRecharge=invoice_wk_master.IsRecharge,
-        IsLiability=invoice_wk_master.IsLiability,
-        TotalAmount=invoice_wk_master.TotalAmount,
-        CreateDate=invoice_wk_master.CreateDate,
-    ) if invoice_wk_master.WKMasterID is None else InvoiceWKMasterDBModel(
-        WKMasterID=invoice_wk_master.WKMasterID,
-        InvoiceNo=invoice_wk_master.InvoiceNo,
-        Description=invoice_wk_master.Description,
-        SupplierName=invoice_wk_master.SupplierName,
-        SubmarineCable=invoice_wk_master.SubmarineCable,
-        WorkTitle=invoice_wk_master.WorkTitle,
-        ContractType=invoice_wk_master.ContractType,
-        IssueDate=invoice_wk_master.IssueDate,
-        InvoiceDueDate=invoice_wk_master.InvoiceDueDate,
-        PartyName=invoice_wk_master.PartyName,
-        Status=invoice_wk_master.Status,
-        IsPro=invoice_wk_master.IsPro,
-        IsRecharge=invoice_wk_master.IsRecharge,
-        IsLiability=invoice_wk_master.IsLiability,
-        TotalAmount=invoice_wk_master.TotalAmount,
-        CreateDate=invoice_wk_master.CreateDate,
+    db_invoice_wk_master = (
+        InvoiceWKMasterDBModel(
+            InvoiceNo=invoice_wk_master.InvoiceNo,
+            Description=invoice_wk_master.Description,
+            SupplierName=invoice_wk_master.SupplierName,
+            SubmarineCable=invoice_wk_master.SubmarineCable,
+            WorkTitle=invoice_wk_master.WorkTitle,
+            ContractType=invoice_wk_master.ContractType,
+            IssueDate=invoice_wk_master.IssueDate,
+            InvoiceDueDate=invoice_wk_master.InvoiceDueDate,
+            PartyName=invoice_wk_master.PartyName,
+            Status=invoice_wk_master.Status,
+            IsPro=invoice_wk_master.IsPro,
+            IsRecharge=invoice_wk_master.IsRecharge,
+            IsLiability=invoice_wk_master.IsLiability,
+            TotalAmount=invoice_wk_master.TotalAmount,
+            CreateDate=invoice_wk_master.CreateDate,
+        )
+        if invoice_wk_master.WKMasterID is None
+        else InvoiceWKMasterDBModel(
+            WKMasterID=invoice_wk_master.WKMasterID,
+            InvoiceNo=invoice_wk_master.InvoiceNo,
+            Description=invoice_wk_master.Description,
+            SupplierName=invoice_wk_master.SupplierName,
+            SubmarineCable=invoice_wk_master.SubmarineCable,
+            WorkTitle=invoice_wk_master.WorkTitle,
+            ContractType=invoice_wk_master.ContractType,
+            IssueDate=invoice_wk_master.IssueDate,
+            InvoiceDueDate=invoice_wk_master.InvoiceDueDate,
+            PartyName=invoice_wk_master.PartyName,
+            Status=invoice_wk_master.Status,
+            IsPro=invoice_wk_master.IsPro,
+            IsRecharge=invoice_wk_master.IsRecharge,
+            IsLiability=invoice_wk_master.IsLiability,
+            TotalAmount=invoice_wk_master.TotalAmount,
+            CreateDate=invoice_wk_master.CreateDate,
+        )
     )
     db.add(db_invoice_wk_master)
     db.commit()
@@ -75,7 +79,8 @@ def get_invoice_wk_master_with_condition(db: Session, condition: dict):
 def update_invoice_wk_master(db: Session, dict_condition: dict):
     pprint(dict_condition)
     db_invoice_wk_master = db.query(InvoiceWKMasterDBModel).filter_by(
-        **{"WKMasterID": dict_condition.get("WKMasterID")})
+        **{"WKMasterID": dict_condition.get("WKMasterID")}
+    )
     pprint(db_invoice_wk_master)
     for item in db_invoice_wk_master:
         item.WKMasterID = dict_condition.get("WKMasterID")
@@ -95,6 +100,11 @@ def update_invoice_wk_master(db: Session, dict_condition: dict):
         item.TotalAmount = dict_condition.get("TotalAmount")
         item.CreateDate = dict_condition.get("CreateDate")
         db.commit()
+
+
+def delete_invoice_wk_master(db: Session, invoice_wk_master_data: InvoiceMasterDBModel):
+    db.delete(invoice_wk_master_data)
+    db.commit()
 
 
 # -----------------------------------------------------------------------------
@@ -222,5 +232,6 @@ def get_bill_master_with_condition(db: Session, condition: dict):
 
 def get_liability_with_condition(db: Session, condition: dict):
     return db.query(LiabilityDBModel).filter_by(**condition)
+
 
 # -----------------------------------------------------------------------
