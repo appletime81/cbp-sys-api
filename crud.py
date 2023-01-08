@@ -36,6 +36,23 @@ def create_invoice_wk_master(db: Session, invoice_wk_master: InvoiceWKMasterSche
         IsLiability=invoice_wk_master.IsLiability,
         TotalAmount=invoice_wk_master.TotalAmount,
         CreateDate=invoice_wk_master.CreateDate,
+    ) if invoice_wk_master.WKMasterID is None else InvoiceWKMasterDBModel(
+        WKMasterID=invoice_wk_master.WKMasterID,
+        InvoiceNo=invoice_wk_master.InvoiceNo,
+        Description=invoice_wk_master.Description,
+        SupplierName=invoice_wk_master.SupplierName,
+        SubmarineCable=invoice_wk_master.SubmarineCable,
+        WorkTitle=invoice_wk_master.WorkTitle,
+        ContractType=invoice_wk_master.ContractType,
+        IssueDate=invoice_wk_master.IssueDate,
+        InvoiceDueDate=invoice_wk_master.InvoiceDueDate,
+        PartyName=invoice_wk_master.PartyName,
+        Status=invoice_wk_master.Status,
+        IsPro=invoice_wk_master.IsPro,
+        IsRecharge=invoice_wk_master.IsRecharge,
+        IsLiability=invoice_wk_master.IsLiability,
+        TotalAmount=invoice_wk_master.TotalAmount,
+        CreateDate=invoice_wk_master.CreateDate,
     )
     db.add(db_invoice_wk_master)
     db.commit()
