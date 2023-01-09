@@ -63,12 +63,10 @@ async def addInvoiceWKMaster(
 @router.post(f"/deleteInvoiceWKMaster")
 async def deleteInvoiceWKMaster(
     request: Request,
-    invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
-    WKMasterID = invoice_data["WKMasterID"]
     InvoiceWKMasterDBModelData = get_invoice_wk_master_with_condition(
-        db, {"WKMasterID": WKMasterID}
+        db, await request.json()
     )
     delete_invoice_wk_master(db, InvoiceWKMasterDBModelData)
     return {"message": "InvoiceWKMaster successfully deleted"}
@@ -123,12 +121,10 @@ async def addInvoiceWKDetail(
 @router.post("/deleteInvoiceWKDetail")
 async def deleteInvoiceWKDetail(
     request: Request,
-    invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
-    WKDetailID = invoice_data["WKDetailID"]
     InvoiceWKDetailDBModelDataList = get_all_invoice_wk_detail_with_condition(
-        db, {"WKDetailID": WKDetailID}
+        db, await request.json()
     )
 
     for InvoiceWKDetailDBModelData in InvoiceWKDetailDBModelDataList:
@@ -177,6 +173,21 @@ async def addInvoiceMaster(
     }
 
 
+@router.post("/deleteInvoiceMaster")
+async def deleteInvoiceMaster(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    InvoiceMasterDBModelDataList = get_all_invoice_master_with_condition(
+        db, await request.json()
+    )
+
+    for InvoiceMasterDBModelData in InvoiceMasterDBModelDataList:
+        delete_invoice_master(db, InvoiceMasterDBModelData)
+
+    return {"message": "InvoiceMaster successfully deleted"}
+
+
 # ---------------------------------------------------------------------------
 
 # ------------------------------ InvoiceDetail ------------------------------
@@ -216,6 +227,21 @@ async def getInvoiceDetail(
             db, InvoiceDetailConditionDict
         )
     return InvoiceDetailDataList
+
+
+@router.post("/deleteInvoiceDetail")
+async def deleteInvoiceDetail(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    InvoiceDetailDBModelDataList = get_all_invoice_detail_with_condition(
+        db, await request.json()
+    )
+
+    for InvoiceDetailDBModelData in InvoiceDetailDBModelDataList:
+        delete_invoice_detail(db, InvoiceDetailDBModelData)
+
+    return {"message": "InvoiceDetail successfully deleted"}
 
 
 # ---------------------------------------------------------------------------

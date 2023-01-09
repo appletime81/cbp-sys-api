@@ -177,6 +177,15 @@ def get_all_invoice_master(db: Session):
     return db.query(InvoiceMasterDBModel).all()
 
 
+def get_all_invoice_master_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceMasterDBModel).filter_by(**condition).all()
+
+
+def delete_invoice_master(db: Session, invoice_master_data: InvoiceMasterDBModel):
+    db.delete(invoice_master_data)
+    db.commit()
+
+
 # ---------------------------------------------------------------------------
 
 
@@ -212,6 +221,11 @@ def get_all_invoice_detail(db: Session):
 
 def get_all_invoice_detail_with_condition(db: Session, condition: dict):
     return db.query(InvoiceDetailDBModel).filter_by(**condition).all()
+
+
+def delete_invoice_detail(db: Session, invoice_detail_data: InvoiceDetailDBModel):
+    db.delete(invoice_detail_data)
+    db.commit()
 
 
 # ---------------------------------------------------------------------------

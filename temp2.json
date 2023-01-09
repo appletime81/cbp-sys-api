@@ -1,5 +1,6 @@
 {
   "InvoiceWKMaster": {
+    "WKMasterID": 1,
     "InvoiceNo": "DT0170168-1",
     "Description": "COMMERCIAL INVOICE for SJC2 CABLE SYSTEM[ % of Contract Price=BM9a 3.96%,BM12 5.00% ",
     "SupplierName": "NEC",
@@ -9,7 +10,7 @@
     "IssueDate": "2022-09-09 00:00:00",
     "InvoiceDueDate": "2022-11-08 00:00:00",
     "PartyName": "CHT",
-    "Status": "VALIDATED",
+    "Status": "TEMPORARY",
     "IsPro": 0,
     "IsRecharge": 0,
     "IsLiability": 0,
