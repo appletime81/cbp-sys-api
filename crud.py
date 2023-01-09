@@ -136,6 +136,17 @@ def get_invoice_wk_detail_with_condition(db: Session, condition: dict):
     return db.query(InvoiceWKDetailDBModel).filter_by(**condition).first()
 
 
+def get_all_invoice_wk_detail_with_condition(db: Session, condition: dict):
+    return db.query(InvoiceWKDetailDBModel).filter_by(**condition).all()
+
+
+def delete_invoice_wk_detail(
+    db: Session, invoice_wk_detail_data: InvoiceWKDetailDBModel
+):
+    db.delete(invoice_wk_detail_data)
+    db.commit()
+
+
 # -----------------------------------------------------------------------------
 
 

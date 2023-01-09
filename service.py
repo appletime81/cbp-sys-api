@@ -3,6 +3,7 @@ from crud import *
 from get_db import get_db
 from sqlalchemy.orm import Session
 from utils.utils import *
+from copy import deepcopy
 
 router = APIRouter()
 
@@ -59,25 +60,33 @@ async def addInvoiceWKMaster(
     return {"message": "InvoiceWKMaster successfully created", "WKMasterID": WKMasterID}
 
 
+@router.post(f"/deleteInvoiceWKMaster")
+async def deleteInvoiceWKMaster(
+    request: Request,
+    invoice_data: dict = Body(...),
+    db: Session = Depends(get_db),
+):
+    WKMasterID = invoice_data["WKMasterID"]
+    InvoiceWKMasterDBModelData = get_invoice_wk_master_with_condition(
+        db, {"WKMasterID": WKMasterID}
+    )
+    delete_invoice_wk_master(db, InvoiceWKMasterDBModelData)
+    return {"message": "InvoiceWKMaster successfully deleted"}
+
+
 @router.post(f"/updateInvoiceWKMaster")
 async def updateInvoiceWKMaster(
     request: Request,
     invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
-    WKMasterID = invoice_data["WKMasterID"]
-    # Step 1: delete InvoiceWKMaster
-    InvoiceWKMasterDBModelData = get_invoice_wk_master_with_condition(
-        db, {"WKMasterID": WKMasterID}
+    # WKMasterID = invoice_data["WKMasterID"]
+    deleteInvoiceWKMasterResponse = await deleteInvoiceWKMaster(
+        request, deepcopy(invoice_data), db
     )
-    delete_invoice_wk_master(db, InvoiceWKMasterDBModelData)
-
-    # Step 2: delete InvoiceWKDetail
-    InvoiceWKDetailDBModelData = get_invoice_wk_detail_with_condition(
-        db, {"WKMasterID": WKMasterID}
-    )
-    # delete_invoice_wk_detail(db, InvoiceWKDetailDBModelData)
-    return {"message": "InvoiceWKMaster successfully updated"}
+    return {
+        "message": f"{deleteInvoiceWKMasterResponse.get('message')}, InvoiceWKMaster successfully updated"
+    }
 
 
 # -----------------------------------------------------------------------------
@@ -109,6 +118,23 @@ async def addInvoiceWKDetail(
         "message": "InvoiceWKDetail successfully created",
         "WKDetailID": InvoiceWKDetailDictDataWKDetailID,
     }
+
+
+@router.post("/deleteInvoiceWKDetail")
+async def deleteInvoiceWKDetail(
+    request: Request,
+    invoice_data: dict = Body(...),
+    db: Session = Depends(get_db),
+):
+    WKDetailID = invoice_data["WKDetailID"]
+    InvoiceWKDetailDBModelDataList = get_all_invoice_wk_detail_with_condition(
+        db, {"WKDetailID": WKDetailID}
+    )
+
+    for InvoiceWKDetailDBModelData in InvoiceWKDetailDBModelDataList:
+        delete_invoice_wk_detail(db, InvoiceWKDetailDBModelData)
+
+    return {"message": "InvoiceWKDetail successfully deleted"}
 
 
 # -----------------------------------------------------------------------------
