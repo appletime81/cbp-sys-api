@@ -228,6 +228,10 @@ def delete_invoice_detail(db: Session, invoice_detail_data: InvoiceDetailDBModel
     db.commit()
 
 
+def get_all_invoice_detail_by_sql(sql: str):
+    return engine.execute(sql).all()
+
+
 # ---------------------------------------------------------------------------
 
 # ------------------------------ BillMaster ------------------------------

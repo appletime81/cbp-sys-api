@@ -9,6 +9,7 @@ import pandas as pd
 from crud import *
 from pprint import pprint
 from get_db import get_db
+from copy import deepcopy
 from datetime import datetime
 from fastapi import FastAPI, Depends, Request, Body
 from utils.utils import (
@@ -16,6 +17,7 @@ from utils.utils import (
     convert_time_to_str,
     cal_fee_amount_post,
     convert_dict_condition_to_url,
+    convert_url_condition_to_dict_ignore_date,
 )
 
 pd.set_option("display.max_columns", None)
@@ -269,6 +271,74 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             InvoiceDetailDictDataList.append(InvoiceDetailDictData)
 
     return {"message": "success"}
+
+
+@app.get(ROOT_URL + "/searchInvoiceWKMaster/{urlCondition}")
+async def searchInvoiceWKMaster(
+    request: Request,
+    urlCondition: str,
+    db: Session = Depends(get_db),
+):
+    dict_condition = convert_url_condition_to_dict_ignore_date(urlCondition)
+    dict_condition_copy = deepcopy(dict_condition)
+
+    # remove Date's condition in dict_condition_copy
+    containDateStringList = [k for k in dict_condition_copy if "Date" in k]
+    for k in containDateStringList:
+        dict_condition_copy.pop(k)
+
+    # remove Status's condition in dict_condition_copy
+    if "Status" in dict_condition_copy:
+        dict_condition_copy.pop("Status")
+
+    # convert dict_condition_copy condition to url condition
+    url_condition_for_invoice_detail_master = convert_dict_condition_to_url(
+        dict_condition_copy
+    )
+
+    # get InvoiceDetail datas
+    InvoiceDetailDataList = await service.getInvoiceDetail(
+        request, url_condition_for_invoice_detail_master, db
+    )
+
+    # get all InvoiceDetail's WKMasterID
+    WKMasterIDList = [
+        InvoiceDetailData.WKMasterID for InvoiceDetailData in InvoiceDetailDataList
+    ]
+    WKMasterIDList = list(set(WKMasterIDList))
+    print("-" * 50)
+    print(WKMasterIDList)
+    # remove PartyName, BillMilestone in dict_condition
+    if "PartyName" in dict_condition:
+        dict_condition.pop("PartyName")
+    if "BillMilestone" in dict_condition:
+        dict_condition.pop("BillMilestone")
+
+    # generate dict condition list for get InvoiceWKMaster
+    dict_condition_list = []
+    for WKMasterID in WKMasterIDList:
+        tempDictCondition = deepcopy(dict_condition)
+        tempDictCondition["WKMasterID"] = WKMasterID
+        print("-" * 50)
+        print(tempDictCondition)
+        dict_condition_list.append(tempDictCondition)
+
+    # get InvoiceWKMaster datas
+    InvoiceWKMasterDataList = []
+    for dict_condition in dict_condition_list:
+        url_condition_for_invoice_wk_master = convert_dict_condition_to_url(
+            deepcopy(dict_condition)
+        )
+        print(url_condition_for_invoice_wk_master)
+        InvoiceWKMasterData = await service.getInvoiceWKMaster(
+            request, url_condition_for_invoice_wk_master, db
+        )
+        InvoiceWKMasterDataList.append(InvoiceWKMasterData)
+
+    pprint(InvoiceWKMasterDataList)
+
+    # get all InvoiceDetail
+    return InvoiceWKMasterDataList
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------

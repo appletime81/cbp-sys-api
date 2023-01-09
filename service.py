@@ -17,18 +17,21 @@ async def getInvoiceWKMaster(
     table_name = "InvoiceWKMaster"
     if InvoiceWKMasterCondition == "all":
         InvoiceWKMasterData = get_all_invoice_wk_master(db)
-    elif "start" in InvoiceWKMasterCondition or "end" in InvoiceWKMasterCondition:
+    elif (
+        "start" in InvoiceWKMasterCondition
+        or "end" in InvoiceWKMasterCondition
+        or "equal" in InvoiceWKMasterCondition
+    ):
         InvoiceWKMasterCondition = convert_url_condition_to_dict(
             InvoiceWKMasterCondition
         )
         sql_condition = convert_dict_to_sql_condition(
             InvoiceWKMasterCondition, table_name
         )
-        print(sql_condition)
+        print("sql_condition: ", sql_condition)
 
         # get all InvoiceWKMaster by sql
         InvoiceWKMasterData = get_all_invoice_wk_master_by_sql(sql_condition)
-        print(type(InvoiceWKMasterData[0]))
     else:
         InvoiceWKMasterCondition = convert_url_condition_to_dict(
             InvoiceWKMasterCondition
@@ -218,11 +221,14 @@ async def getInvoiceDetail(
 ):
     if InvoiceDetailCondition == "all":
         InvoiceDetailDataList = get_all_invoice_detail_with_condition(db)
+    elif "start" in InvoiceDetailCondition or "end" in InvoiceDetailCondition:
+        InvoiceDetailCondition = convert_url_condition_to_dict(InvoiceDetailCondition)
+        sql_condition = convert_dict_to_sql_condition(InvoiceDetailCondition)
+        InvoiceDetailDataList = get_all_invoice_detail_by_sql(sql_condition)
     else:
         InvoiceDetailConditionDict = convert_url_condition_to_dict(
             InvoiceDetailCondition
         )
-        print(InvoiceDetailConditionDict)
         InvoiceDetailDataList = get_all_invoice_detail_with_condition(
             db, InvoiceDetailConditionDict
         )
