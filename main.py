@@ -293,8 +293,20 @@ async def searchInvoiceWKMaster(
 
         # generate result with InvoiceWKMaster datas and InvoiceWKDetail datas
         resultDataList = []
-
-        return InvoiceWKMasterDictList
+        for InvoiceWKMasterDictData in InvoiceWKMasterDictList:
+            InvoiceWKDetailDatas = await service.getInvoiceWKDetail(
+                request, f"WKMasterID={InvoiceWKMasterDictData['WKMasterID']}", db
+            )
+            InvoiceWKDetailDictDatas = [
+                orm_to_pydantic(item, InvoiceWKDetailSchema).dict()
+                for item in InvoiceWKDetailDatas
+            ]
+            resultDataList.append(
+                {
+                    "InvoiceWKMaster": InvoiceWKMasterDictData,
+                    "InvoiceWKDetail": InvoiceWKDetailDictDatas,
+                }
+            )
     else:
         dict_condition = convert_url_condition_to_dict_ignore_date(urlCondition)
         dict_condition_copy = deepcopy(dict_condition)
