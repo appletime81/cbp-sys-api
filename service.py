@@ -104,7 +104,7 @@ async def updateInvoiceWKMasterStatus(
     }
     update_invoice_master_status(db, update_invoice_master_condition)
 
-    return {"message": f"InvoiceWKMaster successfully updated"}
+    return {"message": "InvoiceWKMaster status and InvoiceMaster status successfully updated"}
 
 
 # -----------------------------------------------------------------------------
