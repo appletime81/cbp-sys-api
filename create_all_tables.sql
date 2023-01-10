@@ -1,4 +1,4 @@
-DROP TABLE `BillMaster`, `InvoiceDetail`, `InvoiceMaster`, `InvoiceWKDetail`, `InvoiceWKMaster`;
+DROP TABLE `billmaster`, `invoicedetail`, `invoicemaster`, `invoicewkdetail`, `invoicewkmaster`;
 
 CREATE TABLE InvoiceWKMaster
 (
@@ -93,3 +93,42 @@ CREATE TABLE Liability
     EndDate       datetime,
     PRIMARY KEY (LBRawID)
 );
+
+/* --------------------------------------------------------------------- */
+CREATE TABLE Suppliers
+(
+    SupplierID   int NOT NULL AUTO_INCREMENT,
+    SupplierName varchar(100),
+    PRIMARY KEY (SupplierID)
+);
+
+CREATE TABLE Corporates
+(
+    CorpID         int NOT NULL AUTO_INCREMENT,
+    CorpName       varchar(20),
+    SubmarineCable varchar(20),
+    CreateDate     datetime,
+    PRIMARY KEY (CorpID)
+);
+
+CREATE TABLE Parties
+(
+
+    PartyName varchar(100) NOT NULL,
+    Address   varchar(512),
+    Contact   varchar(20),
+    Email     varchar(50),
+    Tel       varchar(20),
+    PRIMARY KEY (PartyName)
+);
+
+CREATE TABLE Contracts
+(
+    ContractID     int NOT NULL AUTO_INCREMENT,
+    ContractName   varchar(20),
+    SubmarineCable varchar(20),
+    WorkTitle      varchar(20),
+    CreateDate     datetime,
+    PRIMARY KEY (ContractID)
+);
+/* --------------------------------------------------------------------- */

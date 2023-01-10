@@ -45,6 +45,7 @@ class InvoiceMasterSchema(BaseModel):
     IssueDate: datetime
     InvoiceDueDate: datetime
     Status: str
+    IsPro: bool
 
 
 class InvoiceDetailSchema(BaseModel):

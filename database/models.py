@@ -46,6 +46,7 @@ class InvoiceMasterDBModel(Base):
     IssueDate = Column(String(20))
     InvoiceDueDate = Column(String(20))
     Status = Column(String(20))
+    IsPro = Column(Boolean)
 
 
 class InvoiceDetailDBModel(Base):
