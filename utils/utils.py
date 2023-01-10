@@ -23,10 +23,6 @@ def convert_url_condition_to_dict(url_condition):
             # covert YYYYMMDDHHMMSS to YYYY-MM-DD HH:MM:SS
             value = value[:4] + "-" + value[4:6] + "-" + value[6:8] + " " + "00:00:00"
             dict_condition[key].update({"lte": value})
-        elif "equal" in key:
-            # covert YYYYMMDDHHMMSS to YYYY-MM-DD HH:MM:SS
-            value = value[:4] + "-" + value[4:6] + "-" + value[6:8] + " " + "00:00:00"
-            dict_condition[key] = value
         else:
             dict_condition[key] = value
 
@@ -62,14 +58,8 @@ def convert_dict_to_sql_condition(dict_condition: Dict, table_name: str):
 
 
 def convert_dict_condition_to_url(dict_condition):
-    print("-" * 25 + " dict condition " + "-" * 25)
-    print(dict_condition)
     url_condition = ""
     for key, value in dict_condition.items():
-        if "Date" in key:
-            if "range" in key:
-                key = key.replace("range", "start")
-            value = value.replace("-", "").replace(" ", "").replace(":", "")
         url_condition += f"{key}={value}&"
     return url_condition[:-1]
 
