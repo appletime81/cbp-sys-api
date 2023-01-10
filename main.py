@@ -310,7 +310,7 @@ async def searchInvoiceWKMaster(
     else:
         dict_condition = convert_url_condition_to_dict_ignore_date(urlCondition)
         dict_condition_copy = deepcopy(dict_condition)
-        pprint(dict_condition)
+        # pprint(dict_condition)
 
         # remove Date's condition in dict_condition_copy
         containDateStringList = [k for k in dict_condition_copy if "Date" in k]
