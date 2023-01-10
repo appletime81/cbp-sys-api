@@ -1,7 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Union, Optional, List, Dict
-from bson.objectid import ObjectId
+from typing import Optional
 
 
 class InvoiceWKMasterSchema(BaseModel):
