@@ -162,7 +162,7 @@ def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
         IssueDate=invoice_master.IssueDate,
         InvoiceDueDate=invoice_master.InvoiceDueDate,
         Status=invoice_master.Status,
-        IsPro=invoice_master.IsPro
+        IsPro=invoice_master.IsPro,
     )
     db.add(db_invoice_master)
     db.commit()

@@ -76,10 +76,38 @@ class BillMasterSchema(BaseModel):
 
 
 class LiabilitySchema(BaseModel):
-    LBRawID: int
+    LBRawID: Optional[int]
     BillMilestone: str
     PartyName: str
     LBRatio: float
     CreateDate: datetime
     ModifyNote: str
     EndDate: datetime
+
+
+class SuppliersSchema(BaseModel):
+    SupplierID: Optional[int]
+    SupplierName: str
+
+
+class CorporatesSchema(BaseModel):
+    CorpID: Optional[int]
+    CorpName: str
+    SubmarineCable: str
+    CreateDate: datetime
+
+
+class PartiesSchema(BaseModel):
+    PartyName: str
+    Address: str
+    Contact: str
+    Email: str
+    Tel: str
+
+
+class ContractsSchema(BaseModel):
+    ContractID: Optional[int]
+    ContractName: str
+    SubmarineCable: str
+    WorkTitle: str
+    CreateDate: datetime
