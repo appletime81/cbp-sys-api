@@ -3,6 +3,7 @@ from crud import *
 from get_db import get_db
 from sqlalchemy.orm import Session
 from utils.utils import *
+from utils.orm_pydantic_convert import orm_to_pydantic
 from copy import deepcopy
 
 router = APIRouter()
@@ -83,6 +84,27 @@ async def updateInvoiceWKMaster(
     return {
         "message": f"{deleteInvoiceWKMasterResponse.get('message')}, InvoiceWKMaster successfully updated"
     }
+
+
+@router.post(f"/updateInvoiceWKMasterStatus&InvoiceMasterStatus")
+async def updateInvoiceWKMasterStatus(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+
+    invoice_data = await request.json()
+
+    # update InvoiceWKMaster status
+    update_invoice_wk_master(db, invoice_data)
+
+    # update InvoiceMaster status
+    update_invoice_master_condition = {
+        "WKMasterID": invoice_data["WKMasterID"],
+        "Status": invoice_data["Status"],
+    }
+    update_invoice_master_status(db, update_invoice_master_condition)
+
+    return {"message": f"InvoiceWKMaster successfully updated"}
 
 
 # -----------------------------------------------------------------------------

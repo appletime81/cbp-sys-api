@@ -386,14 +386,6 @@ async def searchInvoiceWKMaster(
     return resultDataList
 
 
-@app.post(ROOT_URL + "/updateInvoiceWKMasterStatus")
-async def updateInvoiceWKMasterStatus(
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    pass
-
-
 # -------------------------------------------------------------------------------------------------------------------------------------
 
 

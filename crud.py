@@ -81,7 +81,6 @@ def update_invoice_wk_master(db: Session, dict_condition: dict):
     db_invoice_wk_master = db.query(InvoiceWKMasterDBModel).filter_by(
         **{"WKMasterID": dict_condition.get("WKMasterID")}
     )
-    pprint(db_invoice_wk_master)
     for item in db_invoice_wk_master:
         item.WKMasterID = dict_condition.get("WKMasterID")
         item.InvoiceNo = dict_condition.get("InvoiceNo")
@@ -184,6 +183,35 @@ def get_all_invoice_master_with_condition(db: Session, condition: dict):
 def delete_invoice_master(db: Session, invoice_master_data: InvoiceMasterDBModel):
     db.delete(invoice_master_data)
     db.commit()
+
+
+def update_invoice_master(db: Session, dict_condition: dict):
+    pprint(dict_condition)
+    db_invoice_master = db.query(InvoiceMasterDBModel).filter_by(
+        **{"WKMasterID": dict_condition.get("WKMasterID")}
+    )
+    for item in db_invoice_master:
+        item.InvMasterID = dict_condition.get("InvMasterID")
+        item.WKMasterID = dict_condition.get("WKMasterID")
+        item.InvoiceNo = dict_condition.get("InvoiceNo")
+        item.PartyName = dict_condition.get("PartyName")
+        item.SupplierName = dict_condition.get("SupplierName")
+        item.SubmarineCable = dict_condition.get("SubmarineCable")
+        item.ContractType = dict_condition.get("ContractType")
+        item.IssueDate = dict_condition.get("IssueDate")
+        item.InvoiceDueDate = dict_condition.get("InvoiceDueDate")
+        item.Status = dict_condition.get("Status")
+        db.commit()
+
+
+def update_invoice_master_status(db: Session, dict_condition: dict):
+    pprint(dict_condition)
+    db_invoice_master = db.query(InvoiceMasterDBModel).filter_by(
+        **{"WKMasterID": dict_condition.get("WKMasterID")}
+    )
+    for item in db_invoice_master:
+        item.Status = dict_condition.get("Status")
+        db.commit()
 
 
 # ---------------------------------------------------------------------------
