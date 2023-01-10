@@ -112,7 +112,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                     "InvoiceDueDate": InvoiceWKMasterDictData["InvoiceDueDate"],
                     "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
                     "Status": InvoiceWKMasterDictData["Status"],
-                    "IsPro": InvoiceWKMasterDictData["IsPro"],
+                    "IsPro": 0 if not InvoiceWKMasterDictData["IsPro"] else 1,
                 }
             )
             InvoiceMasterPydanticData = InvoiceMasterSchema(**InvoiceMasterDictData)
@@ -223,7 +223,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 "InvoiceDueDate": InvoiceWKMasterDictData["InvoiceDueDate"],
                 "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
                 "Status": InvoiceWKMasterDictData["Status"],
-                "IsPro": InvoiceWKMasterDictData["IsPro"],
+                "IsPro": 0 if not InvoiceWKMasterDictData["IsPro"] else 1,
             }
         )
         InvoiceMasterPydanticData = InvoiceMasterSchema(**InvoiceMasterDictData)

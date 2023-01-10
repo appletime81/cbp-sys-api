@@ -87,7 +87,7 @@ async def updateInvoiceWKMaster(
 
 
 @router.post(f"/updateInvoiceWKMasterStatus&InvoiceMasterStatus")
-async def updateInvoiceWKMasterStatus(
+async def updateInvoiceWKMasterStatusAndInvoiceMasterStatus(
     request: Request,
     db: Session = Depends(get_db),
 ):
@@ -104,7 +104,9 @@ async def updateInvoiceWKMasterStatus(
     }
     update_invoice_master_status(db, update_invoice_master_condition)
 
-    return {"message": "InvoiceWKMaster status and InvoiceMaster status successfully updated"}
+    return {
+        "message": "InvoiceWKMaster status and InvoiceMaster status successfully updated"
+    }
 
 
 # -----------------------------------------------------------------------------
