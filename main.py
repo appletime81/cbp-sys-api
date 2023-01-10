@@ -19,10 +19,7 @@ from utils.utils import (
     convert_dict_condition_to_url,
     convert_url_condition_to_dict_ignore_date,
 )
-from utils.orm_pydantic_convert import (
-    orm_to_pydantic,
-    pydantic_to_orm,
-)
+from utils.orm_pydantic_convert import orm_to_pydantic
 
 pd.set_option("display.max_columns", None)
 
