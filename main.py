@@ -3,6 +3,9 @@ import io
 import json
 import uuid
 import copy
+
+from fastapi.middleware.cors import CORSMiddleware
+
 import service
 import pandas as pd
 
@@ -29,6 +32,15 @@ ROOT_URL = "/api/v1"
 
 app.include_router(service.router, prefix=ROOT_URL, tags=["service"])
 
+# allow middlewares
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail ------------------------------
 @app.post(
@@ -36,9 +48,11 @@ app.include_router(service.router, prefix=ROOT_URL, tags=["service"])
 )
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     request: Request,
-    invoice_data: dict = Body(...),
+    # invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
+
+    invoice_data = await request.json()
     InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
 
     # IsLiable: True
@@ -176,6 +190,8 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
             datetime.now()
         )  # add CreateDate
+        print("-" * 20)
+        pprint(InvoiceWKMasterDictData)
         InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
         AddInvoiceWKMasterResponse = await service.addInvoiceWKMaster(
             request, InvoiceWKMasterPydanticData, db
@@ -417,10 +433,10 @@ async def searchInvoiceWKMaster(
 )
 async def generateBillMasterAndBillDetail(
     request: Request,
-    invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
     # get condition
+    invoice_data = await request.json()
     WKMasterID = invoice_data["WKMasterID"]
     DueDate = invoice_data["DueDate"]
     if not WKMasterID or not DueDate:  # check condition

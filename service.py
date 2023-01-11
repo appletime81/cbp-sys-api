@@ -74,9 +74,10 @@ async def deleteInvoiceWKMaster(
 @router.post(f"/updateInvoiceWKMaster")
 async def updateInvoiceWKMaster(
     request: Request,
-    invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
+    invoice_data = await request.json()
+
     # WKMasterID = invoice_data["WKMasterID"]
     deleteInvoiceWKMasterResponse = await deleteInvoiceWKMaster(
         request, deepcopy(invoice_data), db
