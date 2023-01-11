@@ -309,6 +309,30 @@ async def getLiability(
     return LiabilityDatas
 
 
+@router.post("/addLiability", status_code=status.HTTP_201_CREATED)
+async def addLiability(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    LiabilityDictData = await request.json()
+    LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
+    create_liability(db, LiabilityPydanticData)
+
+    return {"message": "Liability successfully created"}
+
+
+@router.post("/updateLiability")
+async def updateLiability(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    LiabilityDictData = await request.json()
+    LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
+    update_liability(db, LiabilityPydanticData)
+
+    return {"message": "Liability successfully updated"}
+
+
 # -----------------------------------------------------------------------
 
 # ------------------------------ Parties ------------------------------

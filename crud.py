@@ -279,6 +279,50 @@ def get_liability_with_condition(db: Session, condition: dict):
     return db.query(LiabilityDBModel).filter_by(**condition)
 
 
+def get_all_liability(db: Session):
+    return db.query(LiabilityDBModel).all()
+
+
+def create_liability(db: Session, liability: LiabilitySchema):
+    db_liability = LiabilityDBModel(
+        LBRawID=liability.LBRawID,
+        BillMilestone=liability.BillMilestone,
+        PartyName=liability.PartyName,
+        LBRatio=liability.LBRatio,
+        CreateDate=liability.CreateDate,
+        ModifyNote=liability.ModifyNote,
+        EndDate=liability.EndDate,
+    )
+    db.add(db_liability)
+    db.commit()
+    db.refresh(db_liability)
+
+
+def update_liability(db: Session, dict_condition: dict):
+    pprint(dict_condition)
+    db_liability = db.query(LiabilityDBModel).filter_by(
+        **{"LBRawID": dict_condition.get("LBRawID")}
+    )
+    for item in db_liability:
+        item.LBRawID = dict_condition.get("LBRawID")
+        item.BillMilestone = dict_condition.get("BillMilestone")
+        item.PartyName = dict_condition.get("PartyName")
+        item.LBRatio = dict_condition.get("LBRatio")
+        item.CreateDate = dict_condition.get("CreateDate")
+        item.ModifyNote = dict_condition.get("ModifyNote")
+        item.EndDate = dict_condition.get("EndDate")
+        db.commit()
+
+
+def delete_liability(db: Session, dict_condition: dict):
+    db_liability = db.query(LiabilityDBModel).filter_by(
+        **{"LBRawID": dict_condition.get("LBRawID")}
+    )
+    for item in db_liability:
+        db.delete(item)
+        db.commit()
+
+
 # -----------------------------------------------------------------------
 
 # ------------------------------ Parties ------------------------------

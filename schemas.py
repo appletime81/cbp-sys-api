@@ -79,9 +79,9 @@ class LiabilitySchema(BaseModel):
     BillMilestone: str
     PartyName: str
     LBRatio: float
-    CreateDate: datetime
-    ModifyNote: str
-    EndDate: datetime
+    CreateDate: Optional[datetime]
+    ModifyNote: Optional[str]
+    EndDate: Optional[datetime]
 
 
 class SuppliersSchema(BaseModel):
