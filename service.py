@@ -327,7 +327,7 @@ async def getParties(
     return PartiesDataList
 
 
-@router.post("/Parties", status_code=status.HTTP_201_CREATED)
+@router.post("/addParties", status_code=status.HTTP_201_CREATED)
 async def addParties(
     request: Request,
     db: Session = Depends(get_db),
@@ -361,18 +361,92 @@ async def getSuppliers(
     return SuppliersDataList
 
 
-@router.post("/Suppliers", status_code=status.HTTP_201_CREATED)
+@router.post("/addSuppliers", status_code=status.HTTP_201_CREATED)
 async def addSuppliers(
     request: Request,
     db: Session = Depends(get_db),
 ):
     SupplierDictData = await request.json()
-    print(SupplierDictData)
+
     # dict to Pydantic model
     SupplierPydanticData = SuppliersSchema(**SupplierDictData)
+
+    # add to db
     create_supplier(db, SupplierPydanticData)
 
     return {"message": "Supplier successfully created"}
+
+
+# -----------------------------------------------------------------------
+
+# ------------------------------ Corporates ------------------------------
+# 查詢Corporates
+@router.get("/Corporates/{CorporatesCondition}")
+async def getCorporates(
+    request: Request,
+    CorporatesCondition: str,
+    db: Session = Depends(get_db),
+):
+    CorporatesDataList = []
+    if CorporatesCondition == "all":
+        CorporateDatas = get_all_corporate(db)
+        for CorporateData in CorporateDatas:
+            CorporatesDataList.append(
+                orm_to_pydantic(CorporateData, CorporatesSchema).dict()
+            )
+    return CorporatesDataList
+
+
+@router.post("/addCorporates", status_code=status.HTTP_201_CREATED)
+async def addCorporates(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    CorporateDictData = await request.json()
+
+    # dict to Pydantic model
+    CorporatePydanticData = CorporatesSchema(**CorporateDictData)
+
+    # add to db
+    create_corporate(db, CorporatePydanticData)
+
+    return {"message": "Corporate successfully created"}
+
+
+# ------------------------------------------------------------------------
+
+# ------------------------------ Contracts ------------------------------
+# 查詢Contracts
+@router.get("/Contracts/{ContractsCondition}")
+async def getContracts(
+    request: Request,
+    ContractsCondition: str,
+    db: Session = Depends(get_db),
+):
+    ContractsDataList = []
+    if ContractsCondition == "all":
+        ContractDatas = get_all_contract(db)
+        for ContractData in ContractDatas:
+            ContractsDataList.append(
+                orm_to_pydantic(ContractData, ContractsSchema).dict()
+            )
+    return ContractsDataList
+
+
+@router.post("/addContracts", status_code=status.HTTP_201_CREATED)
+async def addContracts(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    ContractDictData = await request.json()
+
+    # dict to Pydantic model
+    ContractPydanticData = ContractsSchema(**ContractDictData)
+
+    # add to db
+    create_contract(db, ContractPydanticData)
+
+    return {"message": "Contract successfully created"}
 
 
 # -----------------------------------------------------------------------

@@ -1,25 +1,8 @@
 from pprint import pprint
 from sqlalchemy.orm import Session
 from database.engine import engine
-from database.models import (
-    InvoiceWKMasterDBModel,
-    InvoiceWKDetailDBModel,
-    InvoiceMasterDBModel,
-    InvoiceDetailDBModel,
-    BillMasterDBModel,
-    LiabilityDBModel,
-    PartiesDBModel,
-    SuppliersDBModel,
-)
-from schemas import (
-    InvoiceWKMasterSchema,
-    InvoiceWKDetailSchema,
-    InvoiceMasterSchema,
-    InvoiceDetailSchema,
-    BillMasterSchema,
-    PartiesSchema,
-    SuppliersSchema,
-)
+from database.models import *
+from schemas import *
 
 
 # ------------------------------ InvoiceWKMaster ------------------------------
@@ -325,11 +308,51 @@ def get_all_supplier(db: Session):
 
 def create_supplier(db: Session, supplier: SuppliersSchema):
     db_supplier = SuppliersDBModel(
+        SupplierID=supplier.SupplierID,
         SupplierName=supplier.SupplierName,
     )
     db.add(db_supplier)
     db.commit()
     db.refresh(db_supplier)
+
+
+# -----------------------------------------------------------------------
+
+# ------------------------------ Corporates ------------------------------
+def get_all_corporate(db: Session):
+    return db.query(CorporatesDBModel).all()
+
+
+def create_corporate(db: Session, corporate: CorporatesSchema):
+    db_corporate = CorporatesDBModel(
+        CorpID=corporate.CorpID,
+        CorpName=corporate.CorpName,
+        SubmarineCable=corporate.SubmarineCable,
+        CreateDate=corporate.CreateDate,
+    )
+    db.add(db_corporate)
+    db.commit()
+    db.refresh(db_corporate)
+
+
+# ------------------------------------------------------------------------
+
+# ------------------------------ Contracts ------------------------------
+def get_all_contract(db: Session):
+    return db.query(ContractsDBModel).all()
+
+
+def create_contract(db: Session, contract: ContractsSchema):
+    db_contract = ContractsDBModel(
+        ContractID=contract.ContractID,
+        ContractName=contract.ContractName,
+        SubmarineCable=contract.SubmarineCable,
+        WorkTitle=contract.WorkTitle,
+        CreateDate=contract.CreateDate,
+    )
+    db.add(db_contract)
+    db.commit()
+    db.refresh(db_contract)
 
 
 # -----------------------------------------------------------------------
