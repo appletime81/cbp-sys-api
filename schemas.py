@@ -5,8 +5,8 @@ from typing import Optional
 
 class InvoiceWKMasterSchema(BaseModel):
     WKMasterID: Optional[int]
-    InvoiceNo: str
-    Description: str
+    InvoiceNo: Optional[str]
+    Description: Optional[str]
     SupplierName: str
     SubmarineCable: str
     WorkTitle: str
@@ -109,4 +109,24 @@ class ContractsSchema(BaseModel):
     ContractName: str
     SubmarineCable: str
     WorkTitle: str
+    CreateDate: datetime
+
+
+class PartiesSchema(BaseModel):
+    PartyName: str
+    Address: Optional[str]
+    Contact: Optional[str]
+    Email: Optional[str]
+    Tel: Optional[str]
+
+
+class SuppliersSchema(BaseModel):
+    SupplierID: Optional[int]
+    SupplierName: str
+
+
+class CorporatesSchema(BaseModel):
+    CorpID: Optional[int]
+    CorpName: str
+    SubmarineCable: str
     CreateDate: datetime

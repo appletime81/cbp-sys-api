@@ -87,3 +87,35 @@ class LiabilityDBModel(Base):
     CreateDate = Column(String(20))
     ModifyNote = Column(String(128))
     EndDate = Column(String(20))
+
+
+class PartiesDBModel(Base):
+    __tablename__ = "Parties"
+    PartyName = Column(String(100), primary_key=True, index=True)
+    Address = Column(String(512))
+    Contact = Column(String(20))
+    Email = Column(String(50))
+    Tel = Column(String(20))
+
+
+class SuppliersDBModel(Base):
+    __tablename__ = "Suppliers"
+    SupplierID = Column(Integer, primary_key=True, index=True)
+    SupplierName = Column(String(100))
+
+
+class CorporatesDBModel(Base):
+    __tablename__ = "Corporates"
+    CorpID = Column(Integer, primary_key=True, index=True)
+    CorpName = Column(String(20))
+    SubmarineCable = Column(String(20))
+    CreateDate = Column(String(20))
+
+
+class ContractsDBModel(Base):
+    __tablename__ = "Contracts"
+    ContractID = Column(Integer, primary_key=True, index=True)
+    ContractName = Column(String(20))
+    SubmarineCable = Column(String(20))
+    WorkTitle = Column(String(20))
+    CreateDate = Column(String(20))

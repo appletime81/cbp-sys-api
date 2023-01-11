@@ -8,6 +8,8 @@ from database.models import (
     InvoiceDetailDBModel,
     BillMasterDBModel,
     LiabilityDBModel,
+    PartiesDBModel,
+    SuppliersDBModel,
 )
 from schemas import (
     InvoiceWKMasterSchema,
@@ -15,6 +17,8 @@ from schemas import (
     InvoiceMasterSchema,
     InvoiceDetailSchema,
     BillMasterSchema,
+    PartiesSchema,
+    SuppliersSchema,
 )
 
 
@@ -290,6 +294,42 @@ def get_bill_master_with_condition(db: Session, condition: dict):
 
 def get_liability_with_condition(db: Session, condition: dict):
     return db.query(LiabilityDBModel).filter_by(**condition)
+
+
+# -----------------------------------------------------------------------
+
+# ------------------------------ Parties ------------------------------
+def get_all_party(db: Session):
+    return db.query(PartiesDBModel).all()
+
+
+def create_party(db: Session, party: PartiesSchema):
+    db_party = PartiesDBModel(
+        PartyName=party.PartyName,
+        Address=party.Address,
+        Contact=party.Contact,
+        Email=party.Email,
+        Tel=party.Tel,
+    )
+    db.add(db_party)
+    db.commit()
+    db.refresh(db_party)
+
+
+# ---------------------------------------------------------------------
+
+# ------------------------------ Suppliers ------------------------------
+def get_all_supplier(db: Session):
+    return db.query(SuppliersDBModel).all()
+
+
+def create_supplier(db: Session, supplier: SuppliersSchema):
+    db_supplier = SuppliersDBModel(
+        SupplierName=supplier.SupplierName,
+    )
+    db.add(db_supplier)
+    db.commit()
+    db.refresh(db_supplier)
 
 
 # -----------------------------------------------------------------------

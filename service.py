@@ -130,7 +130,7 @@ async def getInvoiceWKDetail(
 
 
 # 新增發票工作明細檔
-@router.post("/InvoiceWKDetail/", status_code=status.HTTP_201_CREATED)
+@router.post("/InvoiceWKDetail", status_code=status.HTTP_201_CREATED)
 async def addInvoiceWKDetail(
     request: Request,
     InvoiceWKDetailPydanticData: InvoiceWKDetailSchema,
@@ -181,7 +181,7 @@ async def getInvoiceMaster(
 
 
 # 新增發票主檔
-@router.post("/InvoiceMaster/", status_code=status.HTTP_201_CREATED)
+@router.post("/InvoiceMaster", status_code=status.HTTP_201_CREATED)
 async def addInvoiceMaster(
     request: Request,
     InvoiceMasterPydanticData: InvoiceMasterSchema,
@@ -221,7 +221,7 @@ async def deleteInvoiceMaster(
 
 # ------------------------------ InvoiceDetail ------------------------------
 # 建立InvoiceDetail
-@router.post("/InvoiceDetail/", status_code=status.HTTP_201_CREATED)
+@router.post("/InvoiceDetail", status_code=status.HTTP_201_CREATED)
 async def addInvoiceDetail(
     request: Request,
     InvoiceDetailPydanticData: InvoiceDetailSchema,
@@ -279,7 +279,7 @@ async def deleteInvoiceDetail(
 # ---------------------------------------------------------------------------
 
 # ------------------------------ BillMaster ------------------------------
-@router.post("/BillMaster/", status_code=status.HTTP_201_CREATED)
+@router.post("/BillMaster", status_code=status.HTTP_201_CREATED)
 async def addBillMaster(
     request: Request,
     BillMasterPydanticData: BillMasterSchema,
@@ -307,6 +307,72 @@ async def getLiability(
     LiabilityConditionDict = convert_url_condition_to_dict(LiabilityCondition)
     LiabilityDatas = get_liability_with_condition(db, LiabilityConditionDict)
     return LiabilityDatas
+
+
+# -----------------------------------------------------------------------
+
+# ------------------------------ Parties ------------------------------
+# 查詢Parties
+@router.get("/Parties/{PartiesCondition}")
+async def getParties(
+    request: Request,
+    PartiesCondition: str,
+    db: Session = Depends(get_db),
+):
+    PartiesDataList = []
+    if PartiesCondition == "all":
+        PartiesDatas = get_all_party(db)
+        for PartiesData in PartiesDatas:
+            PartiesDataList.append(orm_to_pydantic(PartiesData, PartiesSchema).dict())
+    return PartiesDataList
+
+
+@router.post("/Parties", status_code=status.HTTP_201_CREATED)
+async def addParties(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    PartyDictData = await request.json()
+
+    # dict to Pydantic model
+    PartyPydanticData = PartiesSchema(**PartyDictData)
+    create_party(db, PartyPydanticData)
+
+    return {"message": "Party successfully created"}
+
+
+# ---------------------------------------------------------------------
+
+# ------------------------------ Suppliers ------------------------------
+# 查詢Suppliers
+@router.get("/Suppliers/{SuppliersCondition}")
+async def getSuppliers(
+    request: Request,
+    SuppliersCondition: str,
+    db: Session = Depends(get_db),
+):
+    SuppliersDataList = []
+    if SuppliersCondition == "all":
+        SupplierDatas = get_all_supplier(db)
+        for SupplierData in SupplierDatas:
+            SuppliersDataList.append(
+                orm_to_pydantic(SupplierData, SuppliersSchema).dict()
+            )
+    return SuppliersDataList
+
+
+@router.post("/Suppliers", status_code=status.HTTP_201_CREATED)
+async def addSuppliers(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    SupplierDictData = await request.json()
+    print(SupplierDictData)
+    # dict to Pydantic model
+    SupplierPydanticData = SuppliersSchema(**SupplierDictData)
+    create_supplier(db, SupplierPydanticData)
+
+    return {"message": "Supplier successfully created"}
 
 
 # -----------------------------------------------------------------------
