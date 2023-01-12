@@ -122,7 +122,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                     "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                     "ContractType": InvoiceWKMasterDictData["ContractType"],
                     "IssueDate": InvoiceWKMasterDictData["IssueDate"],
-                    "InvoiceDueDate": InvoiceWKMasterDictData["InvoiceDueDate"],
+                    "DueDate": InvoiceWKMasterDictData["DueDate"],
                     "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
                     "Status": InvoiceWKMasterDictData["Status"],
                     "IsPro": 0 if not InvoiceWKMasterDictData["IsPro"] else 1,
@@ -185,7 +185,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                     "InvDetailID"
                 ]
                 InvoiceDetailDictDataList.append(InvoiceDetailDictData)
-        pprint(InvoiceDetailDictDataList)
+        # pprint(InvoiceDetailDictDataList)
 
     if not InvoiceWKMasterDictData.get("IsLiability"):
         # 2. create InvoiceWKDetail

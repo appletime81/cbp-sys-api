@@ -1,8 +1,11 @@
 from pprint import pprint
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.sync import update
+
 from database.engine import engine
 from database.models import *
 from schemas import *
+from copy import deepcopy
 
 
 # ------------------------------ InvoiceWKMaster ------------------------------
@@ -138,19 +141,7 @@ def delete_invoice_wk_detail(
 
 # ------------------------------ InvoiceMaster ------------------------------
 def create_invoice_master(db: Session, invoice_master: InvoiceMasterSchema):
-    db_invoice_master = InvoiceMasterDBModel(
-        InvMasterID=invoice_master.InvMasterID,
-        WKMasterID=invoice_master.WKMasterID,
-        InvoiceNo=invoice_master.InvoiceNo,
-        PartyName=invoice_master.PartyName,
-        SupplierName=invoice_master.SupplierName,
-        SubmarineCable=invoice_master.SubmarineCable,
-        ContractType=invoice_master.ContractType,
-        IssueDate=invoice_master.IssueDate,
-        DueDate=invoice_master.DueDate,
-        Status=invoice_master.Status,
-        IsPro=invoice_master.IsPro,
-    )
+    db_invoice_master = InvoiceMasterDBModel(**invoice_master.dict())
     db.add(db_invoice_master)
     db.commit()
     db.refresh(db_invoice_master)
@@ -179,16 +170,8 @@ def update_invoice_master(db: Session, dict_condition: dict):
         **{"WKMasterID": dict_condition.get("WKMasterID")}
     )
     for item in db_invoice_master:
-        item.InvMasterID = dict_condition.get("InvMasterID")
-        item.WKMasterID = dict_condition.get("WKMasterID")
-        item.InvoiceNo = dict_condition.get("InvoiceNo")
-        item.PartyName = dict_condition.get("PartyName")
-        item.SupplierName = dict_condition.get("SupplierName")
-        item.SubmarineCable = dict_condition.get("SubmarineCable")
-        item.ContractType = dict_condition.get("ContractType")
-        item.IssueDate = dict_condition.get("IssueDate")
-        item.InvoiceDueDate = dict_condition.get("InvoiceDueDate")
-        item.Status = dict_condition.get("Status")
+        for k, v in dict_condition.items():
+            setattr(item, k, v)
         db.commit()
 
 
@@ -207,21 +190,7 @@ def update_invoice_master_status(db: Session, dict_condition: dict):
 
 # ------------------------------ InvoiceDetail ------------------------------
 def create_invoice_detail(db: Session, invoice_detail: InvoiceDetailSchema):
-    db_invoice_detail = InvoiceDetailDBModel(
-        InvMasterID=invoice_detail.InvMasterID,
-        WKMasterID=invoice_detail.WKMasterID,
-        WKDetailID=invoice_detail.WKDetailID,
-        InvoiceNo=invoice_detail.InvoiceNo,
-        PartyName=invoice_detail.PartyName,
-        SupplierName=invoice_detail.SupplierName,
-        SubmarineCable=invoice_detail.SubmarineCable,
-        BillMilestone=invoice_detail.BillMilestone,
-        FeeItem=invoice_detail.FeeItem,
-        FeeAmountPre=invoice_detail.FeeAmountPre,
-        LBRatio=invoice_detail.LBRatio,
-        FeeAmountPost=invoice_detail.FeeAmountPost,
-        Difference=invoice_detail.Difference,
-    )
+    db_invoice_detail = InvoiceDetailDBModel(**invoice_detail.dict())
     db.add(db_invoice_detail)
     db.commit()
     db.refresh(db_invoice_detail)
@@ -252,15 +221,7 @@ def get_all_invoice_detail_by_sql(sql: str):
 
 # ------------------------------ BillMaster ------------------------------
 def create_bill_master(db: Session, bill_master: BillMasterSchema):
-    db_bill_master = BillMasterDBModel(
-        BillMasterID=bill_master.BillMasterID,
-        BillingNo=bill_master.BillingNo,
-        PartyName=bill_master.PartyName,
-        CreateDate=bill_master.CreateDate,
-        DueDate=bill_master.DueDate,
-        Status=bill_master.Status,
-        IsPro=bill_master.IsPro,
-    )
+    db_bill_master = BillMasterDBModel(**bill_master.dict())
     db.add(db_bill_master)
     db.commit()
     db.refresh(db_bill_master)
@@ -284,15 +245,7 @@ def get_all_liability(db: Session):
 
 
 def create_liability(db: Session, liability: LiabilitySchema):
-    db_liability = LiabilityDBModel(
-        LBRawID=liability.LBRawID,
-        BillMilestone=liability.BillMilestone,
-        PartyName=liability.PartyName,
-        LBRatio=liability.LBRatio,
-        CreateDate=liability.CreateDate,
-        ModifyNote=liability.ModifyNote,
-        EndDate=liability.EndDate,
-    )
+    db_liability = LiabilityDBModel(**liability.dict())
     db.add(db_liability)
     db.commit()
     db.refresh(db_liability)
@@ -304,13 +257,8 @@ def update_liability(db: Session, dict_condition: dict):
         **{"LBRawID": dict_condition.get("LBRawID")}
     )
     for item in db_liability:
-        item.LBRawID = dict_condition.get("LBRawID")
-        item.BillMilestone = dict_condition.get("BillMilestone")
-        item.PartyName = dict_condition.get("PartyName")
-        item.LBRatio = dict_condition.get("LBRatio")
-        item.CreateDate = dict_condition.get("CreateDate")
-        item.ModifyNote = dict_condition.get("ModifyNote")
-        item.EndDate = dict_condition.get("EndDate")
+        for k, v in dict_condition.items():
+            setattr(item, k, v)
         db.commit()
 
 
