@@ -12,7 +12,7 @@ class InvoiceWKMasterSchema(BaseModel):
     WorkTitle: str
     ContractType: str
     IssueDate: datetime
-    InvoiceDueDate: datetime
+    DueDate: datetime
     PartyName: str
     Status: str
     IsPro: bool
@@ -42,7 +42,7 @@ class InvoiceMasterSchema(BaseModel):
     SubmarineCable: str
     ContractType: str
     IssueDate: datetime
-    InvoiceDueDate: datetime
+    DueDate: datetime
     Status: str
     IsPro: bool
 
@@ -130,3 +130,19 @@ class CorporatesSchema(BaseModel):
     CorpName: str
     SubmarineCable: str
     CreateDate: datetime
+
+
+class SubmarineCablesSchema(BaseModel):
+    CableID: Optional[int]
+    CableName: str
+    Note: Optional[str]
+
+
+class WorkTitlesSchema(BaseModel):
+    Title: str
+    Note: Optional[str]
+
+
+class ContractTypesSchema(BaseModel):
+    ContractID: Optional[int]
+    Note: Optional[str]

@@ -12,7 +12,7 @@ class InvoiceWKMasterDBModel(Base):
     WorkTitle = Column(String(50))
     ContractType = Column(String(20))
     IssueDate = Column(String(20))
-    InvoiceDueDate = Column(String(20))
+    DueDate = Column(String(20))
     PartyName = Column(String(100))
     Status = Column(String(20))
     IsPro = Column(Boolean)
@@ -44,7 +44,7 @@ class InvoiceMasterDBModel(Base):
     SubmarineCable = Column(String(10))
     ContractType = Column(String(20))
     IssueDate = Column(String(20))
-    InvoiceDueDate = Column(String(20))
+    DueDate = Column(String(20))
     Status = Column(String(20))
     IsPro = Column(Boolean)
 
@@ -119,3 +119,9 @@ class ContractsDBModel(Base):
     SubmarineCable = Column(String(20))
     WorkTitle = Column(String(20))
     CreateDate = Column(String(20))
+
+
+class SubmarineCablesDBModel(Base):
+    __tablename__ = "SubmarineCables"
+    CableID = Column(Integer, primary_key=True, index=True)
+    CableName = Column(String(20))

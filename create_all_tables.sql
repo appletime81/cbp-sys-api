@@ -10,7 +10,7 @@ CREATE TABLE InvoiceWKMaster
     WorkTitle      varchar(50),
     ContractType   varchar(20),
     IssueDate      datetime,
-    InvoiceDueDate datetime,
+    DueDate        datetime,
     PartyName      varchar(100),
     Status         varchar(20),
     IsPro          TINYINT(1),
@@ -44,7 +44,7 @@ CREATE TABLE InvoiceMaster
     SubmarineCable varchar(10),
     ContractType   varchar(20),
     IssueDate      datetime,
-    InvoiceDueDate datetime,
+    DueDate        datetime,
     Status         varchar(20),
     IsPro          TINYINT(1),
     PRIMARY KEY (InvMasterID)
@@ -131,4 +131,27 @@ CREATE TABLE Contracts
     CreateDate     datetime,
     PRIMARY KEY (ContractID)
 );
+
+CREATE TABLE SubmarineCables
+(
+    CableID   varchar(20),
+    CableName varchar(64),
+    Note      varchar(128),
+    PRIMARY KEY (CableID)
+);
+
+CREATE TABLE WorkTitles
+(
+    Title varchar(20),
+    Note  varchar(128),
+    PRIMARY KEY (Title)
+);
+
+CREATE TABLE ContractTypes
+(
+    ContractID varchar(20),
+    Note       varchar(128),
+    PRIMARY KEY (ContractID)
+);
+
 /* --------------------------------------------------------------------- */

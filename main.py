@@ -173,7 +173,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 InvoiceDetailDictData["FeeAmountPre"] = FeeAmount
                 InvoiceDetailDictData["LBRatio"] = LiabilityDatas.first().LBRatio
                 InvoiceDetailDictData["FeeAmountPost"] = cal_fee_amount_post(
-                    LiabilityDatas.first().LBRatio, FeeAmount
+                    LiabilityDatas.first().LBRatio, float(FeeAmount)
                 )
                 InvoiceDetailDictData["Difference"] = 0
 
@@ -222,7 +222,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
                 "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                 "ContractType": InvoiceWKMasterDictData["ContractType"],
                 "IssueDate": InvoiceWKMasterDictData["IssueDate"],
-                "InvoiceDueDate": InvoiceWKMasterDictData["InvoiceDueDate"],
+                "DueDate": InvoiceWKMasterDictData["DueDate"],
                 "SubmarineCable": InvoiceWKMasterDictData["SubmarineCable"],
                 "Status": InvoiceWKMasterDictData["Status"],
                 "IsPro": 0 if not InvoiceWKMasterDictData["IsPro"] else 1,
@@ -239,7 +239,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         InvoiceDetailDictDataList = []
         for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
             InvoiceDetailDictData = {}
-            InvMasterID = +["InvMasterID"]
+            InvMasterID = InvoiceMasterDictData["InvMasterID"]
             PartyName = InvoiceWKMasterDictData["PartyName"]
             WKMasterID = InvoiceWKDetailDictData["WKMasterID"]
             WKDetailID = InvoiceWKDetailDictData["WKDetailID"]
@@ -262,7 +262,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
             InvoiceDetailDictData["FeeAmountPre"] = FeeAmount
             InvoiceDetailDictData["LBRatio"] = 100
             InvoiceDetailDictData["FeeAmountPost"] = cal_fee_amount_post(
-                InvoiceDetailDictData["LBRatio"], FeeAmount
+                InvoiceDetailDictData["LBRatio"], float(FeeAmount)
             )
             InvoiceDetailDictData["Difference"] = 0
 
