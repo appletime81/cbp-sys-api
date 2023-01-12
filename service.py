@@ -328,10 +328,10 @@ async def updateLiability(
     db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
-    LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
-    update_liability(db, LiabilityPydanticData)
+    update_liability(db, LiabilityDictData)
 
     return {"message": "Liability successfully updated"}
+
 
 @router.post("/deleteLiability")
 async def deleteLiability(
@@ -339,9 +339,7 @@ async def deleteLiability(
     db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
-    LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
-    delete_liability(db, LiabilityPydanticData)
-
+    delete_liability(db, LiabilityDictData)
     return {"message": "Liability successfully deleted"}
 
 
@@ -486,5 +484,3 @@ async def addContracts(
 
 
 # -----------------------------------------------------------------------
-
-# ------------------------------ Contracts ------------------------------

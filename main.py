@@ -48,7 +48,6 @@ app.add_middleware(
 )
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     request: Request,
-    # invoice_data: dict = Body(...),
     db: Session = Depends(get_db),
 ):
 
