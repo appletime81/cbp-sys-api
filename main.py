@@ -54,22 +54,25 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
     invoice_data = await request.json()
     InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
+    print("-" * 25 + " invoice_data " + "-" * 25)
+    pprint(invoice_data)
+    # 1. create InvoiceWKMaster
+    InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
+        datetime.now()
+    )  # add CreateDate
+    InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
+    AddInvoiceWKMasterResponse = await service.addInvoiceWKMaster(
+        request, InvoiceWKMasterPydanticData, db
+    )
+    WKMasterID = AddInvoiceWKMasterResponse["WKMasterID"]
+
+    # 2. prepare for creating InvoiceWKDetail (declare variable)
+    InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
+    newInvoiceWKDetailDictDataList = []
 
     # IsLiable: True
     if InvoiceWKMasterDictData.get("IsLiability"):
-        # 1. create InvoiceWKMaster
-        InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
-            datetime.now()
-        )  # add CreateDate
-        InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
-        AddInvoiceWKMasterResponse = await service.addInvoiceWKMaster(
-            request, InvoiceWKMasterPydanticData, db
-        )
-        WKMasterID = AddInvoiceWKMasterResponse["WKMasterID"]
-
-        # 2. create InvoiceWKDetail
-        InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
-        newInvoiceWKDetailDictDataList = []
+        # 2. create InvoiceWKDetail\
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
             InvoiceWKDetailDictData.update(
                 {
@@ -186,21 +189,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         pprint(InvoiceDetailDictDataList)
 
     if not InvoiceWKMasterDictData.get("IsLiability"):
-        # 1. create InvoiceWKMaster
-        InvoiceWKMasterDictData["CreateDate"] = convert_time_to_str(
-            datetime.now()
-        )  # add CreateDate
-        print("-" * 20)
-        pprint(InvoiceWKMasterDictData)
-        InvoiceWKMasterPydanticData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
-        AddInvoiceWKMasterResponse = await service.addInvoiceWKMaster(
-            request, InvoiceWKMasterPydanticData, db
-        )
-        WKMasterID = AddInvoiceWKMasterResponse["WKMasterID"]
-
         # 2. create InvoiceWKDetail
-        InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
-        newInvoiceWKDetailDictDataList = []
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
             InvoiceWKDetailDictData.update(
                 {
@@ -250,7 +239,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         InvoiceDetailDictDataList = []
         for InvoiceWKDetailDictData in newInvoiceWKDetailDictDataList:
             InvoiceDetailDictData = {}
-            InvMasterID = InvoiceMasterDictData["InvMasterID"]
+            InvMasterID = +["InvMasterID"]
             PartyName = InvoiceWKMasterDictData["PartyName"]
             WKMasterID = InvoiceWKDetailDictData["WKMasterID"]
             WKDetailID = InvoiceWKDetailDictData["WKDetailID"]

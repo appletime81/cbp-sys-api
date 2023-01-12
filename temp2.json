@@ -8,7 +8,7 @@
     "WorkTitle": "Construction",
     "ContractType": "SC",
     "IssueDate": "2022-09-09 00:00:00",
-    "InvoiceDueDate": "2022-11-08 00:00:00",
+    "DueDate": "2022-11-08 00:00:00",
     "PartyName": "CHT",
     "Status": "TEMPORARY",
     "IsPro": 0,
