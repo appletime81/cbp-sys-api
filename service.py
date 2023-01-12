@@ -333,6 +333,17 @@ async def updateLiability(
 
     return {"message": "Liability successfully updated"}
 
+@router.post("/deleteLiability")
+async def deleteLiability(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    LiabilityDictData = await request.json()
+    LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
+    delete_liability(db, LiabilityPydanticData)
+
+    return {"message": "Liability successfully deleted"}
+
 
 # -----------------------------------------------------------------------
 
