@@ -84,15 +84,17 @@ CREATE TABLE BillMaster
 
 CREATE TABLE Liability
 (
-    LBRawID       int NOT NULL AUTO_INCREMENT,
-    BillMilestone varchar(20),
-    PartyName     varchar(100),
-    LBRatio       decimal(13, 10),
-    CreateDate    datetime,
-    ModifyNote    varchar(128),
-    EndDate       datetime,
+    LBRawID        int NOT NULL AUTO_INCREMENT,
+    SubmarineCable varchar(10),
+    BillMilestone  varchar(20),
+    PartyName      varchar(100),
+    LBRatio        decimal(13, 10),
+    CreateDate     datetime,
+    ModifyNote     varchar(128),
+    EndDate        datetime,
     PRIMARY KEY (LBRawID)
 );
+
 
 /* --------------------------------------------------------------------- */
 CREATE TABLE Suppliers

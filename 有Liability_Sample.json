@@ -13,7 +13,8 @@
     "IsPro": 0,
     "IsRecharge": 0,
     "IsLiability": 1,
-    "TotalAmount": 5582012.72
+    "TotalAmount": 5582012.72,
+    "CreateDate": "2023-01-13 00:00:00"
   },
   "InvoiceWKDetail": [
     {

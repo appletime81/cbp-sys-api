@@ -81,6 +81,7 @@ class BillMasterDBModel(Base):
 class LiabilityDBModel(Base):
     __tablename__ = "Liability"
     LBRawID = Column(Integer, primary_key=True, index=True)
+    SubmarineCable = Column(String(10))
     BillMilestone = Column(String(20))
     PartyName = Column(String(100))
     LBRatio = Column(Float)

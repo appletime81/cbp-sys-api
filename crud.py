@@ -300,7 +300,8 @@ def get_all_supplier(db: Session):
 
 def create_supplier(db: Session, supplier: SuppliersSchema):
     db_supplier = SuppliersDBModel(
-        SupplierID=supplier.SupplierID, SupplierName=supplier.SupplierName,
+        SupplierID=supplier.SupplierID,
+        SupplierName=supplier.SupplierName,
     )
     db.add(db_supplier)
     db.commit()
@@ -350,16 +351,19 @@ def create_contract(db: Session, contract: ContractsSchema):
 
 
 class CRUD:
-    def __init__(self, db: Session, model, filter_condition: dict):
+    def __init__(self, db: Session, model):
         self.db = db
         self.model = model
-        self.condition = filter_condition
 
-    def get_with_condition(self):
-        return self.db.query(self.model).filter_by(**self.filter_condition).all()
+    def get_with_condition(self, filter_condition: dict):
+        return self.db.query(self.model).filter_by(**filter_condition).all()
 
     def get_all(self):
         return self.db.query(self.model).all()
+
+    @staticmethod
+    def get_all_by_sql(sql: str):
+        return engine.execute(sql).all()
 
     def create(self, obj_in):
         db_obj = self.model(**obj_in.dict())

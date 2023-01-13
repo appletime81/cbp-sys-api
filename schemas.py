@@ -76,6 +76,7 @@ class BillMasterSchema(BaseModel):
 
 class LiabilitySchema(BaseModel):
     LBRawID: Optional[int]
+    SubmarineCable: str
     BillMilestone: str
     PartyName: str
     LBRatio: float

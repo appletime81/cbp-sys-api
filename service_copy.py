@@ -15,10 +15,9 @@ router = APIRouter()
 async def getInvoiceWKMaster(
     request: Request, InvoiceWKMasterCondition: str, db: Session = Depends(get_db)
 ):
-    crud = CRUD(db, InvoiceWKMasterDBModel)
     table_name = "InvoiceWKMaster"
     if InvoiceWKMasterCondition == "all":
-        InvoiceWKMasterDataList = crud.get_all()
+        InvoiceWKMasterData = get_all_invoice_wk_master(db)
     elif "start" in InvoiceWKMasterCondition or "end" in InvoiceWKMasterCondition:
         InvoiceWKMasterCondition = convert_url_condition_to_dict(
             InvoiceWKMasterCondition
@@ -28,13 +27,15 @@ async def getInvoiceWKMaster(
         )
 
         # get all InvoiceWKMaster by sql
-        InvoiceWKMasterDataList = crud.get_all_by_sql(sql_condition)
+        InvoiceWKMasterData = get_all_invoice_wk_master_by_sql(sql_condition)
     else:
         InvoiceWKMasterCondition = convert_url_condition_to_dict(
             InvoiceWKMasterCondition
         )
-        InvoiceWKMasterDataList = crud.get_with_condition(InvoiceWKMasterCondition)
-    return InvoiceWKMasterDataList
+        InvoiceWKMasterData = get_invoice_wk_master_with_condition(
+            db, InvoiceWKMasterCondition
+        )
+    return InvoiceWKMasterData
 
 
 # 新增發票工作主檔
@@ -44,10 +45,30 @@ async def addInvoiceWKMaster(
     InvoiceWKMasterPydanticData: InvoiceWKMasterSchema,
     db: Session = Depends(get_db),
 ):
+    # create_invoice_wk_master(db, InvoiceWKMasterPydanticData)
+    #
+    # # convert pydantic model to dict
+    # InvoiceWKMasterDictData = InvoiceWKMasterPydanticData.dict()
+    #
+    # # get InvoiceWKMasterID
+    # InvoiceWKMasterDictData.pop("WKMasterID")  # delete key "WKMasterID"
+    # justAddedInvoiceWKMaster = get_invoice_wk_master_with_condition(
+    #     db, InvoiceWKMasterDictData
+    # )
+    # WKMasterID = justAddedInvoiceWKMaster.WKMasterID
+
     crud = CRUD(db, InvoiceWKMasterDBModel)
     crud.create(InvoiceWKMasterPydanticData)
+
+    InvoiceWKMasterDictData = InvoiceWKMasterPydanticData.dict()
+    InvoiceWKMasterDictData.pop("WKMasterID")
+    justAddInvoiceWKMasterID = crud.get_with_condition(InvoiceWKMasterDictData)[
+        0
+    ].WKMasterID
+
     return {
         "message": "InvoiceWKMaster successfully created",
+        "WKMasterID": justAddInvoiceWKMasterID,
     }
 
 
