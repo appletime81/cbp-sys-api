@@ -47,8 +47,7 @@ app.add_middleware(
     f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail&InvoiceMaster&InvoiceDetail"
 )
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
 
     invoice_data = await request.json()
@@ -71,7 +70,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
     # IsLiable: True
     if InvoiceWKMasterDictData.get("IsLiability"):
-        # 2. create InvoiceWKDetail\
+        # 2. create InvoiceWKDetail
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
             InvoiceWKDetailDictData.update(
                 {
@@ -280,9 +279,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
 @app.get(ROOT_URL + "/searchInvoiceWKMaster/{urlCondition}")
 async def searchInvoiceWKMaster(
-    request: Request,
-    urlCondition: str,
-    db: Session = Depends(get_db),
+    request: Request, urlCondition: str, db: Session = Depends(get_db),
 ):
     if urlCondition == "all":
         # get all InvoiceWKMaster datas
@@ -416,12 +413,9 @@ async def searchInvoiceWKMaster(
 
 
 # ------------------------------ BillMaster and  BillDetail ------------------------------
-@app.post(
-    f"{ROOT_URL}/generateBillMaster&BillDetail",
-)
+@app.post(f"{ROOT_URL}/generateBillMaster&BillDetail",)
 async def generateBillMasterAndBillDetail(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     # get condition
     invoice_data = await request.json()

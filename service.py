@@ -61,8 +61,7 @@ async def addInvoiceWKMaster(
 
 @router.post(f"/deleteInvoiceWKMaster")
 async def deleteInvoiceWKMaster(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     InvoiceWKMasterDBModelData = get_invoice_wk_master_with_condition(
         db, await request.json()
@@ -73,8 +72,7 @@ async def deleteInvoiceWKMaster(
 
 @router.post(f"/updateInvoiceWKMaster")
 async def updateInvoiceWKMaster(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     invoice_data = await request.json()
 
@@ -89,8 +87,7 @@ async def updateInvoiceWKMaster(
 
 @router.post(f"/updateInvoiceWKMasterStatus&InvoiceMasterStatus")
 async def updateInvoiceWKMasterStatusAndInvoiceMasterStatus(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
 
     invoice_data = await request.json()
@@ -150,8 +147,7 @@ async def addInvoiceWKDetail(
 
 @router.post("/deleteInvoiceWKDetail")
 async def deleteInvoiceWKDetail(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     InvoiceWKDetailDBModelDataList = get_all_invoice_wk_detail_with_condition(
         db, await request.json()
@@ -205,8 +201,7 @@ async def addInvoiceMaster(
 
 @router.post("/deleteInvoiceMaster")
 async def deleteInvoiceMaster(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     InvoiceMasterDBModelDataList = get_all_invoice_master_with_condition(
         db, await request.json()
@@ -264,8 +259,7 @@ async def getInvoiceDetail(
 
 @router.post("/deleteInvoiceDetail")
 async def deleteInvoiceDetail(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     InvoiceDetailDBModelDataList = get_all_invoice_detail_with_condition(
         db, await request.json()
@@ -301,9 +295,7 @@ async def addBillMaster(
 # 查詢Liability
 @router.get("/Liability/{LiabilityCondition}")
 async def getLiability(
-    request: Request,
-    LiabilityCondition: str,
-    db: Session = Depends(get_db),
+    request: Request, LiabilityCondition: str, db: Session = Depends(get_db),
 ):
     LiabilityConditionDict = convert_url_condition_to_dict(LiabilityCondition)
     LiabilityDatas = get_liability_with_condition(db, LiabilityConditionDict)
@@ -312,8 +304,7 @@ async def getLiability(
 
 @router.post("/addLiability", status_code=status.HTTP_201_CREATED)
 async def addLiability(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
     LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
@@ -324,8 +315,7 @@ async def addLiability(
 
 @router.post("/updateLiability")
 async def updateLiability(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
     update_liability(db, LiabilityDictData)
@@ -335,8 +325,7 @@ async def updateLiability(
 
 @router.post("/deleteLiability")
 async def deleteLiability(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
     delete_liability(db, LiabilityDictData)
@@ -349,9 +338,7 @@ async def deleteLiability(
 # 查詢Parties
 @router.get("/Parties/{PartiesCondition}")
 async def getParties(
-    request: Request,
-    PartiesCondition: str,
-    db: Session = Depends(get_db),
+    request: Request, PartiesCondition: str, db: Session = Depends(get_db),
 ):
     PartiesDataList = []
     if PartiesCondition == "all":
@@ -363,8 +350,7 @@ async def getParties(
 
 @router.post("/addParties", status_code=status.HTTP_201_CREATED)
 async def addParties(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     PartyDictData = await request.json()
 
@@ -381,9 +367,7 @@ async def addParties(
 # 查詢Suppliers
 @router.get("/Suppliers/{SuppliersCondition}")
 async def getSuppliers(
-    request: Request,
-    SuppliersCondition: str,
-    db: Session = Depends(get_db),
+    request: Request, SuppliersCondition: str, db: Session = Depends(get_db),
 ):
     SuppliersDataList = []
     if SuppliersCondition == "all":
@@ -397,8 +381,7 @@ async def getSuppliers(
 
 @router.post("/addSuppliers", status_code=status.HTTP_201_CREATED)
 async def addSuppliers(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     SupplierDictData = await request.json()
 
@@ -417,9 +400,7 @@ async def addSuppliers(
 # 查詢Corporates
 @router.get("/Corporates/{CorporatesCondition}")
 async def getCorporates(
-    request: Request,
-    CorporatesCondition: str,
-    db: Session = Depends(get_db),
+    request: Request, CorporatesCondition: str, db: Session = Depends(get_db),
 ):
     CorporatesDataList = []
     if CorporatesCondition == "all":
@@ -433,8 +414,7 @@ async def getCorporates(
 
 @router.post("/addCorporates", status_code=status.HTTP_201_CREATED)
 async def addCorporates(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     CorporateDictData = await request.json()
 
@@ -453,9 +433,7 @@ async def addCorporates(
 # 查詢Contracts
 @router.get("/Contracts/{ContractsCondition}")
 async def getContracts(
-    request: Request,
-    ContractsCondition: str,
-    db: Session = Depends(get_db),
+    request: Request, ContractsCondition: str, db: Session = Depends(get_db),
 ):
     ContractsDataList = []
     if ContractsCondition == "all":
@@ -469,8 +447,7 @@ async def getContracts(
 
 @router.post("/addContracts", status_code=status.HTTP_201_CREATED)
 async def addContracts(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     ContractDictData = await request.json()
 
