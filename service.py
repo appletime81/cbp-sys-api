@@ -110,16 +110,15 @@ async def updateInvoiceWKMasterStatusAndInvoiceMasterStatus(
 async def getInvoiceWKDetail(
     request: Request, InvoiceWKDetailCondition: str, db: Session = Depends(get_db)
 ):
+    crud = CRUD(db, InvoiceWKDetailDBModel)
     if InvoiceWKDetailCondition == "all":
-        InvoiceWKDetailDatas = get_all_invoice_wk_detail(db)
+        InvoiceWKDetailDataList = crud.get_all()
     else:
         InvoiceWKDetailCondition = convert_url_condition_to_dict(
             InvoiceWKDetailCondition
         )
-        InvoiceWKDetailDatas = get_all_invoice_wk_detail_with_condition(
-            db, InvoiceWKDetailCondition
-        )
-    return InvoiceWKDetailDatas
+        InvoiceWKDetailDataList = crud.get_with_condition(InvoiceWKDetailCondition)
+    return InvoiceWKDetailDataList
 
 
 # 新增發票工作明細檔
@@ -297,9 +296,10 @@ async def getLiability(
     LiabilityCondition: str,
     db: Session = Depends(get_db),
 ):
-    LiabilityConditionDict = convert_url_condition_to_dict(LiabilityCondition)
-    LiabilityDatas = get_liability_with_condition(db, LiabilityConditionDict)
-    return LiabilityDatas
+    crud = CRUD(db, LiabilityDBModel)
+    LiabilityDictCondition = convert_url_condition_to_dict(LiabilityCondition)
+    LiabilityDataList = crud.get_with_condition(LiabilityDictCondition)
+    return LiabilityDataList
 
 
 @router.post("/addLiability", status_code=status.HTTP_201_CREATED)

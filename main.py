@@ -75,6 +75,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         # covert InvoiceWKDetailDictData to Pydantic model
         InvoiceWKDetailDictData["WKMasterID"] = justCreatedInvoiceWKMasterID
         InvoiceWKDetailDictData["InvoiceNo"] = InvoiceWKMasterDictData["InvoiceNo"]
+        InvoiceWKDetailDictData["WorkTitle"] = InvoiceWKMasterDictData["WorkTitle"]
         InvoiceWKDetailDictData["SupplierName"] = InvoiceWKMasterDictData[
             "SupplierName"
         ]
@@ -91,19 +92,88 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
 
 @app.get(ROOT_URL + "/getInvoiceMaster&InvoiceDetailStream/WKMasterID={WKMasterID}")
-async def generateInvoiceMasterInvoiceDetail(
+async def getInvoiceMasterInvoiceDetailStram(
     request: Request,
     WKMasterID: int,
     db: Session = Depends(get_db),
 ):
+    # Step1. Get InvoiceWKMaster
     InvoiceWKMasterDataList = await service.getInvoiceWKMaster(
         request, f"WKMasterID={WKMasterID}", db
     )
+    print(InvoiceWKMasterDataList)
     InvoiceWKMasterData = InvoiceWKMasterDataList[0]
     InvoiceWKMasterDictData = orm_to_pydantic(
         InvoiceWKMasterData, InvoiceWKMasterSchema
     ).dict()
+    WorkTitle = InvoiceWKMasterDictData["WorkTitle"]
+    SubmarineCable = InvoiceWKMasterDictData["SubmarineCable"]
+    BillMilestone = InvoiceWKMasterDictData["BillMilestone"]
     pprint(InvoiceWKMasterDictData)
+
+    # Step2. Get InvoiceWKDetail
+    InvoiceWKDetailDataList = await service.getInvoiceWKDetail(
+        request, f"WKMasterID={WKMasterID}", db
+    )
+    InvoiceWKDetailDictDataList = [
+        orm_to_pydantic(InvoiceWKDetailData, InvoiceWKDetailSchema).dict()
+        for InvoiceWKDetailData in InvoiceWKDetailDataList
+    ]
+
+    # Step3. Generate InvoiceMaster
+    # get all Liability
+    LiabilityDataList = await service.getLiability(
+        request,
+        f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={BillMilestone}",
+        db,
+    )
+    LiabilityDictDataList = [
+        orm_to_pydantic(LiabilityData, LiabilitySchema).dict()
+        for LiabilityData in LiabilityDataList
+    ]
+    LiabilityDataFrameDataList = [
+        pd.DataFrame(LiabilityDictData) for LiabilityDictData in LiabilityDictDataList
+    ]
+    LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
+    print(LiabilityDataFrameData)
+
+    # get all PartyName
+    PartyNameList = list(
+        set([LiabilityData.PartyName for LiabilityData in LiabilityDataList])
+    )
+
+    InvoiceMasterDictDataList = []
+    for PartyName in PartyNameList:
+        InvoiceMasterDictData = {
+            "WKMasterID": WKMasterID,
+            "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
+            "PartyName": PartyName,
+            "SubmarineCable": SubmarineCable,
+            "WorkTitle": WorkTitle,
+            "IssueDate": InvoiceWKMasterDictData["IssueDate"],
+            "DueDate": InvoiceWKMasterDictData["DueDate"],
+            "IsPro": InvoiceWKMasterDictData["IsPro"],
+            "SupplierName": InvoiceWKMasterDictData["SupplierName"],
+            "ContractType": InvoiceWKMasterDictData["ContractType"],
+        }
+        InvoiceMasterDictDataList.append(InvoiceMasterDictData)
+
+    # Step4. Generate InvoiceDetail
+    InvoiceDetailDictDataList = []
+    for InvoiceMasterDictData in InvoiceMasterDictDataList:
+        for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+            InvoiceDetailDictData = {
+                "WKMasterID": WKMasterID,
+                "WKDetailID": InvoiceWKDetailDictData["WKDetailID"],
+                "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
+                "PartyName": InvoiceMasterDictData["PartyName"],
+                "SupplierName": InvoiceMasterDictData["SupplierName"],
+                "SubmarineCable": InvoiceMasterDictData["SubmarineCable"],
+                "WorkTitle": InvoiceMasterDictData["WorkTitle"],
+                "BillMilestone": InvoiceWKDetailDictData["BillMilestone"],
+                "FeeItem": InvoiceWKDetailDictData["FeeItem"],
+                "FeeAmountPre": InvoiceWKDetailDictData["FeeAmount"],
+            }
 
 
 @app.get(ROOT_URL + "/searchInvoiceWKMaster/{urlCondition}")

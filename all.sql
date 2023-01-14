@@ -28,6 +28,7 @@ CREATE TABLE InvoiceWKDetail
     InvoiceNo      varchar(20),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
     BillMilestone  varchar(20),
     FeeItem        varchar(100),
     FeeAmount      decimal(65, 2),
@@ -42,6 +43,7 @@ CREATE TABLE InvoiceMaster
     PartyName      varchar(100),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
     ContractType   varchar(20),
     IssueDate      datetime,
     DueDate        datetime,
@@ -49,6 +51,7 @@ CREATE TABLE InvoiceMaster
     IsPro          TINYINT(1),
     PRIMARY KEY (InvMasterID)
 );
+
 
 CREATE TABLE InvoiceDetail
 (
@@ -60,10 +63,11 @@ CREATE TABLE InvoiceDetail
     PartyName      varchar(100),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
     BillMilestone  varchar(20),
     FeeItem        varchar(100),
     FeeAmountPre   decimal(12, 2),
-    LBRatio        decimal(13, 10),
+    Liability      decimal(13, 10),
     FeeAmountPost  decimal(12, 2),
     Difference     decimal(3, 2),
     PRIMARY KEY (InvDetailID)
@@ -86,6 +90,7 @@ CREATE TABLE Liability
 (
     LBRawID        int NOT NULL AUTO_INCREMENT,
     SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
     BillMilestone  varchar(20),
     PartyName      varchar(100),
     LBRatio        decimal(13, 10),
@@ -157,48 +162,49 @@ CREATE TABLE ContractTypes
 );
 
 /* --------------------------------------------------------------------- */
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'Edge', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'BM0', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'Edge', 28.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM9a', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
 
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'Edge', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM9a', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'Edge', 28.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null);
+insert into liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
+values ('SJC2', 'Construction', 'BM12', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
 
+/*
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
 values ('SegT', 'BM9b', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
@@ -220,23 +226,25 @@ values ('SegT', 'BM9b', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null)
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
 values ('SegT', 'BM9b', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
 
+
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'Edge', 28.5714285714, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'Edge', 28.5714285714, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SegT', 'BM12', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+values ('SJC2', 'BM0', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+ */

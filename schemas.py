@@ -28,6 +28,7 @@ class InvoiceWKDetailSchema(BaseModel):
     InvoiceNo: str
     SupplierName: str
     SubmarineCable: str
+    WorkTitle: str
     BillMilestone: str
     FeeItem: Optional[str]
     FeeAmount: float

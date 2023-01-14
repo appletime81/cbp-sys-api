@@ -29,6 +29,7 @@ class InvoiceWKDetailDBModel(Base):
     InvoiceNo = Column(String(20))
     SupplierName = Column(String(6))
     SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
     BillMilestone = Column(String(20))
     FeeItem = Column(String(100))
     FeeAmount = Column(Float)
