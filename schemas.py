@@ -80,6 +80,7 @@ class LiabilitySchema(BaseModel):
     SubmarineCable: str
     BillMilestone: str
     PartyName: str
+    WorkTitle: str
     LBRatio: float
     CreateDate: Optional[datetime]
     ModifyNote: Optional[str]

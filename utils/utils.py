@@ -71,7 +71,6 @@ def cal_fee_amount_post(ratio: float, fee_amount_pre: float):
 
 def dflist_to_df(list_data: List[pd.DataFrame]):
     df = pd.concat(list_data, axis=0, ignore_index=True)
-    df = df.drop(columns=["_sa_instance_state"])
     return df
 
 

@@ -1,4 +1,4 @@
-import os
+﻿import os
 import io
 import json
 import uuid
@@ -101,15 +101,14 @@ async def getInvoiceMasterInvoiceDetailStram(
     InvoiceWKMasterDataList = await service.getInvoiceWKMaster(
         request, f"WKMasterID={WKMasterID}", db
     )
-    print(InvoiceWKMasterDataList)
+    # print(InvoiceWKMasterDataList)
     InvoiceWKMasterData = InvoiceWKMasterDataList[0]
     InvoiceWKMasterDictData = orm_to_pydantic(
         InvoiceWKMasterData, InvoiceWKMasterSchema
     ).dict()
     WorkTitle = InvoiceWKMasterDictData["WorkTitle"]
     SubmarineCable = InvoiceWKMasterDictData["SubmarineCable"]
-    BillMilestone = InvoiceWKMasterDictData["BillMilestone"]
-    pprint(InvoiceWKMasterDictData)
+    # pprint(InvoiceWKMasterDictData)
 
     # Step2. Get InvoiceWKDetail
     InvoiceWKDetailDataList = await service.getInvoiceWKDetail(
@@ -122,19 +121,27 @@ async def getInvoiceMasterInvoiceDetailStram(
 
     # Step3. Generate InvoiceMaster
     # get all Liability
-    LiabilityDataList = await service.getLiability(
-        request,
-        f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={BillMilestone}",
-        db,
-    )
+    newLiabilityDataList = []
+    for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+        LiabilityDataList = await service.getLiability(
+            request,
+            f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
+            db,
+        )
+        newLiabilityDataList.append(LiabilityDataList)
     LiabilityDictDataList = [
         orm_to_pydantic(LiabilityData, LiabilitySchema).dict()
+        for LiabilityDataList in newLiabilityDataList
         for LiabilityData in LiabilityDataList
     ]
+    # print("-" * 50)
+    # pprint(LiabilityDictDataList)
     LiabilityDataFrameDataList = [
-        pd.DataFrame(LiabilityDictData) for LiabilityDictData in LiabilityDictDataList
+        pd.DataFrame(dict([(k, [v]) for k, v in LiabilityDictData.items()]))
+        for LiabilityDictData in LiabilityDictDataList
     ]
     LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
+    print("-" * 50)
     print(LiabilityDataFrameData)
 
     # get all PartyName
@@ -157,11 +164,21 @@ async def getInvoiceMasterInvoiceDetailStram(
             "ContractType": InvoiceWKMasterDictData["ContractType"],
         }
         InvoiceMasterDictDataList.append(InvoiceMasterDictData)
+    crud = CRUD(db, InvoiceWKMasterDBModel)
+    print(crud.get_max_id(InvoiceWKMasterDBModel.WKMasterID))
+
+    pprint(InvoiceMasterDictDataList)
 
     # Step4. Generate InvoiceDetail
     InvoiceDetailDictDataList = []
     for InvoiceMasterDictData in InvoiceMasterDictDataList:
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+            LBRatio = LiabilityDataFrameData[
+                (LiabilityDataFrameData["PartyName"] == InvoiceMasterDictData["PartyName"]) &
+                (LiabilityDataFrameData["BillMilestone"] == InvoiceWKDetailDictData["BillMilestone"]) &
+                (LiabilityDataFrameData["WorkTitle"] == InvoiceMasterDictData["WorkTitle"])
+            ]["LBRatio"].values[0]
+
             InvoiceDetailDictData = {
                 "WKMasterID": WKMasterID,
                 "WKDetailID": InvoiceWKDetailDictData["WKDetailID"],
@@ -172,8 +189,15 @@ async def getInvoiceMasterInvoiceDetailStram(
                 "WorkTitle": InvoiceMasterDictData["WorkTitle"],
                 "BillMilestone": InvoiceWKDetailDictData["BillMilestone"],
                 "FeeItem": InvoiceWKDetailDictData["FeeItem"],
+                "LBRatio": LBRatio,
                 "FeeAmountPre": InvoiceWKDetailDictData["FeeAmount"],
+                "FeeAmountPost": cal_fee_amount_post(
+                    LBRatio, InvoiceWKDetailDictData["FeeAmount"]
+                ),
+                "Difference": 0
             }
+            InvoiceDetailDictDataList.append(InvoiceDetailDictData)
+    return InvoiceDetailDictDataList
 
 
 @app.get(ROOT_URL + "/searchInvoiceWKMaster/{urlCondition}")

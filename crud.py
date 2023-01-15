@@ -1,6 +1,7 @@
 from pprint import pprint
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.sync import update
+from sqlalchemy.sql import func
 
 from database.engine import engine
 from database.models import *
@@ -364,6 +365,9 @@ class CRUD:
     @staticmethod
     def get_all_by_sql(sql: str):
         return engine.execute(sql).all()
+
+    def get_max_id(self, model_id):
+        return self.db.query(func.max(model_id)).scalar()
 
     def create(self, obj_in):
         db_obj = self.model(**obj_in.dict())

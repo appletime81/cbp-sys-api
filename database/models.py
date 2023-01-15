@@ -84,6 +84,7 @@ class LiabilityDBModel(Base):
     LBRawID = Column(Integer, primary_key=True, index=True)
     SubmarineCable = Column(String(10))
     BillMilestone = Column(String(20))
+    WorkTitle = Column(String(50))
     PartyName = Column(String(100))
     LBRatio = Column(Float)
     CreateDate = Column(String(20))
