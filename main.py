@@ -119,98 +119,102 @@ async def getInvoiceMasterInvoiceDetailStram(
         for InvoiceWKDetailData in InvoiceWKDetailDataList
     ]
 
-    # Step3. Generate InvoiceMaster
-    # get all Liability
-    newLiabilityDataList = []
-    for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
-        LiabilityDataList = await service.getLiability(
-            request,
-            f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
-            db,
-        )
-        newLiabilityDataList.append(LiabilityDataList)
-    LiabilityDictDataList = [
-        orm_to_pydantic(LiabilityData, LiabilitySchema).dict()
-        for LiabilityDataList in newLiabilityDataList
-        for LiabilityData in LiabilityDataList
-    ]
-    # print("-" * 50)
-    # pprint(LiabilityDictDataList)
-    LiabilityDataFrameDataList = [
-        pd.DataFrame(dict([(k, [v]) for k, v in LiabilityDictData.items()]))
-        for LiabilityDictData in LiabilityDictDataList
-    ]
-    LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
-    # print("-" * 50)
-    # print(LiabilityDataFrameData)
-
-    # get all PartyName
-    PartyNameList = list(
-        set([LiabilityData.PartyName for LiabilityData in LiabilityDataList])
-    )
-
-    InvoiceMasterDictDataList = []
-    for PartyName in PartyNameList:
-        InvoiceMasterDictData = {
-            "WKMasterID": WKMasterID,
-            "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
-            "PartyName": PartyName,
-            "SubmarineCable": SubmarineCable,
-            "WorkTitle": WorkTitle,
-            "IssueDate": InvoiceWKMasterDictData["IssueDate"],
-            "DueDate": InvoiceWKMasterDictData["DueDate"],
-            "IsPro": InvoiceWKMasterDictData["IsPro"],
-            "SupplierName": InvoiceWKMasterDictData["SupplierName"],
-            "ContractType": InvoiceWKMasterDictData["ContractType"],
-        }
-        InvoiceMasterDictDataList.append(InvoiceMasterDictData)
-    crud = CRUD(db, InvoiceWKMasterDBModel)
-    InvMasterID = (
-        crud.get_max_id(InvoiceMasterDBModel.InvMasterID) + 1
-        if crud.get_max_id(InvoiceMasterDBModel.InvMasterID)
-        else 1
-    )
-    print(f"{'-' * 50} InvMasterID {'-' * 50}")
-    print(InvMasterID)
-
-    # Step4. Generate InvoiceDetail
-    InvoiceDetailDictDataList = []
-    for InvoiceMasterDictData in InvoiceMasterDictDataList:
+    if InvoiceWKMasterDictData.get("IsLiability"):
+        # Step3. Generate InvoiceMaster
+        # get all Liability
+        newLiabilityDataList = []
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
-            LBRatio = LiabilityDataFrameData[
-                (
-                    LiabilityDataFrameData["PartyName"]
-                    == InvoiceMasterDictData["PartyName"]
-                )
-                & (
-                    LiabilityDataFrameData["BillMilestone"]
-                    == InvoiceWKDetailDictData["BillMilestone"]
-                )
-                & (
-                    LiabilityDataFrameData["WorkTitle"]
-                    == InvoiceMasterDictData["WorkTitle"]
-                )
-            ]["LBRatio"].values[0]
+            LiabilityDataList = await service.getLiability(
+                request,
+                f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
+                db,
+            )
+            newLiabilityDataList.append(LiabilityDataList)
+        LiabilityDictDataList = [
+            orm_to_pydantic(LiabilityData, LiabilitySchema).dict()
+            for LiabilityDataList in newLiabilityDataList
+            for LiabilityData in LiabilityDataList
+        ]
+        # print("-" * 50)
+        # pprint(LiabilityDictDataList)
+        LiabilityDataFrameDataList = [
+            pd.DataFrame(dict([(k, [v]) for k, v in LiabilityDictData.items()]))
+            for LiabilityDictData in LiabilityDictDataList
+        ]
+        LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
+        # print("-" * 50)
+        # print(LiabilityDataFrameData)
 
-            InvoiceDetailDictData = {
+        # get all PartyName
+        PartyNameList = list(
+            set([LiabilityData.PartyName for LiabilityData in LiabilityDataList])
+        )
+
+        InvoiceMasterDictDataList = []
+        for PartyName in PartyNameList:
+            InvoiceMasterDictData = {
                 "WKMasterID": WKMasterID,
-                "WKDetailID": InvoiceWKDetailDictData["WKDetailID"],
-                "InvMasterID": InvMasterID,
                 "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
-                "PartyName": InvoiceMasterDictData["PartyName"],
-                "SupplierName": InvoiceMasterDictData["SupplierName"],
-                "SubmarineCable": InvoiceMasterDictData["SubmarineCable"],
-                "WorkTitle": InvoiceMasterDictData["WorkTitle"],
-                "BillMilestone": InvoiceWKDetailDictData["BillMilestone"],
-                "FeeItem": InvoiceWKDetailDictData["FeeItem"],
-                "LBRatio": LBRatio,
-                "FeeAmountPre": InvoiceWKDetailDictData["FeeAmount"],
-                "FeeAmountPost": cal_fee_amount_post(
-                    LBRatio, InvoiceWKDetailDictData["FeeAmount"]
-                ),
-                "Difference": 0,
+                "PartyName": PartyName,
+                "SubmarineCable": SubmarineCable,
+                "WorkTitle": WorkTitle,
+                "IssueDate": InvoiceWKMasterDictData["IssueDate"],
+                "DueDate": InvoiceWKMasterDictData["DueDate"],
+                "IsPro": InvoiceWKMasterDictData["IsPro"],
+                "SupplierName": InvoiceWKMasterDictData["SupplierName"],
+                "ContractType": InvoiceWKMasterDictData["ContractType"],
             }
-            InvoiceDetailDictDataList.append(InvoiceDetailDictData)
+            InvoiceMasterDictDataList.append(InvoiceMasterDictData)
+        crud = CRUD(db, InvoiceWKMasterDBModel)
+        InvMasterID = (
+            crud.get_max_id(InvoiceMasterDBModel.InvMasterID) + 1
+            if crud.get_max_id(InvoiceMasterDBModel.InvMasterID)
+            else 1
+        )
+        print(f"{'-' * 50} InvMasterID {'-' * 50}")
+        print(InvMasterID)
+
+        # Step4. Generate InvoiceDetail
+        InvoiceDetailDictDataList = []
+        for InvoiceMasterDictData in InvoiceMasterDictDataList:
+            for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+                LBRatio = LiabilityDataFrameData[
+                    (
+                        LiabilityDataFrameData["PartyName"]
+                        == InvoiceMasterDictData["PartyName"]
+                    )
+                    & (
+                        LiabilityDataFrameData["BillMilestone"]
+                        == InvoiceWKDetailDictData["BillMilestone"]
+                    )
+                    & (
+                        LiabilityDataFrameData["WorkTitle"]
+                        == InvoiceMasterDictData["WorkTitle"]
+                    )
+                ]["LBRatio"].values[0]
+
+                InvoiceDetailDictData = {
+                    "WKMasterID": WKMasterID,
+                    "WKDetailID": InvoiceWKDetailDictData["WKDetailID"],
+                    "InvMasterID": InvMasterID,
+                    "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
+                    "PartyName": InvoiceMasterDictData["PartyName"],
+                    "SupplierName": InvoiceMasterDictData["SupplierName"],
+                    "SubmarineCable": InvoiceMasterDictData["SubmarineCable"],
+                    "WorkTitle": InvoiceMasterDictData["WorkTitle"],
+                    "BillMilestone": InvoiceWKDetailDictData["BillMilestone"],
+                    "FeeItem": InvoiceWKDetailDictData["FeeItem"],
+                    "LBRatio": LBRatio,
+                    "FeeAmountPre": InvoiceWKDetailDictData["FeeAmount"],
+                    "FeeAmountPost": cal_fee_amount_post(
+                        LBRatio, InvoiceWKDetailDictData["FeeAmount"]
+                    ),
+                    "Difference": 0,
+                }
+                InvoiceDetailDictDataList.append(InvoiceDetailDictData)
+    else:
+        pass
+    print(len(InvoiceDetailDictDataList))
     return InvoiceDetailDictDataList
 
 
