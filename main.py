@@ -141,8 +141,8 @@ async def getInvoiceMasterInvoiceDetailStram(
         for LiabilityDictData in LiabilityDictDataList
     ]
     LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
-    print("-" * 50)
-    print(LiabilityDataFrameData)
+    # print("-" * 50)
+    # print(LiabilityDataFrameData)
 
     # get all PartyName
     PartyNameList = list(
@@ -165,23 +165,37 @@ async def getInvoiceMasterInvoiceDetailStram(
         }
         InvoiceMasterDictDataList.append(InvoiceMasterDictData)
     crud = CRUD(db, InvoiceWKMasterDBModel)
-    print(crud.get_max_id(InvoiceWKMasterDBModel.WKMasterID))
-
-    pprint(InvoiceMasterDictDataList)
+    InvMasterID = (
+        crud.get_max_id(InvoiceMasterDBModel.InvMasterID) + 1
+        if crud.get_max_id(InvoiceMasterDBModel.InvMasterID)
+        else 1
+    )
+    print(f"{'-' * 50} InvMasterID {'-' * 50}")
+    print(InvMasterID)
 
     # Step4. Generate InvoiceDetail
     InvoiceDetailDictDataList = []
     for InvoiceMasterDictData in InvoiceMasterDictDataList:
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
             LBRatio = LiabilityDataFrameData[
-                (LiabilityDataFrameData["PartyName"] == InvoiceMasterDictData["PartyName"]) &
-                (LiabilityDataFrameData["BillMilestone"] == InvoiceWKDetailDictData["BillMilestone"]) &
-                (LiabilityDataFrameData["WorkTitle"] == InvoiceMasterDictData["WorkTitle"])
+                (
+                    LiabilityDataFrameData["PartyName"]
+                    == InvoiceMasterDictData["PartyName"]
+                )
+                & (
+                    LiabilityDataFrameData["BillMilestone"]
+                    == InvoiceWKDetailDictData["BillMilestone"]
+                )
+                & (
+                    LiabilityDataFrameData["WorkTitle"]
+                    == InvoiceMasterDictData["WorkTitle"]
+                )
             ]["LBRatio"].values[0]
 
             InvoiceDetailDictData = {
                 "WKMasterID": WKMasterID,
                 "WKDetailID": InvoiceWKDetailDictData["WKDetailID"],
+                "InvMasterID": InvMasterID,
                 "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
                 "PartyName": InvoiceMasterDictData["PartyName"],
                 "SupplierName": InvoiceMasterDictData["SupplierName"],
@@ -194,7 +208,7 @@ async def getInvoiceMasterInvoiceDetailStram(
                 "FeeAmountPost": cal_fee_amount_post(
                     LBRatio, InvoiceWKDetailDictData["FeeAmount"]
                 ),
-                "Difference": 0
+                "Difference": 0,
             }
             InvoiceDetailDictDataList.append(InvoiceDetailDictData)
     return InvoiceDetailDictDataList
