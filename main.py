@@ -156,13 +156,14 @@ async def getInvoiceMasterInvoiceDetailStram(
                 "WKMasterID": WKMasterID,
                 "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
                 "PartyName": PartyName,
+                "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                 "SubmarineCable": SubmarineCable,
                 "WorkTitle": WorkTitle,
                 "IssueDate": InvoiceWKMasterDictData["IssueDate"],
                 "DueDate": InvoiceWKMasterDictData["DueDate"],
                 "IsPro": InvoiceWKMasterDictData["IsPro"],
-                "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                 "ContractType": InvoiceWKMasterDictData["ContractType"],
+                "Status": ""
             }
             InvoiceMasterDictDataList.append(InvoiceMasterDictData)
         crud = CRUD(db, InvoiceWKMasterDBModel)
@@ -215,7 +216,11 @@ async def getInvoiceMasterInvoiceDetailStram(
     else:
         pass
     print(len(InvoiceDetailDictDataList))
-    return InvoiceDetailDictDataList
+    streamResponse = {
+        "InvoiceWKMaster": InvoiceWKMasterDictData,
+        "InvoiceWKDetail": InvoiceWKDetailDictDataList,
+    }
+    return streamResponse
 
 
 @app.get(ROOT_URL + "/searchInvoiceWKMaster/{urlCondition}")
