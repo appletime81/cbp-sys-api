@@ -369,14 +369,14 @@ class CRUD:
     def get_max_id(self, model_id):
         return self.db.query(func.max(model_id)).scalar()
 
-    def create(self, obj_in):
+    def create(self, obj_in: dict):
         db_obj = self.model(**obj_in.dict())
         self.db.add(db_obj)
         self.db.commit()
         self.db.refresh(db_obj)
         return db_obj
 
-    def update(self, db_obj, obj_in):
+    def update(self, db_obj, obj_in: dict):
         for field in obj_in:
             setattr(db_obj, field, obj_in[field])
         self.db.add(db_obj)
@@ -389,3 +389,9 @@ class CRUD:
         self.db.delete(obj)
         self.db.commit()
         return obj
+
+    def remove_with_condition(self, condition: dict):
+        objs = self.db.query(self.model).filter_by(**condition).all()
+        for obj in objs:
+            self.db.delete(obj)
+            self.db.commit()

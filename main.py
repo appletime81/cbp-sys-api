@@ -159,8 +159,9 @@ async def getInvoiceMasterInvoiceDetailStram(
         )
 
         InvoiceMasterDictDataList = []
-        for PartyName in PartyNameList:
+        for i, PartyName in enumerate(PartyNameList):
             InvoiceMasterDictData = {
+                "InvMasterID": InvMasterID + i,
                 "WKMasterID": WKMasterID,
                 "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
                 "PartyName": PartyName,
@@ -200,7 +201,7 @@ async def getInvoiceMasterInvoiceDetailStram(
                 InvoiceDetailDictData = {
                     "WKMasterID": WKMasterID,
                     "WKDetailID": InvoiceWKDetailDictData["WKDetailID"],
-                    "InvMasterID": InvMasterID,
+                    "InvMasterID": InvoiceMasterDictData["InvMasterID"],
                     "InvoiceNo": InvoiceWKMasterDictData["InvoiceNo"],
                     "PartyName": InvoiceMasterDictData["PartyName"],
                     "SupplierName": InvoiceMasterDictData["SupplierName"],
@@ -264,7 +265,7 @@ async def getInvoiceMasterInvoiceDetailStram(
     print(len(InvoiceDetailDictDataList))
     streamResponse = {
         "InvoiceWKMaster": InvoiceWKMasterDictData,
-        "InvoiceWKDetail": InvoiceWKDetailDictDataList,
+        " InvoiceDetail": InvoiceDetailDictDataList,
     }
     return streamResponse
 

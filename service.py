@@ -56,50 +56,27 @@ async def deleteInvoiceWKMaster(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    InvoiceWKMasterDBModelData = get_invoice_wk_master_with_condition(
-        db, await request.json()
-    )
-    delete_invoice_wk_master(db, InvoiceWKMasterDBModelData)
+    delete_condition = await request.json()
+    WKMasterID = delete_condition["WKMasterID"]
+    crud = CRUD(db, InvoiceWKMasterDBModel)
+    crud.remove(WKMasterID)
     return {"message": "InvoiceWKMaster successfully deleted"}
 
 
 @router.post(f"/updateInvoiceWKMaster")
-async def updateInvoiceWKMaster(
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    invoice_data = await request.json()
-
-    # WKMasterID = invoice_data["WKMasterID"]
-    deleteInvoiceWKMasterResponse = await deleteInvoiceWKMaster(
-        request, deepcopy(invoice_data), db
-    )
-    return {
-        "message": f"{deleteInvoiceWKMasterResponse.get('message')}, InvoiceWKMaster successfully updated"
-    }
-
-
-@router.post(f"/updateInvoiceWKMasterStatus&InvoiceMasterStatus")
 async def updateInvoiceWKMasterStatusAndInvoiceMasterStatus(
     request: Request,
     db: Session = Depends(get_db),
 ):
+    update_dict_condition = await request.json()
+    crud = CRUD(db, InvoiceWKMasterDBModel)
+    InvoiceWKMasterDataList = crud.get_with_condition(
+        {"WKMasterID": update_dict_condition["WKMasterID"]}
+    )
+    for InvoiceWKMasterData in InvoiceWKMasterDataList:
+        crud.update(InvoiceWKMasterData, update_dict_condition)
 
-    invoice_data = await request.json()
-
-    # update InvoiceWKMaster status
-    update_invoice_wk_master(db, invoice_data)
-
-    # update InvoiceMaster status
-    update_invoice_master_condition = {
-        "WKMasterID": invoice_data["WKMasterID"],
-        "Status": invoice_data["Status"],
-    }
-    update_invoice_master_status(db, update_invoice_master_condition)
-
-    return {
-        "message": "InvoiceWKMaster status and InvoiceMaster status successfully updated"
-    }
+    return {"message": "InvoiceWKMaster status successfully updated"}
 
 
 # -----------------------------------------------------------------------------
@@ -144,13 +121,9 @@ async def deleteInvoiceWKDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    InvoiceWKDetailDBModelDataList = get_all_invoice_wk_detail_with_condition(
-        db, await request.json()
-    )
-
-    for InvoiceWKDetailDBModelData in InvoiceWKDetailDBModelDataList:
-        delete_invoice_wk_detail(db, InvoiceWKDetailDBModelData)
-
+    query_condition = await request.json()
+    crud = CRUD(db, InvoiceWKDetailDBModel)
+    crud.remove_with_condition(query_condition)
     return {"message": "InvoiceWKDetail successfully deleted"}
 
 
@@ -199,13 +172,9 @@ async def deleteInvoiceMaster(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    InvoiceMasterDBModelDataList = get_all_invoice_master_with_condition(
-        db, await request.json()
-    )
-
-    for InvoiceMasterDBModelData in InvoiceMasterDBModelDataList:
-        delete_invoice_master(db, InvoiceMasterDBModelData)
-
+    query_condition = await request.json()
+    crud = CRUD(db, InvoiceMasterDBModel)
+    crud.remove_with_condition(query_condition)
     return {"message": "InvoiceMaster successfully deleted"}
 
 
@@ -258,13 +227,9 @@ async def deleteInvoiceDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    InvoiceDetailDBModelDataList = get_all_invoice_detail_with_condition(
-        db, await request.json()
-    )
-
-    for InvoiceDetailDBModelData in InvoiceDetailDBModelDataList:
-        delete_invoice_detail(db, InvoiceDetailDBModelData)
-
+    query_condition = await request.json()
+    crud = CRUD(db, InvoiceDetailDBModel)
+    crud.remove_with_condition(query_condition)
     return {"message": "InvoiceDetail successfully deleted"}
 
 
@@ -297,8 +262,16 @@ async def getLiability(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, LiabilityDBModel)
-    LiabilityDictCondition = convert_url_condition_to_dict(LiabilityCondition)
-    LiabilityDataList = crud.get_with_condition(LiabilityDictCondition)
+    table_name = "Liability"
+    if LiabilityCondition == "all":
+        LiabilityDataList = crud.get_all()
+    elif "start" in LiabilityCondition or "end" in LiabilityCondition:
+        LiabilityCondition = convert_url_condition_to_dict(LiabilityCondition)
+        sql_condition = convert_dict_to_sql_condition(LiabilityCondition, table_name)
+        LiabilityDataList = crud.get_all_by_sql(sql_condition)
+    else:
+        LiabilityCondition = convert_url_condition_to_dict(LiabilityCondition)
+        LiabilityDataList = crud.get_with_condition(LiabilityCondition)
     return LiabilityDataList
 
 
@@ -308,9 +281,8 @@ async def addLiability(
     db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
-    LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
-    create_liability(db, LiabilityPydanticData)
-
+    crud = CRUD(db, LiabilityDBModel)
+    crud.create(LiabilityDictData)
     return {"message": "Liability successfully created"}
 
 
@@ -320,8 +292,11 @@ async def updateLiability(
     db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
-    update_liability(db, LiabilityDictData)
-
+    LBRawID = LiabilityDictData.get("LBRawID")
+    crud = CRUD(db, LiabilityDBModel)
+    LiabilityDataList = crud.get_with_condition({"LBRawID": LBRawID})
+    for LiabilityData in LiabilityDataList:
+        crud.update(LiabilityData, LiabilityDictData)
     return {"message": "Liability successfully updated"}
 
 
@@ -331,7 +306,9 @@ async def deleteLiability(
     db: Session = Depends(get_db),
 ):
     LiabilityDictData = await request.json()
-    delete_liability(db, LiabilityDictData)
+    LBRawID = LiabilityDictData.get("LBRawID")
+    crud = CRUD(db, LiabilityDBModel)
+    crud.remove(LBRawID)
     return {"message": "Liability successfully deleted"}
 
 
