@@ -270,138 +270,45 @@ async def getInvoiceMasterInvoiceDetailStram(
     return streamResponse
 
 
-@app.get(ROOT_URL + "/searchInvoiceWKMaster/{urlCondition}")
+@app.get(ROOT_URL + "/getInvoiceWKMaster&InvoiceWKDetail/{urlCondition}")
 async def searchInvoiceWKMaster(
     request: Request,
     urlCondition: str,
     db: Session = Depends(get_db),
 ):
-    if urlCondition == "all":
-        # get all InvoiceWKMaster datas
-        InvoiceWKMasterList = await service.getInvoiceWKMaster(request, "all", db)
-        InvoiceWKMasterDictList = []
-        for item in InvoiceWKMasterList:
-            item_dict = orm_to_pydantic(item, InvoiceWKMasterSchema).dict()
-            InvoiceWKMasterDictList.append(item_dict)
+    getResult = []
 
-        # generate result with InvoiceWKMaster datas and InvoiceWKDetail datas
-        resultDataList = []
-        for InvoiceWKMasterDictData in InvoiceWKMasterDictList:
-            InvoiceWKDetailDatas = await service.getInvoiceWKDetail(
-                request, f"WKMasterID={InvoiceWKMasterDictData['WKMasterID']}", db
-            )
-            InvoiceWKDetailDictDatas = [
-                orm_to_pydantic(item, InvoiceWKDetailSchema).dict()
-                for item in InvoiceWKDetailDatas
-            ]
-            resultDataList.append(
-                {
-                    "InvoiceWKMaster": InvoiceWKMasterDictData,
-                    "InvoiceWKDetail": InvoiceWKDetailDictDatas,
-                }
-            )
-    else:
-        dict_condition = convert_url_condition_to_dict_ignore_date(urlCondition)
-        dict_condition_copy = deepcopy(dict_condition)
-        # pprint(dict_condition)
+    # get InvoiceWKMaster
+    InvoiceWKMasterDataList = await service.getInvoiceWKMaster(
+        request, urlCondition, db
+    )
+    InvoiceWKMasterDictDataList = [
+        orm_to_pydantic(InvoiceWKMasterData, InvoiceWKMasterSchema).dict()
+        for InvoiceWKMasterData in InvoiceWKMasterDataList
+    ]
 
-        # remove Date's condition in dict_condition_copy
-        containDateStringList = [k for k in dict_condition_copy if "Date" in k]
-        for k in containDateStringList:
-            dict_condition_copy.pop(k)
-
-        # remove Status's condition in dict_condition_copy
-        if "Status" in dict_condition_copy:
-            dict_condition_copy.pop("Status")
-
-        # convert dict_condition_copy condition to url condition
-        url_condition_for_invoice_detail_master = convert_dict_condition_to_url(
-            dict_condition_copy
+    # get InvoiceWKDetail
+    for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
+        InvoiceWKDetailDataList = await service.getInvoiceWKDetail(
+            request, f"WKMasterID={InvoiceWKMasterDictData.get('WKMasterID')}", db
         )
-
-        # get InvoiceDetail datas
-        InvoiceDetailDataList = await service.getInvoiceDetail(
-            request, url_condition_for_invoice_detail_master, db
-        )
-
-        # get all InvoiceDetail's WKMasterID
-        WKMasterIDList = [
-            InvoiceDetailData.WKMasterID for InvoiceDetailData in InvoiceDetailDataList
-        ]
-        WKMasterIDList = list(set(WKMasterIDList))
-
-        # remove PartyName, BillMilestone in dict_condition
-        if "PartyName" in dict_condition:
-            dict_condition.pop("PartyName")
-        if "BillMilestone" in dict_condition:
-            dict_condition.pop("BillMilestone")
-
-        # generate dict condition list for get InvoiceWKMaster
-        dict_condition_list = []
-        for WKMasterID in WKMasterIDList:
-            tempDictCondition = deepcopy(dict_condition)
-            tempDictCondition["WKMasterID"] = WKMasterID
-            dict_condition_list.append(tempDictCondition)
-
-        # get InvoiceWKMaster datas
-        InvoiceWKMasterDataList = []
-        for dict_condition in dict_condition_list:
-            url_condition_for_invoice_wk_master = convert_dict_condition_to_url(
-                deepcopy(dict_condition)
-            )
-            InvoiceWKMasterData = await service.getInvoiceWKMaster(
-                request, url_condition_for_invoice_wk_master, db
-            )
-            InvoiceWKMasterDataList.append(InvoiceWKMasterData)
-
-        newInvoiceWKMasterDataList = []
-        for InvoiceWKMasterData in InvoiceWKMasterDataList:
-            if type(InvoiceWKMasterData) == list:
-                newInvoiceWKMasterDataList += InvoiceWKMasterData
-            else:
-                newInvoiceWKMasterDataList.append(InvoiceWKMasterData)
-        InvoiceWKMasterDataList = deepcopy(newInvoiceWKMasterDataList)
-        InvoiceWKMasterDictDataList = [
-            orm_to_pydantic(InvoiceWKMasterData, InvoiceWKMasterSchema).dict()
-            for InvoiceWKMasterData in InvoiceWKMasterDataList
-        ]
-        # pprint(InvoiceWKMasterDictDataList)
-
-        # get all InvoiceWKDetail datas
-        InvoiceWKDetailDatasList = []
-        for WKMasterID in WKMasterIDList:
-            url_condition_for_invoice_wk_detail = f"WKMasterID={WKMasterID}"
-            InvoiceWKDetailDatas = await service.getInvoiceWKDetail(
-                request, url_condition_for_invoice_wk_detail, db
-            )
-            InvoiceWKDetailDatasList.append(InvoiceWKDetailDatas)
-
-        newInvoiceWKDetailDatasList = []
-        for InvoiceWKDetailDatas in InvoiceWKDetailDatasList:
-            if type(InvoiceWKDetailDatas) == list:
-                newInvoiceWKDetailDatasList += InvoiceWKDetailDatas
-            else:
-                newInvoiceWKDetailDatasList.append(InvoiceWKDetailDatas)
-        InvoiceWKDetailDatasList = deepcopy(newInvoiceWKDetailDatasList)
-        InvoiceWKDetailDictDatasList = [
+        InvoiceWKDetailDictDataList = [
             orm_to_pydantic(InvoiceWKDetailData, InvoiceWKDetailSchema).dict()
-            for InvoiceWKDetailData in InvoiceWKDetailDatasList
+            for InvoiceWKDetailData in InvoiceWKDetailDataList
         ]
-        # pprint(InvoiceWKDetailDictDatasList)
-
-        resultDataList = []
-        for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
-            tempDict = {"InvoiceWKMaster": deepcopy(InvoiceWKMasterDictData)}
-            tempDict["InvoiceWKDetail"] = []
-            for InvoiceWKDetailDictData in InvoiceWKDetailDictDatasList:
-                if (
-                    InvoiceWKDetailDictData["WKMasterID"]
-                    == InvoiceWKMasterDictData["WKMasterID"]
-                ):
-                    tempDict["InvoiceWKDetail"].append(InvoiceWKDetailDictData)
-            resultDataList.append(tempDict)
-
-    return resultDataList
+        newInvoiceWKDetailDictDataList = []
+        for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+            InvoiceWKDetailDictData.pop("WKDetailID")
+            newInvoiceWKDetailDictDataList.append(InvoiceWKDetailDictData)
+        InvoiceWKDetailDictDataList = newInvoiceWKDetailDictDataList
+        # generate InvoiceMaster & InvoiceDetail result
+        getResult.append(
+            {
+                "InvoiceWKMaster": InvoiceWKMasterDictData,
+                "InvoiceWKDetail": InvoiceWKDetailDictDataList,
+            }
+        )
+    return getResult
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------
