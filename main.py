@@ -119,6 +119,14 @@ async def getInvoiceMasterInvoiceDetailStram(
         for InvoiceWKDetailData in InvoiceWKDetailDataList
     ]
 
+    # get max InvoiceMaster ID and generate InvoiceMasterID
+    crud = CRUD(db, InvoiceMasterDBModel)
+    InvMasterID = (
+        crud.get_max_id(InvoiceMasterDBModel.InvMasterID) + 1
+        if crud.get_max_id(InvoiceMasterDBModel.InvMasterID)
+        else 1
+    )
+
     if InvoiceWKMasterDictData.get("IsLiability"):
         # Step3. Generate InvoiceMaster
         # get all Liability
@@ -163,15 +171,10 @@ async def getInvoiceMasterInvoiceDetailStram(
                 "DueDate": InvoiceWKMasterDictData["DueDate"],
                 "IsPro": InvoiceWKMasterDictData["IsPro"],
                 "ContractType": InvoiceWKMasterDictData["ContractType"],
-                "Status": ""
+                "Status": "",
             }
             InvoiceMasterDictDataList.append(InvoiceMasterDictData)
-        crud = CRUD(db, InvoiceWKMasterDBModel)
-        InvMasterID = (
-            crud.get_max_id(InvoiceMasterDBModel.InvMasterID) + 1
-            if crud.get_max_id(InvoiceMasterDBModel.InvMasterID)
-            else 1
-        )
+
         print(f"{'-' * 50} InvMasterID {'-' * 50}")
         print(InvMasterID)
 
@@ -214,7 +217,50 @@ async def getInvoiceMasterInvoiceDetailStram(
                 }
                 InvoiceDetailDictDataList.append(InvoiceDetailDictData)
     else:
-        pass
+        # Step1. generate InvoiceMaster
+        InvoiceNo = InvoiceWKMasterDictData["InvoiceNo"]
+        SupplierName = InvoiceWKMasterDictData["SupplierName"]
+        ContractType = InvoiceWKMasterDictData["ContractType"]
+        IssueDate = InvoiceWKMasterDictData["IssueDate"]
+        DueDate = InvoiceWKMasterDictData["DueDate"]
+        PartyName = InvoiceWKMasterDictData["PartyName"]
+        IsPro = InvoiceWKMasterDictData["IsPro"]
+        InvoiceMasterDictData = {
+            "InvMasterID": InvMasterID,
+            "WKMasterID": WKMasterID,
+            "InvoiceNo": InvoiceNo,
+            "PartyName": PartyName,
+            "SupplierName": SupplierName,
+            "SubmarineCable": SubmarineCable,
+            "WorkTitle": WorkTitle,
+            "ContractType": ContractType,
+            "IssueDate": IssueDate,
+            "DueDate": DueDate,
+            "Status": "",
+            "IsPro": IsPro,
+        }
+
+        # Step2. generate InvoiceDetail
+        InvoiceDetailDictDataList = []
+        for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+            InvoiceDetailDictData = {
+                "InvMasterID": InvMasterID,
+                "WKMasterID": WKMasterID,
+                "WKDetailID": InvoiceWKDetailDictData["WKDetailID"],
+                "InvoiceNo": InvoiceNo,
+                "PartyName": PartyName,
+                "SupplierName": SupplierName,
+                "SubmarineCable": SubmarineCable,
+                "WorkTitle": WorkTitle,
+                "BillMilestone": InvoiceWKDetailDictData["BillMilestone"],
+                "FeeItem": InvoiceWKDetailDictData["FeeItem"],
+                "LBRatio": 1,
+                "FeeAmountPre": InvoiceWKDetailDictData["FeeAmount"],
+                "FeeAmountPost": InvoiceWKDetailDictData["FeeAmount"],
+                "Difference": 0,
+            }
+            InvoiceDetailDictDataList.append(InvoiceDetailDictData)
+
     print(len(InvoiceDetailDictDataList))
     streamResponse = {
         "InvoiceWKMaster": InvoiceWKMasterDictData,
