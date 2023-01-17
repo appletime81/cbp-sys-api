@@ -49,10 +49,14 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     db: Session = Depends(get_db),
 ):
     invoice_data = await request.json()
+    CreateDate = convert_time_to_str(datetime.now())
     # ---------- Step1. Generate InvoiceWKMaster ----------
 
     # get invoice wk master data
     InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
+
+    # set CreateDate
+    InvoiceWKMasterDictData["CreateDate"] = CreateDate
 
     # covert InvoiceWKMasterDictData to Pydantic model
     InvoiceWKMasterSchemaData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
@@ -67,7 +71,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     print("justCreatedInvoiceWKMasterID", justCreatedInvoiceWKMasterID)
 
     # ---------- Step2. Generate InvoiceWKDetail ----------
-
     # get invoice wk detail data
     InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
 
@@ -103,6 +106,7 @@ async def searchInvoiceWKMaster(
     InvoiceWKMasterDataList = await service.getInvoiceWKMaster(
         request, urlCondition, db
     )
+
     InvoiceWKMasterDictDataList = [
         orm_to_pydantic(InvoiceWKMasterData, InvoiceWKMasterSchema).dict()
         for InvoiceWKMasterData in InvoiceWKMasterDataList
@@ -147,6 +151,7 @@ async def getInvoiceMasterInvoiceDetailStram(
     InvoiceWKMasterDictData = orm_to_pydantic(
         InvoiceWKMasterData, InvoiceWKMasterSchema
     ).dict()
+    TotalAmount = InvoiceWKMasterDictData.get("TotalAmount")
     WorkTitle = InvoiceWKMasterDictData["WorkTitle"]
     SubmarineCable = InvoiceWKMasterDictData["SubmarineCable"]
     # pprint(InvoiceWKMasterDictData)
@@ -307,6 +312,7 @@ async def getInvoiceMasterInvoiceDetailStram(
 
     print(len(InvoiceDetailDictDataList))
     streamResponse = {
+        "TotalAmount": TotalAmount,
         "InvoiceMaster": InvoiceMasterDictDataList,
         "InvoiceDetail": InvoiceDetailDictDataList,
     }
@@ -322,14 +328,17 @@ async def addInvoiceMasterAndInvoiceDetail(
     InvoiceDetailDictDataList = request_data["InvoiceDetail"]
 
     # add InvoiceMaster data to database
-    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
     for InvoiceMasterDictData in InvoiceMasterDictDataList:
-        crudInvoiceMaster.create(InvoiceMasterDictData)
+        InvoiceMasterDictData["Status"] = "TO_MERGE"
+        InvoiceMasterPydanticData = InvoiceMasterSchema(**InvoiceMasterDictData)
+        await service.addInvoiceMaster(request, InvoiceMasterPydanticData, db)
 
     # add InvoiceDetail data to database
-    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     for InvoiceDetailDictData in InvoiceDetailDictDataList:
-        crudInvoiceDetail.create(InvoiceDetailDictData)
+        InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
+        await service.addInvoiceDetail(request, InvoiceDetailPydanticData, db)
+
+    return {"message": "success add InvoiceMaster and InvoiceDetail"}
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------

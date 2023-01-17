@@ -135,13 +135,19 @@ async def deleteInvoiceWKDetail(
 async def getInvoiceMaster(
     request: Request, InvoiceMasterCondition: str, db: Session = Depends(get_db)
 ):
+    crud = CRUD(db, InvoiceMasterDBModel)
+    table_name = "InvoiceMaster"
     if InvoiceMasterCondition == "all":
-        InvoiceMasterDataList = get_all_invoice_master(db)
+        InvoiceMasterDataList = crud.get_all()
+    elif "start" in InvoiceMasterCondition or "end" in InvoiceMasterCondition:
+        InvoiceMasterCondition = convert_url_condition_to_dict(InvoiceMasterCondition)
+        sql_condition = convert_dict_to_sql_condition(InvoiceMasterCondition, table_name)
+
+        # get all InvoiceMaster by sql
+        InvoiceMasterDataList = crud.get_all_by_sql(sql_condition)
     else:
         InvoiceMasterCondition = convert_url_condition_to_dict(InvoiceMasterCondition)
-        InvoiceMasterDataList = get_invoice_master_with_condition(
-            db, InvoiceMasterCondition
-        )
+        InvoiceMasterDataList = crud.get_with_condition(InvoiceMasterCondition)
     return InvoiceMasterDataList
 
 
@@ -152,18 +158,10 @@ async def addInvoiceMaster(
     InvoiceMasterPydanticData: InvoiceMasterSchema,
     db: Session = Depends(get_db),
 ):
-    create_invoice_master(db, InvoiceMasterPydanticData)
-
-    # convert pydantic model to dict
-    InvoiceMasterDictData = InvoiceMasterPydanticData.dict()
-    InvoiceMasterDictData.pop("InvMasterID")
-
-    # get InvoiceMasterID
-    InvoiceMasterData = get_invoice_master_with_condition(db, InvoiceMasterDictData)
-    InvoiceMasterId = InvoiceMasterData.InvMasterID
+    crud = CRUD(db, InvoiceMasterDBModel)
+    crud.create(InvoiceMasterPydanticData)
     return {
         "message": "InvoiceMaster successfully created",
-        "InvMasterID": InvoiceMasterId,
     }
 
 
@@ -178,6 +176,22 @@ async def deleteInvoiceMaster(
     return {"message": "InvoiceMaster successfully deleted"}
 
 
+@router.post("/updateInvoiceMaster")
+async def updateInvoiceMaster(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    update_dict_condition = await request.json()
+    update_dict_condition_copy = deepcopy(update_dict_condition)
+    if "Status" in update_dict_condition:
+        update_dict_condition.pop("Status")
+    crud = CRUD(db, InvoiceMasterDBModel)
+    InvoiceMasterDataList = crud.get_with_condition(update_dict_condition)
+    for InvoiceMasterData in InvoiceMasterDataList:
+        crud.update(InvoiceMasterData, update_dict_condition_copy)
+    return {"message": "InvoiceMaster status successfully updated"}
+
+
 # ---------------------------------------------------------------------------
 
 # ------------------------------ InvoiceDetail ------------------------------
@@ -188,17 +202,10 @@ async def addInvoiceDetail(
     InvoiceDetailPydanticData: InvoiceDetailSchema,
     db: Session = Depends(get_db),
 ):
-    create_invoice_detail(db, InvoiceDetailPydanticData)
-
-    # get insert data's ID
-    InvoiceDetailDictData = InvoiceDetailPydanticData.dict()
-    InvoiceDetailDictData.pop("InvDetailID")
-    InvDetailID = get_invoice_detail_with_condition(
-        db, InvoiceDetailDictData
-    ).InvDetailID
+    crud = CRUD(db, InvoiceDetailDBModel)
+    crud.create(InvoiceDetailPydanticData)
     return {
         "message": "InvoiceDetail successfully created",
-        "InvDetailID": InvDetailID,
     }
 
 
@@ -206,19 +213,19 @@ async def addInvoiceDetail(
 async def getInvoiceDetail(
     request: Request, InvoiceDetailCondition: str, db: Session = Depends(get_db)
 ):
+    crud = CRUD(db, InvoiceDetailDBModel)
+    table_name = "InvoiceDetail"
     if InvoiceDetailCondition == "all":
-        InvoiceDetailDataList = get_all_invoice_detail_with_condition(db)
+        InvoiceDetailDataList = crud.get_all()
     elif "start" in InvoiceDetailCondition or "end" in InvoiceDetailCondition:
         InvoiceDetailCondition = convert_url_condition_to_dict(InvoiceDetailCondition)
-        sql_condition = convert_dict_to_sql_condition(InvoiceDetailCondition)
-        InvoiceDetailDataList = get_all_invoice_detail_by_sql(sql_condition)
+        sql_condition = convert_dict_to_sql_condition(InvoiceDetailCondition, table_name)
+        InvoiceDetailDataList = crud.get_all_by_sql(sql_condition)
     else:
         InvoiceDetailConditionDict = convert_url_condition_to_dict(
             InvoiceDetailCondition
         )
-        InvoiceDetailDataList = get_all_invoice_detail_with_condition(
-            db, InvoiceDetailConditionDict
-        )
+        InvoiceDetailDataList = crud.get_with_condition(InvoiceDetailConditionDict)
     return InvoiceDetailDataList
 
 

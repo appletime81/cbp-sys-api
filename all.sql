@@ -4,7 +4,6 @@ CREATE TABLE InvoiceWKMaster
 (
     WKMasterID     int NOT NULL AUTO_INCREMENT,
     InvoiceNo      varchar(20),
-    Description    varchar(128),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
     WorkTitle      varchar(50),
@@ -67,7 +66,7 @@ CREATE TABLE InvoiceDetail
     BillMilestone  varchar(20),
     FeeItem        varchar(100),
     FeeAmountPre   decimal(12, 2),
-    Liability      decimal(13, 10),
+    LBRatio      decimal(13, 10),
     FeeAmountPost  decimal(12, 2),
     Difference     decimal(3, 2),
     PRIMARY KEY (InvDetailID)

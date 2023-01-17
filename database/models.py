@@ -6,7 +6,6 @@ class InvoiceWKMasterDBModel(Base):
     __tablename__ = "InvoiceWKMaster"
     WKMasterID = Column(Integer, primary_key=True, index=True)
     InvoiceNo = Column(String(20))
-    Description = Column(String(128))
     SupplierName = Column(String(6))
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
@@ -43,6 +42,7 @@ class InvoiceMasterDBModel(Base):
     PartyName = Column(String(100))
     SupplierName = Column(String(6))
     SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
     ContractType = Column(String(20))
     IssueDate = Column(String(20))
     DueDate = Column(String(20))
@@ -60,6 +60,7 @@ class InvoiceDetailDBModel(Base):
     PartyName = Column(String(100))
     SupplierName = Column(String(6))
     SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
     BillMilestone = Column(String(20))
     FeeItem = Column(String(100))
     FeeAmountPre = Column(Float)

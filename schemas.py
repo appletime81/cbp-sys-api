@@ -6,7 +6,6 @@ from typing import Optional
 class InvoiceWKMasterSchema(BaseModel):
     WKMasterID: Optional[int]
     InvoiceNo: Optional[str]
-    Description: Optional[str]
     SupplierName: str
     SubmarineCable: str
     WorkTitle: str
@@ -41,6 +40,7 @@ class InvoiceMasterSchema(BaseModel):
     PartyName: str
     SupplierName: str
     SubmarineCable: str
+    WorkTitle: str
     ContractType: str
     IssueDate: datetime
     DueDate: datetime
@@ -57,6 +57,7 @@ class InvoiceDetailSchema(BaseModel):
     PartyName: str
     SupplierName: str
     SubmarineCable: str
+    WorkTitle: str
     BillMilestone: str
     FeeItem: str
     FeeAmountPre: float
