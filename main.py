@@ -269,7 +269,7 @@ async def getInvoiceMasterInvoiceDetailStram(
         IsPro = InvoiceWKMasterDictData["IsPro"]
         InvoiceMasterDictDataList = [
             {
-                "InvMasterID": InvMasterID + 1,
+                "InvMasterID": InvMasterID,
                 "WKMasterID": WKMasterID,
                 "InvoiceNo": InvoiceNo,
                 "PartyName": PartyName,
@@ -311,6 +311,25 @@ async def getInvoiceMasterInvoiceDetailStram(
         "InvoiceDetail": InvoiceDetailDictDataList,
     }
     return streamResponse
+
+
+@app.post(ROOT_URL + "/addInvoiceMaster&InvoiceDetail")
+async def addInvoiceMasterAndInvoiceDetail(
+    request: Request, db: Session = Depends(get_db)
+):
+    request_data = await request.json()
+    InvoiceMasterDictDataList = request_data["InvoiceMaster"]
+    InvoiceDetailDictDataList = request_data["InvoiceDetail"]
+
+    # add InvoiceMaster data to database
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    for InvoiceMasterDictData in InvoiceMasterDictDataList:
+        crudInvoiceMaster.create(InvoiceMasterDictData)
+
+    # add InvoiceDetail data to database
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+    for InvoiceDetailDictData in InvoiceDetailDictDataList:
+        crudInvoiceDetail.create(InvoiceDetailDictData)
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,84 @@
+{
+  "InvoiceMaster": [
+    {
+      "InvMasterID": 1,
+      "WKMasterID": 1,
+      "InvoiceNo": "DT0170168-1",
+      "PartyName": "",
+      "SupplierName": "NEC",
+      "SubmarineCable": "SJC2",
+      "WorkTitle": "Construction",
+      "ContractType": "SC",
+      "IssueDate": "2022-09-09T00:00:00",
+      "DueDate": "2022-11-08T00:00:00",
+      "Status": "",
+      "IsPro": false
+    }
+  ],
+  "InvoiceDetail": [
+    {
+      "InvMasterID": 1,
+      "WKMasterID": 1,
+      "WKDetailID": 1,
+      "InvoiceNo": "DT0170168-1",
+      "PartyName": "",
+      "SupplierName": "NEC",
+      "SubmarineCable": "SJC2",
+      "WorkTitle": "Construction",
+      "BillMilestone": "BM9a",
+      "FeeItem": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
+      "LBRatio": 1,
+      "FeeAmountPre": 1288822.32,
+      "FeeAmountPost": 1288822.32,
+      "Difference": 0
+    },
+    {
+      "InvMasterID": 1,
+      "WKMasterID": 1,
+      "WKDetailID": 2,
+      "InvoiceNo": "DT0170168-1",
+      "PartyName": "",
+      "SupplierName": "NEC",
+      "SubmarineCable": "SJC2",
+      "WorkTitle": "Construction",
+      "BillMilestone": "BM9a",
+      "FeeItem": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
+      "LBRatio": 1,
+      "FeeAmountPre": 1178227.94,
+      "FeeAmountPost": 1178227.94,
+      "Difference": 0
+    },
+    {
+      "InvMasterID": 1,
+      "WKMasterID": 1,
+      "WKDetailID": 3,
+      "InvoiceNo": "DT0170168-1",
+      "PartyName": "",
+      "SupplierName": "NEC",
+      "SubmarineCable": "SJC2",
+      "WorkTitle": "Construction",
+      "BillMilestone": "BM12",
+      "FeeItem": "BM12 Branching Units (100%)-Equipment",
+      "LBRatio": 1,
+      "FeeAmountPre": 1627300.92,
+      "FeeAmountPost": 1627300.92,
+      "Difference": 0
+    },
+    {
+      "InvMasterID": 1,
+      "WKMasterID": 1,
+      "WKDetailID": 4,
+      "InvoiceNo": "DT0170168-1",
+      "PartyName": "",
+      "SupplierName": "NEC",
+      "SubmarineCable": "SJC2",
+      "WorkTitle": "Construction",
+      "BillMilestone": "BM12",
+      "FeeItem": "BM12 Branching Units (100%)-Service",
+      "LBRatio": 1,
+      "FeeAmountPre": 1487661.54,
+      "FeeAmountPost": 1487661.54,
+      "Difference": 0
+    }
+  ]
+}
