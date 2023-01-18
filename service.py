@@ -289,11 +289,16 @@ async def getLiability(
 @router.post("/addLiability", status_code=status.HTTP_201_CREATED)
 async def addLiability(
     request: Request,
+    LiabilityPydanticData: LiabilitySchema,
     db: Session = Depends(get_db),
 ):
-    LiabilityDictData = await request.json()
     crud = CRUD(db, LiabilityDBModel)
-    crud.create(LiabilityDictData)
+
+    # give CreateDate
+    LiabilityPydanticData.CreateDate = convert_time_to_str(datetime.now())
+
+    # add into database
+    crud.create(LiabilityPydanticData)
     return {"message": "Liability successfully created"}
 
 
