@@ -342,3 +342,39 @@ async def addInvoiceMasterAndInvoiceDetail(
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------
+
+# ------------------------------ Liability ------------------------------
+@app.post(ROOT_URL + "/compareLiability")  # input data is "List[LiabilitySchema]"
+async def compareLiability(request: Request, db: Session = Depends(get_db)):
+    LiabilityDictDataList = await request.json()
+    compareResultList = []
+    crud = CRUD(db, LiabilityDBModel)
+    for LiabilityDictData in LiabilityDictDataList:
+        query_condition = {
+            "SubmarineCable": LiabilityDictData["SubmarineCable"],
+            "WorkTitle": LiabilityDictData["WorkTitle"],
+            "BillMilestone": LiabilityDictData["BillMilestone"],
+            "PartyName": LiabilityDictData["PartyName"],
+        }
+        LiabilityDataList = crud.get_with_condition(query_condition)
+        if len(LiabilityDataList) != 0:
+            for LiabilityData in LiabilityDataList:
+                compareResultList.append(LiabilityData)
+
+    if len(compareResultList) == 0:
+        return {"message": "No same data", "compareResult": compareResultList}
+    else:
+        return {"message": "There some same datas", "compareResult": compareResultList}
+
+
+@app.post(ROOT_URL + "/batchAddLiability")
+async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
+    LiabilityDictDataList = await request.json()
+    crud = CRUD(db, LiabilityDBModel)
+    for LiabilityDictData in LiabilityDictDataList:
+        LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
+        crud.create(LiabilityPydanticData)
+    return {"message": "success add Liability"}
+
+
+# -----------------------------------------------------------------------
