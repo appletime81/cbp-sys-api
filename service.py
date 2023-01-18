@@ -141,7 +141,9 @@ async def getInvoiceMaster(
         InvoiceMasterDataList = crud.get_all()
     elif "start" in InvoiceMasterCondition or "end" in InvoiceMasterCondition:
         InvoiceMasterCondition = convert_url_condition_to_dict(InvoiceMasterCondition)
-        sql_condition = convert_dict_to_sql_condition(InvoiceMasterCondition, table_name)
+        sql_condition = convert_dict_to_sql_condition(
+            InvoiceMasterCondition, table_name
+        )
 
         # get all InvoiceMaster by sql
         InvoiceMasterDataList = crud.get_all_by_sql(sql_condition)
@@ -219,7 +221,9 @@ async def getInvoiceDetail(
         InvoiceDetailDataList = crud.get_all()
     elif "start" in InvoiceDetailCondition or "end" in InvoiceDetailCondition:
         InvoiceDetailCondition = convert_url_condition_to_dict(InvoiceDetailCondition)
-        sql_condition = convert_dict_to_sql_condition(InvoiceDetailCondition, table_name)
+        sql_condition = convert_dict_to_sql_condition(
+            InvoiceDetailCondition, table_name
+        )
         InvoiceDetailDataList = crud.get_all_by_sql(sql_condition)
     else:
         InvoiceDetailConditionDict = convert_url_condition_to_dict(
