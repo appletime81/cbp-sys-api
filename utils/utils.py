@@ -8,6 +8,13 @@ def convert_time_to_str(datetime_data):
     return datetime_data.strftime(TIME_FORMAT)
 
 
+def convert_dict_data_date_to_normal_str(dict_data: Dict):
+    for key, value in dict_data.items():
+        if "Date" in key:
+            dict_data[key] = convert_time_to_str(value)
+    return dict_data
+
+
 def convert_url_condition_to_dict(url_condition):
     dict_condition = {}
     list_ = url_condition.split("&")
@@ -45,6 +52,8 @@ def convert_dict_to_sql_condition(dict_condition: Dict, table_name: str):
             date_column_name = key.replace("range", "")
             start_date = value["gte"]
             end_date = value["lte"]
+            if start_date == end_date:
+                end_date = end_date.replace("00:00:00", "23:59:59")
             sql_condition += (
                 f" {date_column_name} BETWEEN '{start_date}' AND '{end_date}' AND"
             )

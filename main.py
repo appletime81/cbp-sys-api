@@ -21,6 +21,7 @@ from utils.utils import (
     cal_fee_amount_post,
     convert_dict_condition_to_url,
     convert_url_condition_to_dict_ignore_date,
+    convert_dict_data_date_to_normal_str,
 )
 from utils.orm_pydantic_convert import orm_to_pydantic
 
@@ -112,6 +113,17 @@ async def searchInvoiceWKMaster(
         for InvoiceWKMasterData in InvoiceWKMasterDataList
     ]
 
+    # 只查詢 TEMPORARY 和 VALIDATED 的資料(篩選)
+    if "Status" not in urlCondition:
+        newInvoiceWKMasterDictDataList = []
+        for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
+            if (
+                InvoiceWKMasterDictData["Status"] == "TEMPORARY"
+                or InvoiceWKMasterDictData["Status"] == "VALIDATED"
+            ):
+                newInvoiceWKMasterDictDataList.append(InvoiceWKMasterDictData)
+        InvoiceWKMasterDictDataList = newInvoiceWKMasterDictDataList
+
     # get InvoiceWKDetail
     for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
         InvoiceWKDetailDataList = await service.getInvoiceWKDetail(
@@ -127,12 +139,16 @@ async def searchInvoiceWKMaster(
             newInvoiceWKDetailDictDataList.append(InvoiceWKDetailDictData)
         InvoiceWKDetailDictDataList = newInvoiceWKDetailDictDataList
         # generate InvoiceMaster & InvoiceDetail result
+        InvoiceWKMasterDictData = convert_dict_data_date_to_normal_str(
+            InvoiceWKMasterDictData
+        )
         getResult.append(
             {
                 "InvoiceWKMaster": InvoiceWKMasterDictData,
                 "InvoiceWKDetail": InvoiceWKDetailDictDataList,
             }
         )
+    pprint(getResult)
     return getResult
 
 
@@ -189,15 +205,15 @@ async def getInvoiceMasterInvoiceDetailStram(
             for LiabilityDataList in newLiabilityDataList
             for LiabilityData in LiabilityDataList
         ]
-        # print("-" * 50)
-        # pprint(LiabilityDictDataList)
+
+        if not LiabilityDictDataList:
+            return {"message": "No Liability Data"}
+
         LiabilityDataFrameDataList = [
             pd.DataFrame(dict([(k, [v]) for k, v in LiabilityDictData.items()]))
             for LiabilityDictData in LiabilityDictDataList
         ]
         LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
-        # print("-" * 50)
-        # print(LiabilityDataFrameData)
 
         # get all PartyName
         PartyNameList = list(
@@ -214,8 +230,8 @@ async def getInvoiceMasterInvoiceDetailStram(
                 "SupplierName": InvoiceWKMasterDictData["SupplierName"],
                 "SubmarineCable": SubmarineCable,
                 "WorkTitle": WorkTitle,
-                "IssueDate": InvoiceWKMasterDictData["IssueDate"],
-                "DueDate": InvoiceWKMasterDictData["DueDate"],
+                "IssueDate": convert_time_to_str(InvoiceWKMasterDictData["IssueDate"]),
+                "DueDate": convert_time_to_str(InvoiceWKMasterDictData["DueDate"]),
                 "IsPro": InvoiceWKMasterDictData["IsPro"],
                 "ContractType": InvoiceWKMasterDictData["ContractType"],
                 "Status": "",
@@ -268,8 +284,8 @@ async def getInvoiceMasterInvoiceDetailStram(
         InvoiceNo = InvoiceWKMasterDictData["InvoiceNo"]
         SupplierName = InvoiceWKMasterDictData["SupplierName"]
         ContractType = InvoiceWKMasterDictData["ContractType"]
-        IssueDate = InvoiceWKMasterDictData["IssueDate"]
-        DueDate = InvoiceWKMasterDictData["DueDate"]
+        IssueDate = convert_time_to_str(InvoiceWKMasterDictData["IssueDate"])
+        DueDate = convert_time_to_str(InvoiceWKMasterDictData["DueDate"])
         PartyName = InvoiceWKMasterDictData["PartyName"]
         IsPro = InvoiceWKMasterDictData["IsPro"]
         InvoiceMasterDictDataList = [

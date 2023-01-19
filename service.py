@@ -56,8 +56,7 @@ async def deleteInvoiceWKMaster(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    delete_condition = await request.json()
-    WKMasterID = delete_condition["WKMasterID"]
+    WKMasterID = await request.json()
     crud = CRUD(db, InvoiceWKMasterDBModel)
     crud.remove(WKMasterID)
     return {"message": "InvoiceWKMaster successfully deleted"}
@@ -69,6 +68,7 @@ async def updateInvoiceWKMasterStatusAndInvoiceMasterStatus(
     db: Session = Depends(get_db),
 ):
     update_dict_condition = await request.json()
+    print(update_dict_condition)
     crud = CRUD(db, InvoiceWKMasterDBModel)
     InvoiceWKMasterDataList = crud.get_with_condition(
         {"WKMasterID": update_dict_condition["WKMasterID"]}
@@ -105,14 +105,10 @@ async def addInvoiceWKDetail(
     InvoiceWKDetailPydanticData: InvoiceWKDetailSchema,
     db: Session = Depends(get_db),
 ):
-    create_invoice_wk_detail(db, InvoiceWKDetailPydanticData)
-    InvoiceWKDetailDictData = InvoiceWKDetailPydanticData.dict()
-    InvoiceWKDetailDictData.pop("WKDetailID")
-    InvoiceWKDetail = get_invoice_wk_detail_with_condition(db, InvoiceWKDetailDictData)
-    InvoiceWKDetailDictDataWKDetailID = InvoiceWKDetail.WKDetailID
+    crud = CRUD(db, InvoiceWKDetailDBModel)
+    crud.create(InvoiceWKDetailPydanticData)
     return {
         "message": "InvoiceWKDetail successfully created",
-        "WKDetailID": InvoiceWKDetailDictDataWKDetailID,
     }
 
 
@@ -121,9 +117,9 @@ async def deleteInvoiceWKDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    query_condition = await request.json()
+    WKDetailID = await request.json()
     crud = CRUD(db, InvoiceWKDetailDBModel)
-    crud.remove_with_condition(query_condition)
+    crud.remove(WKDetailID)
     return {"message": "InvoiceWKDetail successfully deleted"}
 
 
@@ -338,25 +334,20 @@ async def getParties(
     PartiesCondition: str,
     db: Session = Depends(get_db),
 ):
-    PartiesDataList = []
+    crud = CRUD(db, PartiesDBModel)
     if PartiesCondition == "all":
-        PartiesDatas = get_all_party(db)
-        for PartiesData in PartiesDatas:
-            PartiesDataList.append(orm_to_pydantic(PartiesData, PartiesSchema).dict())
+        PartiesDataList = crud.get_all()
     return PartiesDataList
 
 
-@router.post("/addParties", status_code=status.HTTP_201_CREATED)
+@router.post("/Parties", status_code=status.HTTP_201_CREATED)
 async def addParties(
     request: Request,
+    PartiesPydanticData: PartiesSchema,
     db: Session = Depends(get_db),
 ):
-    PartyDictData = await request.json()
-
-    # dict to Pydantic model
-    PartyPydanticData = PartiesSchema(**PartyDictData)
-    create_party(db, PartyPydanticData)
-
+    crud = CRUD(db, PartiesDBModel)
+    crud.create(PartiesPydanticData)
     return {"message": "Party successfully created"}
 
 
@@ -370,30 +361,48 @@ async def getSuppliers(
     SuppliersCondition: str,
     db: Session = Depends(get_db),
 ):
-    SuppliersDataList = []
+    crud = CRUD(db, SuppliersDBModel)
     if SuppliersCondition == "all":
-        SupplierDatas = get_all_supplier(db)
-        for SupplierData in SupplierDatas:
-            SuppliersDataList.append(
-                orm_to_pydantic(SupplierData, SuppliersSchema).dict()
-            )
+        SuppliersDataList = crud.get_all()
     return SuppliersDataList
 
 
-@router.post("/addSuppliers", status_code=status.HTTP_201_CREATED)
+@router.post("/Suppliers", status_code=status.HTTP_201_CREATED)
 async def addSuppliers(
+    request: Request,
+    SuppliersPydanticData: SuppliersSchema,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, SuppliersDBModel)
+    crud.create(SuppliersPydanticData)
+    return {"message": "Supplier successfully created"}
+
+
+@router.post("/deleteSuppliers")
+async def deleteSuppliers(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    SupplierDictData = await request.json()
+    query_condition = await request.json()
+    SupplierID = query_condition.get("SupplierID")
+    crud = CRUD(db, SuppliersDBModel)
+    crud.remove(SupplierID)
+    return {"message": "Supplier successfully deleted"}
 
-    # dict to Pydantic model
-    SupplierPydanticData = SuppliersSchema(**SupplierDictData)
 
-    # add to db
-    create_supplier(db, SupplierPydanticData)
-
-    return {"message": "Supplier successfully created"}
+@router.post("/updateSuppliers")
+async def updateSuppliers(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    SuppliersDictData = await request.json()
+    crud = CRUD(db, SuppliersDBModel)
+    SupplierDataList = crud.get_with_condition(
+        {"SupplierID": SuppliersDictData.get("SupplierID")}
+    )
+    for SupplierData in SupplierDataList:
+        crud.update(SupplierData, SuppliersDictData)
+    return {"message": "Supplier successfully updated"}
 
 
 # -----------------------------------------------------------------------
@@ -469,3 +478,36 @@ async def addContracts(
 
 
 # -----------------------------------------------------------------------
+
+# ------------------------------ SubmarineCables ------------------------------
+# 查詢SubmarineCables
+@router.get("/SubmarineCables/{SubmarineCablesCondition}")
+async def getSubmarineCables(
+    request: Request,
+    SubmarineCablesCondition: str,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, SubmarineCablesDBModel)
+    if SubmarineCablesCondition == "all":
+        SubmarineCablesDataList = crud.get_all()
+    else:
+        SubmarineCablesDictCondition = convert_url_condition_to_dict_ignore_date(
+            SubmarineCablesCondition
+        )
+        SubmarineCablesDataList = crud.get_with_condition(SubmarineCablesDictCondition)
+
+    return SubmarineCablesDataList
+
+
+@router.post("/addSubmarineCables", status_code=status.HTTP_201_CREATED)
+async def addSubmarineCables(
+    request: Request,
+    SubmarineCablesPydanticData: SubmarineCablesSchema,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, SubmarineCablesDBModel)
+    crud.create(SubmarineCablesPydanticData)
+    return {"message": "SubmarineCable successfully created"}
+
+
+# -----------------------------------------------------------------------------

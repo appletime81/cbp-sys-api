@@ -129,3 +129,4 @@ class SubmarineCablesDBModel(Base):
     __tablename__ = "SubmarineCables"
     CableID = Column(Integer, primary_key=True, index=True)
     CableName = Column(String(20))
+    Note = Column(String(128))
