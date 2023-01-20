@@ -119,7 +119,7 @@ async def deleteInvoiceWKDetail(
 ):
     WKDetailID = await request.json()
     crud = CRUD(db, InvoiceWKDetailDBModel)
-    crud.remove(WKDetailID)
+    crud.remove_with_condition({"WKDetailID": WKDetailID})
     return {"message": "InvoiceWKDetail successfully deleted"}
 
 
@@ -322,6 +322,21 @@ async def deleteLiability(
     crud = CRUD(db, LiabilityDBModel)
     crud.remove(LBRawID)
     return {"message": "Liability successfully deleted"}
+
+
+# for drop down list
+@router.get("/dropdownmenuParties")
+async def getDropdownMenuParties(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, LiabilityDBModel)
+    LiabilityDataList = crud.get_all()
+    PartyNameList = []
+    for LiabilityData in LiabilityDataList:
+        PartyNameList.append(LiabilityData.PartyName)
+    PartyNameList = list(set(PartyNameList))
+    return PartyNameList
 
 
 # -----------------------------------------------------------------------
