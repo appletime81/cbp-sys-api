@@ -1,29 +1,27 @@
-﻿import os
-import io
-import json
-import uuid
-import copy
-
+﻿from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-import service
-import pandas as pd
+import service.InvoiceWKMaster.app as InvoiceWKMasterApp
+import service.InvoiceWKDetail.app as InvoiceWKDetailApp
+import service.InvoiceMaster.app as InvoiceMasterApp
+import service.InvoiceDetail.app as InvoiceDetailApp
+import service.Liability.app as LiabilityApp
+import service.Parties.app as PartiesApp
+import service.SubmarineCables.app as SubmarineCablesApp
+import service.Suppliers.app as SuppliersApp
 
 from crud import *
-from pprint import pprint
 from get_db import get_db
-from copy import deepcopy
-from datetime import datetime
-from fastapi import FastAPI, Depends, Request, Body
-from utils.utils import (
-    dflist_to_df,
-    convert_time_to_str,
-    cal_fee_amount_post,
-    convert_dict_condition_to_url,
-    convert_url_condition_to_dict_ignore_date,
-    convert_dict_data_date_to_normal_str,
-)
+from service.InvoiceDetail.app import router as InvoiceDetailRouter
+from service.InvoiceMaster.app import router as InvoiceMasterRouter
+from service.InvoiceWKDetail.app import router as InvoiceWKDetailRouter
+from service.InvoiceWKMaster.app import router as InvoiceWKMasterRouter
+from service.Liability.app import router as LiabilityRouter
+from service.Parties.app import router as PartiesRouter
+from service.SubmarineCables.app import router as SubmarineCablesRouter
+from service.Suppliers.app import router as SuppliersRouter
 from utils.orm_pydantic_convert import orm_to_pydantic
+from utils.utils import *
 
 pd.set_option("display.max_columns", None)
 
@@ -31,7 +29,15 @@ app = FastAPI()
 
 ROOT_URL = "/api/v1"
 
-app.include_router(service.router, prefix=ROOT_URL, tags=["service"])
+
+app.include_router(InvoiceWKMasterRouter, prefix=ROOT_URL, tags=["InvoiceWKMaster"])
+app.include_router(InvoiceWKDetailRouter, prefix=ROOT_URL, tags=["InvoiceWKDetail"])
+app.include_router(InvoiceMasterRouter, prefix=ROOT_URL, tags=["InvoiceMaster"])
+app.include_router(InvoiceDetailRouter, prefix=ROOT_URL, tags=["InvoiceDetail"])
+app.include_router(LiabilityRouter, prefix=ROOT_URL, tags=["Liability"])
+app.include_router(PartiesRouter, prefix=ROOT_URL, tags=["Parties"])
+app.include_router(SubmarineCablesRouter, prefix=ROOT_URL, tags=["SubmarineCables"])
+app.include_router(SuppliersRouter, prefix=ROOT_URL, tags=["Suppliers"])
 
 # allow middlewares
 app.add_middleware(
@@ -104,7 +110,7 @@ async def searchInvoiceWKMaster(
     getResult = []
 
     # get InvoiceWKMaster
-    InvoiceWKMasterDataList = await service.getInvoiceWKMaster(
+    InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
         request, urlCondition, db
     )
 
@@ -126,7 +132,7 @@ async def searchInvoiceWKMaster(
 
     # get InvoiceWKDetail
     for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
-        InvoiceWKDetailDataList = await service.getInvoiceWKDetail(
+        InvoiceWKDetailDataList = await InvoiceWKDetailApp.getInvoiceWKDetail(
             request, f"WKMasterID={InvoiceWKMasterDictData.get('WKMasterID')}", db
         )
         InvoiceWKDetailDictDataList = [
@@ -159,7 +165,7 @@ async def getInvoiceMasterInvoiceDetailStram(
     db: Session = Depends(get_db),
 ):
     # Step1. Get InvoiceWKMaster
-    InvoiceWKMasterDataList = await service.getInvoiceWKMaster(
+    InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
         request, f"WKMasterID={WKMasterID}", db
     )
     # print(InvoiceWKMasterDataList)
@@ -173,7 +179,7 @@ async def getInvoiceMasterInvoiceDetailStram(
     # pprint(InvoiceWKMasterDictData)
 
     # Step2. Get InvoiceWKDetail
-    InvoiceWKDetailDataList = await service.getInvoiceWKDetail(
+    InvoiceWKDetailDataList = await InvoiceWKDetailApp.getInvoiceWKDetail(
         request, f"WKMasterID={WKMasterID}", db
     )
     InvoiceWKDetailDictDataList = [
@@ -194,7 +200,7 @@ async def getInvoiceMasterInvoiceDetailStram(
         # get all Liability
         newLiabilityDataList = []
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
-            LiabilityDataList = await service.getLiability(
+            LiabilityDataList = await LiabilityApp.getLiability(
                 request,
                 f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
                 db,
@@ -347,12 +353,12 @@ async def addInvoiceMasterAndInvoiceDetail(
     for InvoiceMasterDictData in InvoiceMasterDictDataList:
         InvoiceMasterDictData["Status"] = "TO_MERGE"
         InvoiceMasterPydanticData = InvoiceMasterSchema(**InvoiceMasterDictData)
-        await service.addInvoiceMaster(request, InvoiceMasterPydanticData, db)
+        await InvoiceMasterApp.addInvoiceMaster(request, InvoiceMasterPydanticData, db)
 
     # add InvoiceDetail data to database
     for InvoiceDetailDictData in InvoiceDetailDictDataList:
         InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
-        await service.addInvoiceDetail(request, InvoiceDetailPydanticData, db)
+        await InvoiceDetailApp.addInvoiceDetail(request, InvoiceDetailPydanticData, db)
 
     return {"message": "success add InvoiceMaster and InvoiceDetail"}
 
