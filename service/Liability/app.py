@@ -88,6 +88,4 @@ async def getDropdownMenuParties(
     return PartyNameList
 
 
-
-
 # -----------------------------------------------------------------------

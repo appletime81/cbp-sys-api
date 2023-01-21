@@ -1,6 +1,9 @@
+﻿POST http://localhost:8000/api/v1/generateInvoiceWKMaster&InvoiceWKDetail
+Accept: application/json
+Content-Type: application/json
+
 {
   "InvoiceWKMaster": {
-    "WKMasterID": 1,
     "InvoiceNo": "DT0170168-1",
     "SupplierName": "NEC",
     "SubmarineCable": "SJC2",
@@ -8,12 +11,13 @@
     "ContractType": "SC",
     "IssueDate": "2022-09-09 00:00:00",
     "DueDate": "2022-11-08 00:00:00",
-    "PartyName": "CHT",
+    "PartyName": "",
     "Status": "TEMPORARY",
     "IsPro": 0,
     "IsRecharge": 0,
-    "IsLiability": 0,
-    "TotalAmount": 5582012.72
+    "IsLiability": 1,
+    "TotalAmount": 5582012.72,
+    "CreateDate": "2023-01-13 00:00:00"
   },
   "InvoiceWKDetail": [
     {
