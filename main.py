@@ -71,9 +71,9 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     # save InvoiceWKMaster to db
     crud = CRUD(db, InvoiceWKMasterDBModel)
     addResponse = crud.create(InvoiceWKMasterSchemaData)
-    print("-" * 25 + "addResponse" + "-" * 25)
+    print("-" * 25 + " addResponse " + "-" * 25)
     print(addResponse.WKMasterID)
-    print("-" * 25 + "addResponse" + "-" * 25)
+    print("-" * 25 + " addResponse " + "-" * 25)
 
     justCreatedInvoiceWKMasterID = addResponse.WKMasterID
     print("justCreatedInvoiceWKMasterID", addResponse.WKMasterID)
