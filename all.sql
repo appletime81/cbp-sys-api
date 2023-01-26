@@ -1,4 +1,5 @@
 DROP TABLE `billmaster`, `contracts`, `contracttypes`, `corporates`, `invoicedetail`, `invoicemaster`, `invoicewkdetail`, `invoicewkmaster`, `liability`, `parties`, `submarinecables`, `suppliers`, `worktitles`;
+DROP TABLE `invoicewkdetail`, `invoicewkmaster`;
 
 CREATE TABLE InvoiceWKMaster
 (
