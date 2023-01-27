@@ -401,3 +401,11 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 
 
 # -----------------------------------------------------------------------
+
+# ------------------------------ BillMaster & BillDetail ------------------------------
+@app.post(ROOT_URL + "/generateBillMaster")
+async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
+    pass
+
+    return {"message": "success add BillMaster and BillDetail"}
+# -------------------------------------------------------------------------------------
