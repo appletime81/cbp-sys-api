@@ -20,8 +20,8 @@ from service.Liability.app import router as LiabilityRouter
 from service.Parties.app import router as PartiesRouter
 from service.SubmarineCables.app import router as SubmarineCablesRouter
 from service.Suppliers.app import router as SuppliersRouter
-from utils.orm_pydantic_convert import orm_to_pydantic
 from utils.utils import *
+from utils.orm_pydantic_convert import *
 
 pd.set_option("display.max_columns", None)
 
@@ -405,7 +405,42 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 # ------------------------------ BillMaster & BillDetail ------------------------------
 @app.post(ROOT_URL + "/generateBillMaster")
 async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
-    pass
+    request_data = await request.json()
+    InvoiceMasterIdList = request_data["InvoiceMasterIdList"]
 
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+
+    # get all InvoiceMaster data
+    getResult = []
+    for InvoiceMasterId in InvoiceMasterIdList:
+        InvoiceMasterId = int(InvoiceMasterId)
+        InvoiceMasterDataList = crudInvoiceMaster.get_with_condition(
+            {"InvMasterID": InvoiceMasterId}
+        )
+        InvoiceMasterDictData = orm_to_dict(InvoiceMasterDataList[0])
+
+        InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(
+            {"InvMasterID": InvoiceMasterId}
+        )
+        InvoiceDetailDictDataList = [
+            orm_to_dict(InvoiceDetailData)
+            for InvoiceDetailData in InvoiceDetailDataList
+        ]
+
+        #TODO: generate BillMaster data
+        BillMasterDictData = {}
+
+        getResult.append(
+            {
+                "InvoiceMaster": InvoiceMasterDictData,
+                "InvoiceDetail": InvoiceDetailDictDataList,
+            }
+        )
+
+    # get all InvoiceDetail data
+    pprint(getResult)
     return {"message": "success add BillMaster and BillDetail"}
+
+
 # -------------------------------------------------------------------------------------
