@@ -407,6 +407,7 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
     request_data = await request.json()
     InvoiceMasterIdList = request_data["InvoiceMasterIdList"]
+    DueDate = request_data["DueDate"]
 
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
@@ -429,7 +430,18 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
         ]
 
         #TODO: generate BillMaster data
-        BillMasterDictData = {}
+        FeeAmountSum = 0
+        BillingNo = f"{InvoiceMasterDictData['SubmarineCable']}-CBP-{InvoiceMasterDictData['PartyName']}-"
+        for InvoiceDetailDictData in InvoiceDetailDictDataList:
+            BillingNo += f"{InvoiceDetailDictData['BillMilestone']}-"
+        BillingNo = BillingNo[:-1]
+        BillMasterDictData = {
+            "BillingNo": BillingNo,
+            "PartyName": InvoiceMasterDictData["PartyName"],
+            "CreatedDate": convert_time_to_str(datetime.now()),
+            "DueDate": DueDate,
+            "Status": "INITIAL",
+        }
 
         getResult.append(
             {
