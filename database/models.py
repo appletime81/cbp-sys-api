@@ -132,4 +132,15 @@ class SubmarineCablesDBModel(Base):
     Note = Column(String(128))
 
 
-class
+class CreditBalanceDBModel(Base):
+    __tablename__ = "CreditBalance"
+    CBID = Column(Integer, primary_key=True, index=True)
+    CBType = Column(String(100))
+    BillingNo = Column(String(128))
+    BLDetailID = Column(Integer)
+    InvoiceNo = Column(String(20))
+    CurrAmount = Column(Float)
+    PartyName = Column(String(100))
+    CreateDate = Column(String(20))
+    LastUpDate = Column(String(20))
+    Note = Column(String(128))

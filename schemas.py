@@ -150,3 +150,15 @@ class WorkTitlesSchema(BaseModel):
 class ContractTypesSchema(BaseModel):
     ContractID: Optional[int]
     Note: Optional[str]
+
+class CreditBalanceSchema(BaseModel):
+    CBID: Optional[int]
+    CBType: str
+    BillingNo: str
+    BLDetailID: int
+    InvoiceNo: str
+    CurrAmount: float
+    PartyName: str
+    CreateDate: datetime
+    LastUpDate: datetime
+    Note: Optional[str]
