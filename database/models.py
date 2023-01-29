@@ -58,7 +58,7 @@ class InvoiceDetailDBModel(Base):
     WKDetailID = Column(Integer)
     InvoiceNo = Column(String(20))
     PartyName = Column(String(100))
-    SupplierName = Column(String(6))
+    SupplierName = Column(String(100.0))
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
     BillMilestone = Column(String(20))
@@ -71,7 +71,7 @@ class InvoiceDetailDBModel(Base):
 
 class BillMasterDBModel(Base):
     __tablename__ = "BillMaster"
-    BillMasterID = Column(Integer, primary_key=True, index=True)
+    BLMasterID = Column(Integer, primary_key=True, index=True)
     BillingNo = Column(String(128))
     PartyName = Column(String(100))
     CreateDate = Column(String(20))
@@ -79,6 +79,16 @@ class BillMasterDBModel(Base):
     Status = Column(String(20))
     IsPro = Column(Boolean)
 
+class BillDetailDBModel(Base):
+    __tablename__ = "BillDetail"
+    BLDetailID = Column(Integer, primary_key=True, index=True)
+    BLMasterID = Column(Integer)
+    WKMasterID = Column(Integer)
+    InvDetailID = Column(Integer)
+    PartyName = Column(String(100))
+    SupplierName = Column(String(100))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
 
 class LiabilityDBModel(Base):
     __tablename__ = "Liability"
@@ -133,7 +143,7 @@ class SubmarineCablesDBModel(Base):
 
 
 class CreditBalanceDBModel(Base):
-    __tablename__ = "CreditBalance"
+    __tablename__ = "CB"
     CBID = Column(Integer, primary_key=True, index=True)
     CBType = Column(String(100))
     BillingNo = Column(String(128))
@@ -144,3 +154,5 @@ class CreditBalanceDBModel(Base):
     CreateDate = Column(String(20))
     LastUpDate = Column(String(20))
     Note = Column(String(128))
+
+
