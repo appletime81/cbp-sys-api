@@ -67,7 +67,7 @@ CREATE TABLE InvoiceDetail
     BillMilestone  varchar(20),
     FeeItem        varchar(100),
     FeeAmountPre   decimal(12, 2),
-    LBRatio      decimal(13, 10),
+    LBRatio        decimal(13, 10),
     FeeAmountPost  decimal(12, 2),
     Difference     decimal(3, 2),
     PRIMARY KEY (InvDetailID)
@@ -75,14 +75,43 @@ CREATE TABLE InvoiceDetail
 
 CREATE TABLE BillMaster
 (
-    BillMasterID int NOT NULL AUTO_INCREMENT,
-    BillingNo    varchar(128),
-    PartyName    varchar(100),
-    CreateDate   datetime,
-    DueDate      datetime,
-    Status       varchar(20),
-    IsPro        TINYINT(1),
+    BillMasterID      int NOT NULL AUTO_INCREMENT,
+    BillingNo         varchar(128),
+    PartyName         varchar(100),
+    IssueDate         datetime,
+    DueDate           datetime,
+    FeeAmountSum      decimal(12, 2),
+    ReceivedAmountSum decimal(12, 2),
+    IsPro             TINYINT(1),
+    Status            varchar(20),
     PRIMARY KEY (BillMasterID)
+);
+
+CREATE TABLE BillDetail
+(
+    BillDetailID    int NOT NULL AUTO_INCREMENT,
+    BillMasterID    int NOT NULL,
+    WKMasterID      int,
+    InvDetailID     int,
+    PartyName       varchar(100),
+    SupplierName    varchar(100),
+    SubmarineCable  varchar(10),
+    WorkTitle       varchar(50),
+    BillMilestone   varchar(20),
+    FeeItem         varchar(100),
+    OrgFeeAmount    decimal(12, 2),
+    DedAmount       decimal(12, 2),
+    FeeAmount       decimal(12, 2),
+    ReceivedAmount  decimal(12, 2),
+    OverAmount      decimal(12, 2),
+    ShortAmount     decimal(12, 2),
+    BankFees        decimal(12, 2),
+    ShortOverReason varchar(128),
+    WriteOffDate    datetime,
+    ReceiveDate     datetime,
+    Note            varchar(128),
+    Status          int,
+    PRIMARY KEY (BillDetailID)
 );
 
 

@@ -434,6 +434,7 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
         BillingNo = f"{InvoiceMasterDictData['SubmarineCable']}-CBP-{InvoiceMasterDictData['PartyName']}-"
         for InvoiceDetailDictData in InvoiceDetailDictDataList:
             BillingNo += f"{InvoiceDetailDictData['BillMilestone']}-"
+            FeeAmountSum += InvoiceDetailDictData["FeeAmountPost"]
         BillingNo = BillingNo[:-1]
         BillMasterDictData = {
             "BillingNo": BillingNo,
