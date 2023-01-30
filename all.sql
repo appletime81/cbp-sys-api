@@ -129,6 +129,34 @@ CREATE TABLE Liability
     PRIMARY KEY (LBRawID)
 );
 
+CREATE TABLE CB
+(
+    CBID        int NOT NULL AUTO_INCREMENT,
+    CBType      varchar(20),
+    BillingNo   varchar(128),
+    BLDetailID  int,
+    InvoiceNo   varchar(20),
+    CurrAmount  decimal(12, 2),
+    PartyName   varchar(100),
+    CreateDate  datetime,
+    LastUpdDate datetime,
+    Note        varchar(128),
+    PRIMARY KEY (CBID)
+);
+
+CREATE TABLE CBStatement
+(
+    CBStateID   int NOT NULL AUTO_INCREMENT,
+    CBID        int,
+    InvoiceNo   varchar(20),
+    TransItem   varchar(20),
+    OrgAmount   decimal(12, 2),
+    TransAmount decimal(12, 2),
+    Note        varchar(128),
+    CreateDate  datetime,
+    Oprcode     varchar(6),
+    PRIMARY KEY (CBStateID)
+);
 
 /* --------------------------------------------------------------------- */
 CREATE TABLE Suppliers
@@ -170,7 +198,7 @@ CREATE TABLE Contracts
 
 CREATE TABLE SubmarineCables
 (
-    CableID   varchar(20),
+    CableID   int NOT NULL AUTO_INCREMENT,
     CableName varchar(64),
     Note      varchar(128),
     PRIMARY KEY (CableID)

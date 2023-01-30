@@ -151,6 +151,7 @@ class ContractTypesSchema(BaseModel):
     ContractID: Optional[int]
     Note: Optional[str]
 
+
 class CreditBalanceSchema(BaseModel):
     CBID: Optional[int]
     CBType: str

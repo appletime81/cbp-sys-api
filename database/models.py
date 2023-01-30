@@ -79,6 +79,7 @@ class BillMasterDBModel(Base):
     Status = Column(String(20))
     IsPro = Column(Boolean)
 
+
 class BillDetailDBModel(Base):
     __tablename__ = "BillDetail"
     BLDetailID = Column(Integer, primary_key=True, index=True)
@@ -89,6 +90,7 @@ class BillDetailDBModel(Base):
     SupplierName = Column(String(100))
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
+
 
 class LiabilityDBModel(Base):
     __tablename__ = "Liability"
@@ -154,5 +156,3 @@ class CreditBalanceDBModel(Base):
     CreateDate = Column(String(20))
     LastUpDate = Column(String(20))
     Note = Column(String(128))
-
-

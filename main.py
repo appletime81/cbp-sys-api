@@ -20,6 +20,8 @@ from service.Liability.app import router as LiabilityRouter
 from service.Parties.app import router as PartiesRouter
 from service.SubmarineCables.app import router as SubmarineCablesRouter
 from service.Suppliers.app import router as SuppliersRouter
+from service.BillMilestone.app import router as BillMilestoneRouter
+from service.CreditBalance.app import router as CreditBalanceRouter
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 
@@ -38,6 +40,8 @@ app.include_router(LiabilityRouter, prefix=ROOT_URL, tags=["Liability"])
 app.include_router(PartiesRouter, prefix=ROOT_URL, tags=["Parties"])
 app.include_router(SubmarineCablesRouter, prefix=ROOT_URL, tags=["SubmarineCables"])
 app.include_router(SuppliersRouter, prefix=ROOT_URL, tags=["Suppliers"])
+app.include_router(BillMilestoneRouter, prefix=ROOT_URL, tags=["BillMilestone"])
+app.include_router(CreditBalanceRouter, prefix=ROOT_URL, tags=["CreditBalance"])
 
 # allow middlewares
 app.add_middleware(
@@ -429,7 +433,7 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
             for InvoiceDetailData in InvoiceDetailDataList
         ]
 
-        #TODO: generate BillMaster data
+        # TODO: generate BillMaster data
         FeeAmountSum = 0
         BillingNo = f"{InvoiceMasterDictData['SubmarineCable']}-CBP-{InvoiceMasterDictData['PartyName']}-"
         for InvoiceDetailDictData in InvoiceDetailDictDataList:
@@ -441,6 +445,9 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
             "PartyName": InvoiceMasterDictData["PartyName"],
             "CreatedDate": convert_time_to_str(datetime.now()),
             "DueDate": DueDate,
+            "FeeAmountSum": FeeAmountSum,
+            "ReceiverAmountSum": 0,
+            "IsPro": InvoiceMasterDictData["IsPro"],
             "Status": "INITIAL",
         }
 
@@ -448,12 +455,10 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
             {
                 "InvoiceMaster": InvoiceMasterDictData,
                 "InvoiceDetail": InvoiceDetailDictDataList,
+                "BillMaster": BillMasterDictData,
             }
         )
 
     # get all InvoiceDetail data
     pprint(getResult)
-    return {"message": "success add BillMaster and BillDetail"}
-
-
-# -------------------------------------------------------------------------------------
+    return {"message": "success add BillMaster and BillDetail", "data": getResult}

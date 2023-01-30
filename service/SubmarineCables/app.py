@@ -28,7 +28,7 @@ async def getSubmarineCables(
     return SubmarineCablesDataList
 
 
-@router.post("/addSubmarineCables", status_code=status.HTTP_201_CREATED)
+@router.post("/SubmarineCables", status_code=status.HTTP_201_CREATED)
 async def addSubmarineCables(
     request: Request,
     SubmarineCablesPydanticData: SubmarineCablesSchema,
