@@ -107,7 +107,8 @@ class LiabilityDBModel(Base):
 
 class PartiesDBModel(Base):
     __tablename__ = "Parties"
-    PartyName = Column(String(100), primary_key=True, index=True)
+    PartyID = Column(Integer, primary_key=True, index=True)
+    PartyName = Column(String(100))
     Address = Column(String(512))
     Contact = Column(String(20))
     Email = Column(String(50))

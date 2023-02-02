@@ -76,6 +76,17 @@ class BillMasterSchema(BaseModel):
     IsPro: bool
 
 
+class BillDetailSchema(BaseModel):
+    BLDetailID: Optional[int]
+    BLMasterID: int
+    WKMasterID: int
+    InvDetailID: int
+    PartyName: str
+    SupplierName: str
+    SubmarineCable: str
+    WorkTitle: str
+
+
 class LiabilitySchema(BaseModel):
     LBRawID: Optional[int]
     SubmarineCable: str
@@ -100,14 +111,6 @@ class CorporatesSchema(BaseModel):
     CreateDate: datetime
 
 
-class PartiesSchema(BaseModel):
-    PartyName: str
-    Address: str
-    Contact: str
-    Email: str
-    Tel: str
-
-
 class ContractsSchema(BaseModel):
     ContractID: Optional[int]
     ContractName: str
@@ -117,23 +120,12 @@ class ContractsSchema(BaseModel):
 
 
 class PartiesSchema(BaseModel):
+    PartyID: Optional[int]
     PartyName: str
     Address: Optional[str]
     Contact: Optional[str]
     Email: Optional[str]
     Tel: Optional[str]
-
-
-class SuppliersSchema(BaseModel):
-    SupplierID: Optional[int]
-    SupplierName: str
-
-
-class CorporatesSchema(BaseModel):
-    CorpID: Optional[int]
-    CorpName: str
-    SubmarineCable: str
-    CreateDate: datetime
 
 
 class SubmarineCablesSchema(BaseModel):
