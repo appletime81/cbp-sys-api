@@ -177,13 +177,13 @@ CREATE TABLE Corporates
 
 CREATE TABLE Parties
 (
-
-    PartyName varchar(100) NOT NULL,
+    PartyID   int NOT NULL AUTO_INCREMENT,
+    PartyName varchar(100),
     Address   varchar(512),
     Contact   varchar(20),
     Email     varchar(50),
     Tel       varchar(20),
-    PRIMARY KEY (PartyName)
+    PRIMARY KEY (PartyID)
 );
 
 CREATE TABLE Contracts
