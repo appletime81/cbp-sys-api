@@ -1,6 +1,7 @@
 ﻿from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+import re
 import service.InvoiceWKMaster.app as InvoiceWKMasterApp
 import service.InvoiceWKDetail.app as InvoiceWKDetailApp
 import service.InvoiceMaster.app as InvoiceMasterApp
@@ -114,6 +115,18 @@ async def searchInvoiceWKMaster(
 ):
     getResult = []
 
+    # find text "PartyName=..."
+    PartyName = None
+    if "PartyName=" in urlCondition:
+        if re.findall(r"PartyName=(\S+)&", urlCondition):
+            PartyName = re.findall(r"PartyName=(\S+)&", urlCondition)[0]
+            urlCondition = urlCondition.replace(f"PartyName={PartyName}&", "")
+        elif re.findall(r"PartyName=(\S+)", urlCondition):
+            PartyName = re.findall(r"PartyName=(\S+)", urlCondition)[0]
+            urlCondition = urlCondition.replace(f"PartyName={PartyName}", "")
+    if not urlCondition:
+        urlCondition = "all"
+
     # get InvoiceWKMaster
     InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
         request, urlCondition, db
@@ -159,6 +172,14 @@ async def searchInvoiceWKMaster(
                 "InvoiceWKDetail": InvoiceWKDetailDictDataList,
             }
         )
+
+    if PartyName:
+        getResult = [
+            data
+            for data in getResult
+            if PartyName == data["InvoiceWKMaster"]["PartyName"]
+        ]
+
     pprint(getResult)
     return getResult
 
