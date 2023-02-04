@@ -422,6 +422,9 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
     LiabilityDictDataList = await request.json()
     crud = CRUD(db, LiabilityDBModel)
     for LiabilityDictData in LiabilityDictDataList:
+        LiabilityDictData["CreateDate"] = convert_time_to_str(
+            datetime.now()
+        )
         LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
         crud.create(LiabilityPydanticData)
     return {"message": "success add Liability"}

@@ -74,6 +74,7 @@ async def deleteLiability(
 
 
 # for dropdown list
+# 會員名稱
 @router.get("/dropdownmenuParties")
 async def getDropdownMenuParties(
     request: Request,
@@ -86,6 +87,51 @@ async def getDropdownMenuParties(
         PartyNameList.append(LiabilityData.PartyName)
     PartyNameList = list(set(PartyNameList))
     return PartyNameList
+
+
+# 記帳段號(BillMilestone)
+@router.get("/dropdownmenuBillMilestone")
+async def getDropdownMenuBillMilestone(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, LiabilityDBModel)
+    LiabilityDataList = crud.get_all()
+    BillMilestoneList = []
+    for LiabilityData in LiabilityDataList:
+        BillMilestoneList.append(LiabilityData.BillMilestone)
+    BillMilestoneList = list(set(BillMilestoneList))
+    return BillMilestoneList
+
+
+# 海纜名稱(SubmarineCable)
+@router.get("/dropdownmenuSubmarineCable")
+async def getDropdownMenuSubmarineCable(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, LiabilityDBModel)
+    LiabilityDataList = crud.get_all()
+    SubmarineCableList = []
+    for LiabilityData in LiabilityDataList:
+        SubmarineCableList.append(LiabilityData.SubmarineCable)
+    SubmarineCableList = list(set(SubmarineCableList))
+    return SubmarineCableList
+
+
+# 海纜作業(WorkTitle)
+@router.get("/dropdownmenuWorkTitle")
+async def getDropdownMenuWorkTitle(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, LiabilityDBModel)
+    LiabilityDataList = crud.get_all()
+    WorkTitleList = []
+    for LiabilityData in LiabilityDataList:
+        WorkTitleList.append(LiabilityData.WorkTitle)
+    WorkTitleList = list(set(WorkTitleList))
+    return WorkTitleList
 
 
 # -----------------------------------------------------------------------
