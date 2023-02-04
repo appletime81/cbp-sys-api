@@ -60,6 +60,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
+
     invoice_data = await request.json()
     CreateDate = convert_time_to_str(datetime.now())
     # ---------- Step1. Generate InvoiceWKMaster ----------
@@ -86,6 +87,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     # ---------- Step2. Generate InvoiceWKDetail ----------
     # get invoice wk detail data
     InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
+    pprint(InvoiceWKDetailDictDataList)
 
     for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
         # covert InvoiceWKDetailDictData to Pydantic model

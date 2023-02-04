@@ -45,9 +45,11 @@ async def deleteInvoiceWKDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    WKMasterID = await request.json()
+    request_data = await request.json()
+    print("--------------------- WKMasterID ---------------------")
+    print(request_data.get("WKMasterID"))
     crud = CRUD(db, InvoiceWKDetailDBModel)
-    crud.remove_with_condition({"WKMasterID": WKMasterID})
+    crud.remove_with_condition({"WKMasterID": request_data.get("WKMasterID")})
     return {"message": "InvoiceWKDetail successfully deleted"}
 
 
