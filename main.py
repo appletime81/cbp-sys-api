@@ -230,7 +230,7 @@ async def getInvoiceMasterInvoiceDetailStram(
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
             LiabilityDataList = await LiabilityApp.getLiability(
                 request,
-                f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
+                f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&SupplierName={InvoiceWKDetailDictData.get('SupplierName')}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
                 db,
             )
             newLiabilityDataList.append(LiabilityDataList)
@@ -248,7 +248,7 @@ async def getInvoiceMasterInvoiceDetailStram(
             for LiabilityDictData in LiabilityDictDataList
         ]
         LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
-
+        LiabilityDataFrameData.to_csv("LiabilityDataFrameData.csv", index=False)
         # get all PartyName
         PartyNameList = list(
             set([LiabilityData.PartyName for LiabilityData in LiabilityDataList])
@@ -291,6 +291,10 @@ async def getInvoiceMasterInvoiceDetailStram(
                     & (
                         LiabilityDataFrameData["WorkTitle"]
                         == InvoiceMasterDictData["WorkTitle"]
+                    )
+                    & (
+                        LiabilityDataFrameData["SupplierName"]
+                        == InvoiceWKDetailDictData["SupplierName"]
                     )
                 ]["LBRatio"].values[0]
 
@@ -422,9 +426,7 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
     LiabilityDictDataList = await request.json()
     crud = CRUD(db, LiabilityDBModel)
     for LiabilityDictData in LiabilityDictDataList:
-        LiabilityDictData["CreateDate"] = convert_time_to_str(
-            datetime.now()
-        )
+        LiabilityDictData["CreateDate"] = convert_time_to_str(datetime.now())
         LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
         crud.create(LiabilityPydanticData)
     return {"message": "success add Liability"}
