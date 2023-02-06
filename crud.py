@@ -112,6 +112,9 @@ class CRUD:
     def get_all(self):
         return self.db.query(self.model).all()
 
+    def get_all_distinct(self, distinct_field):
+        return self.db.query(distinct_field).distinct().all()
+
     @staticmethod
     def get_all_by_sql(sql: str):
         return engine.execute(sql).all()

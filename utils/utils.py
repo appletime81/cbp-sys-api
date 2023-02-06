@@ -66,6 +66,28 @@ def convert_dict_to_sql_condition(dict_condition: Dict, table_name: str):
     return sql_condition
 
 
+def convert_dict_with_date_to_range_format(dict_condition: Dict):
+    new_dict_condition = {}
+    for key, value in dict_condition.items():
+        if key.startswith("start"):
+            newKey = key.replace("start", "range")
+            if newKey not in new_dict_condition:
+                new_dict_condition[newKey] = {}
+            new_dict_condition[newKey]["gte"] = (
+                value[:4] + "-" + value[4:6] + "-" + value[6:8] + " " + "00:00:00"
+            )
+        elif key.startswith("end"):
+            newKey = key.replace("end", "range")
+            if newKey not in new_dict_condition:
+                new_dict_condition[newKey] = {}
+            new_dict_condition[newKey]["lte"] = (
+                value[:4] + "-" + value[4:6] + "-" + value[6:8] + " " + "00:00:00"
+            )
+        else:
+            new_dict_condition[key] = value
+    return new_dict_condition
+
+
 def convert_dict_condition_to_url(dict_condition):
     url_condition = ""
     for key, value in dict_condition.items():
@@ -83,9 +105,9 @@ def dflist_to_df(list_data: List[pd.DataFrame]):
     return df
 
 
-if __name__ == "__main__":
-    dict_ = convert_url_condition_to_dict(
-        "SupplierName=供應商&SubmarineCable=海纜名稱&PartyName=會員代號&Status=處理狀態&BillMilestone=計帳段號&startCreateDate=20230101&endCreateDate=20230131"
-    )
-    sql = convert_dict_to_sql_condition(dict_, "TABLE")
-    print(sql)
+# if __name__ == "__main__":
+#     dict_ = convert_url_condition_to_dict(
+#         "SupplierName=供應商&SubmarineCable=海纜名稱&PartyName=會員代號&Status=處理狀態&BillMilestone=計帳段號&startCreateDate=20230101&endCreateDate=20230131"
+#     )
+#     sql = convert_dict_to_sql_condition(dict_, "TABLE")
+#     print(sql)
