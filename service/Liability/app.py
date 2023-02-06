@@ -28,6 +28,7 @@ async def getLiability(
     else:
         LiabilityCondition = convert_url_condition_to_dict(LiabilityCondition)
         LiabilityDataList = crud.get_with_condition(LiabilityCondition)
+    pprint(LiabilityDataList)
     return LiabilityDataList
 
 

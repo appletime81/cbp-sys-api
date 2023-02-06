@@ -186,6 +186,18 @@ CREATE TABLE Parties
     PRIMARY KEY (PartyID)
 );
 
+CREATE TABLE Parties
+(
+    PartyID   int          NOT NULL AUTO_INCREMENT,
+    PartyName varchar(100) NOT NULL,
+    Address   varchar(512),
+    Contact   varchar(20),
+    Email     varchar(50),
+    Tel       varchar(20),
+    PRIMARY KEY (PartyID)
+);
+
+
 CREATE TABLE Contracts
 (
     ContractID     int NOT NULL AUTO_INCREMENT,
