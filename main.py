@@ -230,7 +230,7 @@ async def getInvoiceMasterInvoiceDetailStram(
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
             LiabilityDataList = await LiabilityApp.getLiability(
                 request,
-                f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&SupplierName={InvoiceWKDetailDictData.get('SupplierName')}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
+                f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
                 db,
             )
             newLiabilityDataList.append(LiabilityDataList)
@@ -291,10 +291,6 @@ async def getInvoiceMasterInvoiceDetailStram(
                     & (
                         LiabilityDataFrameData["WorkTitle"]
                         == InvoiceMasterDictData["WorkTitle"]
-                    )
-                    & (
-                        LiabilityDataFrameData["SupplierName"]
-                        == InvoiceWKDetailDictData["SupplierName"]
                     )
                 ]["LBRatio"].values[0]
 
