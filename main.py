@@ -10,6 +10,7 @@ import service.Liability.app as LiabilityApp
 import service.Parties.app as PartiesApp
 import service.SubmarineCables.app as SubmarineCablesApp
 import service.Suppliers.app as SuppliersApp
+import service.Letter.app as LetterApp
 
 from crud import *
 from get_db import get_db
@@ -23,6 +24,7 @@ from service.SubmarineCables.app import router as SubmarineCablesRouter
 from service.Suppliers.app import router as SuppliersRouter
 from service.BillMilestone.app import router as BillMilestoneRouter
 from service.CreditBalance.app import router as CreditBalanceRouter
+from service.Letter.app import router as LetterRouter
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 
@@ -43,6 +45,7 @@ app.include_router(SubmarineCablesRouter, prefix=ROOT_URL, tags=["SubmarineCable
 app.include_router(SuppliersRouter, prefix=ROOT_URL, tags=["Suppliers"])
 app.include_router(BillMilestoneRouter, prefix=ROOT_URL, tags=["BillMilestone"])
 app.include_router(CreditBalanceRouter, prefix=ROOT_URL, tags=["CreditBalance"])
+app.include_router(LetterRouter, prefix=ROOT_URL, tags=["Letter"])
 
 # allow middlewares
 app.add_middleware(
@@ -388,7 +391,20 @@ async def addInvoiceMasterAndInvoiceDetail(
         InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
         await InvoiceDetailApp.addInvoiceDetail(request, InvoiceDetailPydanticData, db)
 
-    return {"message": "success add InvoiceMaster and InvoiceDetail"}
+    # update InvoiceWKMaster status
+    WKMasterID = InvoiceMasterDictDataList[0]["WKMasterID"]
+    crud = CRUD(db, InvoiceWKMasterDBModel)
+    InvoiceWKMasterData = crud.get_with_condition({"WKMasterID": WKMasterID})[0]
+    InvoiceWKMasterDictData = orm_to_dict(InvoiceWKMasterData)
+    InvoiceWKMasterDictData["Status"] = "BILLED"
+    updatedInvoiceWKMasterData = crud.update(
+        InvoiceWKMasterData, InvoiceWKMasterDictData
+    )
+
+    return {
+        "message": "success add InvoiceMaster and InvoiceDetail",
+        "InvoiceWKMaster status": updatedInvoiceWKMasterData.Status,
+    }
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------
