@@ -185,7 +185,6 @@ async def searchInvoiceWKMaster(
             if PartyName == data["InvoiceWKMaster"]["PartyName"]
         ]
 
-    pprint(getResult)
     return getResult
 
 

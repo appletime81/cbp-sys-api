@@ -48,7 +48,7 @@ async def getLetter(
     }
     file_name = "output.docx"
     # DEPENDS ON WHERE YOUR FILE LOCATES
-    file_path = os.getcwd() + "/" + file_name
+    file_path = f"{os.getcwd()}/output.docx"
     doc.render(context)
     doc.save(file_path)
     return FileResponse(path=file_path, filename="output.docx")

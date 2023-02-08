@@ -1,32 +1,11 @@
-[
-  {
-    "PartyName": "SKB"
-  },
-  {
-    "PartyName": "DHT"
-  },
-  {
-    "PartyName": "Edge"
-  },
-  {
-    "PartyName": "CHT"
-  },
-  {
-    "PartyName": "Telin"
-  },
-  {
-    "PartyName": "TRUE"
-  },
-  {
-    "PartyName": "VNPT"
-  },
-  {
-    "PartyName": "KDDI"
-  },
-  {
-    "PartyName": "Singtel"
-  },
-  {
-    "PartyName": "CMI"
-  }
-]
+{
+  "SubmarineCable": "SJC2",
+  "BillMilestone": "BM12",
+  "PartyName": "VNPT",
+  "CreateDate": "2022-12-27T14:30:00",
+  "EndDate": null,
+  "LBRawID": 20,
+  "WorkTitle": "Construction",
+  "LBRatio": 7.1428571429,
+  "ModifyNote": null
+}

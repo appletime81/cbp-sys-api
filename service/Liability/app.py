@@ -28,7 +28,15 @@ async def getLiability(
     else:
         LiabilityCondition = convert_url_condition_to_dict(LiabilityCondition)
         LiabilityDataList = crud.get_with_condition(LiabilityCondition)
+
+    # filter the data that has "EndDate"
+    LiabilityDataList = [
+        LiabilityData
+        for LiabilityData in LiabilityDataList
+        if not LiabilityData.EndDate
+    ]
     pprint(LiabilityDataList)
+
     return LiabilityDataList
 
 
