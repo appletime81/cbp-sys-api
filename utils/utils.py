@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 from typing import List, Dict
 
@@ -105,9 +106,21 @@ def dflist_to_df(list_data: List[pd.DataFrame]):
     return df
 
 
-# if __name__ == "__main__":
-#     dict_ = convert_url_condition_to_dict(
-#         "SupplierName=供應商&SubmarineCable=海纜名稱&PartyName=會員代號&Status=處理狀態&BillMilestone=計帳段號&startCreateDate=20230101&endCreateDate=20230131"
-#     )
-#     sql = convert_dict_to_sql_condition(dict_, "TABLE")
-#     print(sql)
+def re_search_url_condition_value(urlCondition: str, conditionKey: str):
+    if f"{conditionKey}=" in urlCondition:
+        if re.findall(rf"{conditionKey}=(\S+)&", urlCondition):
+            value = re.findall(rf"{conditionKey}=(\S+)&", urlCondition)[0]
+            urlCondition = urlCondition.replace(f"{conditionKey}={value}&", "")
+        elif re.findall(rf"{conditionKey}=(\S+)", urlCondition):
+            value = re.findall(rf"{conditionKey}=(\S+)", urlCondition)[0]
+            urlCondition = urlCondition.replace(f"{conditionKey}={value}", "")
+    if urlCondition[-1] == "&":
+        urlCondition = urlCondition[:-1]
+    return urlCondition, value
+
+
+if __name__ == "__main__":
+    url_condition = "BillMilestone=test&GGG=ttt&TTT=JJJ"
+    url_condition, value = re_search_url_condition_value(url_condition, "BillMilestone")
+    url = f"http://127.0.0.1:8000/api/v1/{url_condition}"
+    print(url)

@@ -112,6 +112,81 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     return {"message": "success"}
 
 
+# @app.get(ROOT_URL + "/getInvoiceWKMaster&InvoiceWKDetail/{urlCondition}")
+# async def searchInvoiceWKMaster(
+#     request: Request,
+#     urlCondition: str,
+#     db: Session = Depends(get_db),
+# ):
+#     getResult = []
+#
+#     # find text "PartyName=..."
+#     PartyName = None
+#     if "PartyName=" in urlCondition:
+#         if re.findall(r"PartyName=(\S+)&", urlCondition):
+#             PartyName = re.findall(r"PartyName=(\S+)&", urlCondition)[0]
+#             urlCondition = urlCondition.replace(f"PartyName={PartyName}&", "")
+#         elif re.findall(r"PartyName=(\S+)", urlCondition):
+#             PartyName = re.findall(r"PartyName=(\S+)", urlCondition)[0]
+#             urlCondition = urlCondition.replace(f"PartyName={PartyName}", "")
+#     if not urlCondition:
+#         urlCondition = "all"
+#
+#     # get InvoiceWKMaster
+#     InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
+#         request, urlCondition, db
+#     )
+#
+#     InvoiceWKMasterDictDataList = [
+#         orm_to_pydantic(InvoiceWKMasterData, InvoiceWKMasterSchema).dict()
+#         for InvoiceWKMasterData in InvoiceWKMasterDataList
+#     ]
+#
+#     # 只查詢 TEMPORARY 和 VALIDATED 的資料(篩選)
+#     if "Status" not in urlCondition:
+#         newInvoiceWKMasterDictDataList = []
+#         for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
+#             if (
+#                 InvoiceWKMasterDictData["Status"] == "TEMPORARY"
+#                 or InvoiceWKMasterDictData["Status"] == "VALIDATED"
+#             ):
+#                 newInvoiceWKMasterDictDataList.append(InvoiceWKMasterDictData)
+#         InvoiceWKMasterDictDataList = newInvoiceWKMasterDictDataList
+#
+#     # get InvoiceWKDetail
+#     for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
+#         InvoiceWKDetailDataList = await InvoiceWKDetailApp.getInvoiceWKDetail(
+#             request, f"WKMasterID={InvoiceWKMasterDictData.get('WKMasterID')}", db
+#         )
+#         InvoiceWKDetailDictDataList = [
+#             orm_to_pydantic(InvoiceWKDetailData, InvoiceWKDetailSchema).dict()
+#             for InvoiceWKDetailData in InvoiceWKDetailDataList
+#         ]
+#         newInvoiceWKDetailDictDataList = []
+#         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
+#             InvoiceWKDetailDictData.pop("WKDetailID")
+#             newInvoiceWKDetailDictDataList.append(InvoiceWKDetailDictData)
+#         InvoiceWKDetailDictDataList = newInvoiceWKDetailDictDataList
+#         # generate InvoiceMaster & InvoiceDetail result
+#         InvoiceWKMasterDictData = convert_dict_data_date_to_normal_str(
+#             InvoiceWKMasterDictData
+#         )
+#         getResult.append(
+#             {
+#                 "InvoiceWKMaster": InvoiceWKMasterDictData,
+#                 "InvoiceWKDetail": InvoiceWKDetailDictDataList,
+#             }
+#         )
+#
+#     if PartyName:
+#         getResult = [
+#             data
+#             for data in getResult
+#             if PartyName == data["InvoiceWKMaster"]["PartyName"]
+#         ]
+#
+#     return getResult
+
 @app.get(ROOT_URL + "/getInvoiceWKMaster&InvoiceWKDetail/{urlCondition}")
 async def searchInvoiceWKMaster(
     request: Request,
@@ -120,17 +195,8 @@ async def searchInvoiceWKMaster(
 ):
     getResult = []
 
-    # find text "PartyName=..."
-    PartyName = None
-    if "PartyName=" in urlCondition:
-        if re.findall(r"PartyName=(\S+)&", urlCondition):
-            PartyName = re.findall(r"PartyName=(\S+)&", urlCondition)[0]
-            urlCondition = urlCondition.replace(f"PartyName={PartyName}&", "")
-        elif re.findall(r"PartyName=(\S+)", urlCondition):
-            PartyName = re.findall(r"PartyName=(\S+)", urlCondition)[0]
-            urlCondition = urlCondition.replace(f"PartyName={PartyName}", "")
-    if not urlCondition:
-        urlCondition = "all"
+    if "BillMilestone" in urlCondition:
+        urlCondition, BillMilestoneValue = re_search_url_condition_value(urlCondition, "BillMilestone")
 
     # get InvoiceWKMaster
     InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
@@ -171,19 +237,23 @@ async def searchInvoiceWKMaster(
         InvoiceWKMasterDictData = convert_dict_data_date_to_normal_str(
             InvoiceWKMasterDictData
         )
-        getResult.append(
-            {
-                "InvoiceWKMaster": InvoiceWKMasterDictData,
-                "InvoiceWKDetail": InvoiceWKDetailDictDataList,
-            }
-        )
 
-    if PartyName:
-        getResult = [
-            data
-            for data in getResult
-            if PartyName == data["InvoiceWKMaster"]["PartyName"]
+        # filter BillMilestone
+        checkBillMilestoneInvoiceWKDetailDictDataList = [
+            InvoiceWKDetailData
+            for InvoiceWKDetailData in InvoiceWKDetailDictDataList
+            if InvoiceWKDetailData["BillMilestone"] == BillMilestoneValue
         ]
+
+        if not checkBillMilestoneInvoiceWKDetailDictDataList:
+            getResult.append(
+                {
+                    "InvoiceWKMaster": InvoiceWKMasterDictData,
+                    "InvoiceWKDetail": InvoiceWKDetailDictDataList,
+                }
+            )
+
+
 
     return getResult
 
