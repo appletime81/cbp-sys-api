@@ -195,7 +195,8 @@ async def searchInvoiceWKMaster(
     db: Session = Depends(get_db),
 ):
     getResult = []
-
+    BillMilestoneValue = None
+    checkBillMilestoneInvoiceWKDetailDictDataList = None
     if "BillMilestone" in urlCondition:
         urlCondition, BillMilestoneValue = re_search_url_condition_value(
             urlCondition, "BillMilestone"
@@ -242,13 +243,20 @@ async def searchInvoiceWKMaster(
         )
 
         # filter BillMilestone
-        checkBillMilestoneInvoiceWKDetailDictDataList = [
-            InvoiceWKDetailData
-            for InvoiceWKDetailData in InvoiceWKDetailDictDataList
-            if InvoiceWKDetailData["BillMilestone"] == BillMilestoneValue
-        ]
-
-        if checkBillMilestoneInvoiceWKDetailDictDataList:
+        if BillMilestoneValue:
+            checkBillMilestoneInvoiceWKDetailDictDataList = [
+                InvoiceWKDetailData
+                for InvoiceWKDetailData in InvoiceWKDetailDictDataList
+                if InvoiceWKDetailData["BillMilestone"] == BillMilestoneValue
+            ]
+            if checkBillMilestoneInvoiceWKDetailDictDataList:
+                getResult.append(
+                    {
+                        "InvoiceWKMaster": InvoiceWKMasterDictData,
+                        "InvoiceWKDetail": InvoiceWKDetailDictDataList,
+                    }
+                )
+        else:
             getResult.append(
                 {
                     "InvoiceWKMaster": InvoiceWKMasterDictData,
