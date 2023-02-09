@@ -114,13 +114,17 @@ def re_search_url_condition_value(urlCondition: str, conditionKey: str):
         elif re.findall(rf"{conditionKey}=(\S+)", urlCondition):
             value = re.findall(rf"{conditionKey}=(\S+)", urlCondition)[0]
             urlCondition = urlCondition.replace(f"{conditionKey}={value}", "")
+    print(len(urlCondition))
+
+    if not urlCondition:
+        return "all", value
     if urlCondition[-1] == "&":
         urlCondition = urlCondition[:-1]
     return urlCondition, value
 
 
-if __name__ == "__main__":
-    url_condition = "BillMilestone=test&GGG=ttt&TTT=JJJ"
-    url_condition, value = re_search_url_condition_value(url_condition, "BillMilestone")
-    url = f"http://127.0.0.1:8000/api/v1/{url_condition}"
-    print(url)
+# if __name__ == "__main__":
+#     url_condition = "BillMilestone=test&GGG=ttt&TTT=JJJ"
+#     url_condition, value = re_search_url_condition_value(url_condition, "BillMilestone")
+#     url = f"http://127.0.0.1:8000/api/v1/{url_condition}"
+#     print(url)

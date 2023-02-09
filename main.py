@@ -187,6 +187,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 #
 #     return getResult
 
+
 @app.get(ROOT_URL + "/getInvoiceWKMaster&InvoiceWKDetail/{urlCondition}")
 async def searchInvoiceWKMaster(
     request: Request,
@@ -196,7 +197,9 @@ async def searchInvoiceWKMaster(
     getResult = []
 
     if "BillMilestone" in urlCondition:
-        urlCondition, BillMilestoneValue = re_search_url_condition_value(urlCondition, "BillMilestone")
+        urlCondition, BillMilestoneValue = re_search_url_condition_value(
+            urlCondition, "BillMilestone"
+        )
 
     # get InvoiceWKMaster
     InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
@@ -245,15 +248,13 @@ async def searchInvoiceWKMaster(
             if InvoiceWKDetailData["BillMilestone"] == BillMilestoneValue
         ]
 
-        if not checkBillMilestoneInvoiceWKDetailDictDataList:
+        if checkBillMilestoneInvoiceWKDetailDictDataList:
             getResult.append(
                 {
                     "InvoiceWKMaster": InvoiceWKMasterDictData,
                     "InvoiceWKDetail": InvoiceWKDetailDictDataList,
                 }
             )
-
-
 
     return getResult
 
