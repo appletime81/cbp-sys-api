@@ -114,7 +114,6 @@ def re_search_url_condition_value(urlCondition: str, conditionKey: str):
         elif re.findall(rf"{conditionKey}=(\S+)", urlCondition):
             value = re.findall(rf"{conditionKey}=(\S+)", urlCondition)[0]
             urlCondition = urlCondition.replace(f"{conditionKey}={value}", "")
-    print(len(urlCondition))
 
     if not urlCondition:
         return "all", value
