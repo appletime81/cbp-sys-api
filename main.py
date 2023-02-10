@@ -1,7 +1,6 @@
 ﻿from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-import re
 import service.InvoiceWKMaster.app as InvoiceWKMasterApp
 import service.InvoiceWKDetail.app as InvoiceWKDetailApp
 import service.InvoiceMaster.app as InvoiceMasterApp
@@ -63,7 +62,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
-
     invoice_data = await request.json()
     CreateDate = convert_time_to_str(datetime.now())
     # ---------- Step1. Generate InvoiceWKMaster ----------
@@ -216,6 +214,7 @@ async def searchInvoiceWKMaster(
     if "Status" not in urlCondition:
         newInvoiceWKMasterDictDataList = []
         for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
+            # TODO: 這邊要改成所有的狀態都要顯示
             if (
                 InvoiceWKMasterDictData["Status"] == "TEMPORARY"
                 or InvoiceWKMasterDictData["Status"] == "VALIDATED"
@@ -487,6 +486,7 @@ async def addInvoiceMasterAndInvoiceDetail(
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 
+
 # ------------------------------ Liability ------------------------------
 @app.post(ROOT_URL + "/compareLiability")  # input data is "List[LiabilitySchema]"
 async def compareLiability(request: Request, db: Session = Depends(get_db)):
@@ -524,7 +524,10 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 
 # -----------------------------------------------------------------------
 
+
 # ------------------------------ BillMaster & BillDetail ------------------------------
+
+
 @app.post(ROOT_URL + "/generateBillMaster")
 async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
     request_data = await request.json()
@@ -580,3 +583,20 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
     # get all InvoiceDetail data
     pprint(getResult)
     return {"message": "success add BillMaster and BillDetail", "data": getResult}
+
+
+@app.get(
+    ROOT_URL + "/checkBillingNo/{BillingNo}"
+)  # check input BillingNo is existed or not
+async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
+    BillingNo = request.path_params["BillingNo"]
+    print(BillingNo)
+    crud = CRUD(db, BillMasterDBModel)
+    BillMasterDataList = crud.get_with_condition({"BillingNo": BillingNo})
+    if not BillMasterDataList:
+        return {"message": "BillingNo is not exist"}
+    else:
+        return {"message": "BillingNo is exist"}
+
+
+# -------------------------------------------------------------------------------------

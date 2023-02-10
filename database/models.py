@@ -70,26 +70,85 @@ class InvoiceDetailDBModel(Base):
 
 
 class BillMasterDBModel(Base):
+    """
+    BillMasterID      int NOT NULL AUTO_INCREMENT,
+    BillingNo         varchar(64),
+    PartyName         varchar(100),
+    CreateDate        datetime,
+    IssueDate         datetime,
+    DueDate           datetime,
+    FeeAmountSum      decimal(12, 2),
+    ReceivedAmountSum decimal(12, 2),
+    IsPro             TINYINT(1),
+    Status            varchar(20),
+    PRIMARY KEY (BillMasterID)
+    """
+
     __tablename__ = "BillMaster"
-    BLMasterID = Column(Integer, primary_key=True, index=True)
-    BillingNo = Column(String(128))
+    BillMasterID = Column(Integer, primary_key=True, index=True)
+    BillingNo = Column(String(64))
     PartyName = Column(String(100))
     CreateDate = Column(String(20))
+    IssueDate = Column(String(20))
     DueDate = Column(String(20))
-    Status = Column(String(20))
+    FeeAmountSum = Column(Float)
+    ReceivedAmountSum = Column(Float)
     IsPro = Column(Boolean)
+    Status = Column(String(20))
 
 
 class BillDetailDBModel(Base):
+    """
+    BillDetailID    int NOT NULL AUTO_INCREMENT,
+    BillMasterID    int NOT NULL,
+    WKMasterID      int,
+    InvDetailID     int,
+    PartyName       varchar(100),
+    SupplierName    varchar(100),
+    SubmarineCable  varchar(10),
+    WorkTitle       varchar(50),
+    BillMilestone   varchar(20),
+    FeeItem         varchar(100),
+    OrgFeeAmount    decimal(12, 2),
+    DedAmount       decimal(12, 2),
+    FeeAmount       decimal(12, 2),
+    ReceivedAmount  decimal(12, 2),
+    OverAmount      decimal(12, 2),
+    ShortAmount     decimal(12, 2),
+    BankFees        decimal(12, 2),
+    ShortOverReason varchar(128),
+    WriteOffDate    datetime,
+    ReceiveDate     datetime,
+    Note            varchar(128),
+    ToCB            varchar(10),
+    Status          varchar(20),
+    PRIMARY KEY (BillDetailID)
+    """
+
     __tablename__ = "BillDetail"
-    BLDetailID = Column(Integer, primary_key=True, index=True)
-    BLMasterID = Column(Integer)
+    BillDetailID = Column(Integer, primary_key=True, index=True)
+    BillMasterID = Column(Integer)
     WKMasterID = Column(Integer)
     InvDetailID = Column(Integer)
     PartyName = Column(String(100))
     SupplierName = Column(String(100))
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
+    BillMilestone = Column(String(20))
+    FeeItem = Column(String(100))
+    OrgFeeAmount = Column(Float)
+    DedAmount = Column(Float)
+    FeeAmount = Column(Float)
+    ReceivedAmount = Column(Float)
+    OverAmount = Column(Float)
+    ShortAmount = Column(Float)
+    BankFees = Column(Float)
+    ShortOverReason = Column(String(128))
+    WriteOffDate = Column(String(20))
+    ReceiveDate = Column(String(20))
+    Note = Column(String(128))
+    ToCB = Column(String(10))
+    Status = Column(String(20))
 
 
 class LiabilityDBModel(Base):

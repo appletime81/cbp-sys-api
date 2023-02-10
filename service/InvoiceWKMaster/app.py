@@ -8,6 +8,7 @@ from copy import deepcopy
 
 router = APIRouter()
 
+
 # 查詢發票工作主檔
 @router.get(f"/InvoiceWKMaster/" + "{InvoiceWKMasterCondition}")
 async def getInvoiceWKMaster(

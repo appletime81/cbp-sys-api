@@ -50,7 +50,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
-
     invoice_data = await request.json()
     InvoiceWKMasterDictData = invoice_data["InvoiceWKMaster"]
     print("-" * 25 + " invoice_data " + "-" * 25)

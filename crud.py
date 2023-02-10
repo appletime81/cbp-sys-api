@@ -44,6 +44,7 @@ def create_party(db: Session, party: PartiesSchema):
 
 # ---------------------------------------------------------------------
 
+
 # ------------------------------ Suppliers ------------------------------
 def get_all_supplier(db: Session):
     return db.query(SuppliersDBModel).all()
@@ -60,6 +61,7 @@ def create_supplier(db: Session, supplier: SuppliersSchema):
 
 
 # -----------------------------------------------------------------------
+
 
 # ------------------------------ Corporates ------------------------------
 def get_all_corporate(db: Session):
@@ -79,6 +81,7 @@ def create_corporate(db: Session, corporate: CorporatesSchema):
 
 
 # ------------------------------------------------------------------------
+
 
 # ------------------------------ Contracts ------------------------------
 def get_all_contract(db: Session):

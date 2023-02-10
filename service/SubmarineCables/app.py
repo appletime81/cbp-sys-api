@@ -8,6 +8,7 @@ from copy import deepcopy
 
 router = APIRouter()
 
+
 # ------------------------------ SubmarineCables ------------------------------
 # 查詢SubmarineCables
 @router.get("/SubmarineCables/{SubmarineCablesCondition}")

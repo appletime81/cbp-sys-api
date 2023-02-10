@@ -20,3 +20,24 @@ async def addCreditBalance(
     return {
         "message": "CreditBalance successfully created",
     }
+
+@router.get("/CreditBalance/{urlCondition}", status_code=status.HTTP_200_OK)
+async def getCreditBalance(
+    request: Request,
+    urlCondition: str,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, CreditBalanceDBModel)
+    table_name = "CreditBalance"
+    if urlCondition == "all":
+        CreditBalanceDataList = crud.get_all()
+    elif "start" in urlCondition or "end" in urlCondition:
+        urlCondition = convert_url_condition_to_dict(urlCondition)
+        sql_condition = convert_dict_to_sql_condition(urlCondition, table_name)
+
+        # get all CreditBalance by sql
+        CreditBalanceDataList = crud.get_all_by_sql(sql_condition)
+    else:
+        urlCondition = convert_url_condition_to_dict(urlCondition)
+        CreditBalanceDataList = crud.get_with_condition(urlCondition)
+    return CreditBalanceDataList

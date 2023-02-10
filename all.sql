@@ -76,8 +76,9 @@ CREATE TABLE InvoiceDetail
 CREATE TABLE BillMaster
 (
     BillMasterID      int NOT NULL AUTO_INCREMENT,
-    BillingNo         varchar(128),
+    BillingNo         varchar(64),
     PartyName         varchar(100),
+    CreateDate        datetime,
     IssueDate         datetime,
     DueDate           datetime,
     FeeAmountSum      decimal(12, 2),
@@ -110,9 +111,11 @@ CREATE TABLE BillDetail
     WriteOffDate    datetime,
     ReceiveDate     datetime,
     Note            varchar(128),
-    Status          int,
+    ToCB            varchar(10),
+    Status          varchar(20),
     PRIMARY KEY (BillDetailID)
 );
+
 
 
 CREATE TABLE Liability
