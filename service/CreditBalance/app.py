@@ -21,6 +21,7 @@ async def addCreditBalance(
         "message": "CreditBalance successfully created",
     }
 
+
 @router.get("/CreditBalance/{urlCondition}", status_code=status.HTTP_200_OK)
 async def getCreditBalance(
     request: Request,
