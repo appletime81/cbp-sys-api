@@ -112,6 +112,9 @@ class CRUD:
     def get_with_condition(self, filter_condition: dict):
         return self.db.query(self.model).filter_by(**filter_condition).all()
 
+    def get_value_if_in_a_list(self, value, list_of_values):
+        return self.db.query(self.model).filter(value.in_(list_of_values)).all()
+
     def get_all(self):
         return self.db.query(self.model).all()
 

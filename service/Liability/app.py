@@ -22,7 +22,9 @@ async def getLiability(
 
     EndBool = "Init"
     if "End" in LiabilityCondition:
-        LiabilityCondition, EndBool = re_search_url_condition_value(LiabilityCondition, "End")
+        LiabilityCondition, EndBool = re_search_url_condition_value(
+            LiabilityCondition, "End"
+        )
         if not LiabilityCondition:
             LiabilityCondition = "all"
 

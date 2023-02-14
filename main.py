@@ -450,6 +450,92 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 
 
 # ------------------------------ BillMaster & BillDetail ------------------------------
+@app.post(ROOT_URL + "/checkInitBillMaster&BillDetail")
+async def checkInitBillMasterAndBillDetail(
+    request: Request, db: Session = Depends(get_db)
+):
+    """
+    {
+        "InvoiceMaster": [
+            {...},
+            {...},
+            {...}
+        ]
+    }
+    """
+    request_data = await request.json()
+    PartyList = []
+    SubmarineCableList = []
+    WorkTitleList = []
+    InvoiceMasterDictDataList = request_data["InvoiceMaster"]
+    for InvoiceMasterDictData in InvoiceMasterDictDataList:
+        PartyList.append(InvoiceMasterDictData["PartyName"])
+        SubmarineCableList.append(InvoiceMasterDictData["SubmarineCable"])
+        WorkTitleList.append(InvoiceMasterDictData["WorkTitle"])
+
+    alert_msg = {}
+    if len(set(PartyList)) > 1:
+        alert_msg["PartyName"] = "PartyName is not unique"
+    if len(set(SubmarineCableList)) > 1:
+        alert_msg["SubmarineCable"] = "SubmarineCable is not unique"
+    if len(set(WorkTitleList)) > 1:
+        alert_msg["WorkTitle"] = "WorkTitle is not unique"
+    return alert_msg
+
+
+@app.post(ROOT_URL + "/initBillMaster&BillDetail")
+async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(get_db)):
+    """
+    {
+        "BillingNo": "testNo.",
+        "IssueDate": "2021-01-01",
+        "DueDate": "2021-01-02",
+        "InvoiceMaster": [
+            {...},
+            {...},
+            {...}
+        ]
+    }
+    """
+    request_data = await request.json()
+    InvoiceMasterDataList = request_data["InvoiceMaster"]
+    BillingNo = request_data["BillingNo"]
+    DueDate = request_data["DueDate"]
+    crud = CRUD(db, InvoiceDetailDBModel)
+
+    fake_list = [1]
+    InvMasterIDList = []
+    for InvoiceMasterData in InvoiceMasterDataList:
+        InvMasterIDList.append(InvoiceMasterData["InvMasterID"])
+
+    InvoiceDetailDataList = crud.get_value_if_in_a_list(InvoiceDetailDBModel.InvDetailID, fake_list)
+    InvoiceDetailDictDataList = [
+        orm_to_dict(InvoiceDetailData)
+        for InvoiceDetailData in InvoiceDetailDataList
+    ]
+
+    # cal FeeAmountSum
+    FeeAmountSum = 0
+    for InvoiceDetailData in InvoiceDetailDataList:
+        FeeAmountSum += InvoiceDetailData.FeeAmountPost
+
+    # init BillMaster
+    BillMasterDictData = {
+        "BillingNo": BillingNo,
+        "PartyName": InvoiceMasterDataList[0]["PartyName"],
+        "IssueDate": convert_time_to_str(datetime.now()),
+        "DueDate": DueDate,
+        "FeeAmountSum": FeeAmountSum,
+        "ReceivedAmountSum": 0,
+        "IsPro": InvoiceMasterDataList[0]["IsPro"],
+        "Status": "INITIAL"
+    }
+    print(BillMasterDictData)
+
+    # init BillDetail
+
+
+    return InvoiceDetailDictDataList
 
 
 @app.post(ROOT_URL + "/generateBillMaster&BillDetail")
@@ -460,7 +546,14 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
         "BillDetailList": [
             {
                 "InvDetailID": "1",
-                "CBID": "1",
+                "CBList": [
+                    {
+                        "CBID": "1",
+                        "TransAmount": 1000,
+                    },
+                    {...},
+                    {...},
+                ]
             },
             {...},
             {...}
@@ -470,11 +563,6 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
 
     request_data = await request.json()
     pass
-
-
-
-
-
 
 
 @app.get(

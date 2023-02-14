@@ -1,0 +1,34 @@
+{
+  "exportedFrom": "Restfox-1.0.0",
+  "collection": [
+    {
+      "_id": "0fMxQpdUEZb02UTuNn4di",
+      "_type": "request",
+      "name": "產生帳單主檔",
+      "method": "GET",
+      "body": {
+        "mimeType": "application/json"
+      },
+      "parentId": "2gT2b0v_f9q7v_gzB7ecm",
+      "workspaceId": "n2APogMhZh3UiwUgwLRZp",
+      "sortOrder": 0,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "url": "http://localhost:8000/api/v1/"
+    },
+    {
+      "_id": "2gT2b0v_f9q7v_gzB7ecm",
+      "_type": "request_group",
+      "name": "帳單主檔&帳單明細檔",
+      "children": [],
+      "parentId": null,
+      "workspaceId": "n2APogMhZh3UiwUgwLRZp",
+      "sortOrder": 0,
+      "collapsed": false
+    }
+  ]
+}
