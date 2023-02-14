@@ -19,6 +19,13 @@ async def getLiability(
 ):
     crud = CRUD(db, LiabilityDBModel)
     table_name = "Liability"
+
+    EndBool = "Init"
+    if "End" in LiabilityCondition:
+        LiabilityCondition, EndBool = re_search_url_condition_value(LiabilityCondition, "End")
+        if not LiabilityCondition:
+            LiabilityCondition = "all"
+
     if LiabilityCondition == "all":
         LiabilityDataList = crud.get_all()
     elif "start" in LiabilityCondition or "end" in LiabilityCondition:
@@ -29,13 +36,22 @@ async def getLiability(
         LiabilityCondition = convert_url_condition_to_dict(LiabilityCondition)
         LiabilityDataList = crud.get_with_condition(LiabilityCondition)
 
-    # filter the data that has "EndDate"
-    LiabilityDataList = [
-        LiabilityData
-        for LiabilityData in LiabilityDataList
-        if not LiabilityData.EndDate
-    ]
-    pprint(LiabilityDataList)
+    if EndBool != "Init":
+        # 篩選沒終止的資料
+        if EndBool:
+            LiabilityDataList = [
+                LiabilityData
+                for LiabilityData in LiabilityDataList
+                if LiabilityData.EndDate
+            ]
+
+        # 篩選有終止的資料
+        if not EndBool:
+            LiabilityDataList = [
+                LiabilityData
+                for LiabilityData in LiabilityDataList
+                if not LiabilityData.EndDate
+            ]
 
     return LiabilityDataList
 

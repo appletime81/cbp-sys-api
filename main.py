@@ -88,7 +88,6 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     # ---------- Step2. Generate InvoiceWKDetail ----------
     # get invoice wk detail data
     InvoiceWKDetailDictDataList = invoice_data["InvoiceWKDetail"]
-    pprint(InvoiceWKDetailDictDataList)
 
     for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
         # covert InvoiceWKDetailDictData to Pydantic model
@@ -139,11 +138,12 @@ async def searchInvoiceWKMaster(
         newInvoiceWKMasterDictDataList = []
         for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
             # TODO: 這邊要改成所有的狀態都要顯示
-            if (
-                InvoiceWKMasterDictData["Status"] == "TEMPORARY"
-                or InvoiceWKMasterDictData["Status"] == "VALIDATED"
-            ):
-                newInvoiceWKMasterDictDataList.append(InvoiceWKMasterDictData)
+            # if (
+            #     InvoiceWKMasterDictData["Status"] == "TEMPORARY"
+            #     or InvoiceWKMasterDictData["Status"] == "VALIDATED"
+            # ):
+            #     newInvoiceWKMasterDictDataList.append(InvoiceWKMasterDictData)
+            newInvoiceWKMasterDictDataList.append(InvoiceWKMasterDictData)
         InvoiceWKMasterDictDataList = newInvoiceWKMasterDictDataList
 
     # get InvoiceWKDetail
@@ -452,61 +452,29 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 # ------------------------------ BillMaster & BillDetail ------------------------------
 
 
-@app.post(ROOT_URL + "/generateBillMaster")
+@app.post(ROOT_URL + "/generateBillMaster&BillDetail")
 async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
-    request_data = await request.json()
-    InvoiceMasterIdList = request_data["InvoiceMasterIdList"]
-    DueDate = request_data["DueDate"]
-
-    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
-    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
-
-    # get all InvoiceMaster data
-    getResult = []
-    for InvoiceMasterId in InvoiceMasterIdList:
-        InvoiceMasterId = int(InvoiceMasterId)
-        InvoiceMasterDataList = crudInvoiceMaster.get_with_condition(
-            {"InvMasterID": InvoiceMasterId}
-        )
-        InvoiceMasterDictData = orm_to_dict(InvoiceMasterDataList[0])
-
-        InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(
-            {"InvMasterID": InvoiceMasterId}
-        )
-        InvoiceDetailDictDataList = [
-            orm_to_dict(InvoiceDetailData)
-            for InvoiceDetailData in InvoiceDetailDataList
-        ]
-
-        # TODO: generate BillMaster data
-        FeeAmountSum = 0
-        BillingNo = f"{InvoiceMasterDictData['SubmarineCable']}-CBP-{InvoiceMasterDictData['PartyName']}-"
-        for InvoiceDetailDictData in InvoiceDetailDictDataList:
-            BillingNo += f"{InvoiceDetailDictData['BillMilestone']}-"
-            FeeAmountSum += InvoiceDetailDictData["FeeAmountPost"]
-        BillingNo = BillingNo[:-1]
-        BillMasterDictData = {
-            "BillingNo": BillingNo,
-            "PartyName": InvoiceMasterDictData["PartyName"],
-            "CreatedDate": convert_time_to_str(datetime.now()),
-            "DueDate": DueDate,
-            "FeeAmountSum": FeeAmountSum,
-            "ReceiverAmountSum": 0,
-            "IsPro": InvoiceMasterDictData["IsPro"],
-            "Status": "INITIAL",
-        }
-
-        getResult.append(
+    """
+    {
+        "BillMaster": {...},
+        "BillDetailList": [
             {
-                "InvoiceMaster": InvoiceMasterDictData,
-                "InvoiceDetail": InvoiceDetailDictDataList,
-                "BillMaster": BillMasterDictData,
-            }
-        )
+                "InvDetailID": "1",
+                "CBID": "1",
+            },
+            {...},
+            {...}
+        ]
+    }
+    """
 
-    # get all InvoiceDetail data
-    pprint(getResult)
-    return {"message": "success add BillMaster and BillDetail", "data": getResult}
+    request_data = await request.json()
+    pass
+
+
+
+
+
 
 
 @app.get(
@@ -521,6 +489,16 @@ async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
         return {"message": "BillingNo is not exist"}
     else:
         return {"message": "BillingNo is exist"}
+
+
+@app.router.get(ROOT_URL + "/Test/{condition}")
+async def Test(request: Request, db: Session = Depends(get_db)):
+    condition = request.path_params["condition"]
+    crud = CRUD(db, InvoiceWKMasterDBModel)
+    dict_condition = convert_url_condition_to_dict(condition)
+    print(dict_condition)
+    dataList = crud.get_with_condition(dict_condition)
+    return dataList
 
 
 # -------------------------------------------------------------------------------------

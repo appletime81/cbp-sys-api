@@ -32,6 +32,10 @@ def convert_url_condition_to_dict(url_condition):
             value = value[:4] + "-" + value[4:6] + "-" + value[6:8] + " " + "00:00:00"
             dict_condition[key].update({"lte": value})
         else:
+            if value == "true":
+                value = True
+            elif value == "false":
+                value = False
             dict_condition[key] = value
 
     return dict_condition
@@ -42,6 +46,10 @@ def convert_url_condition_to_dict_ignore_date(url_condition):
     list_ = url_condition.split("&")
     for sub_condition in list_:
         key, value = sub_condition.split("=")
+        if value == "true":
+            value = True
+        elif value == "false":
+            value = False
         dict_condition[key] = value
     return dict_condition
 
@@ -59,7 +67,10 @@ def convert_dict_to_sql_condition(dict_condition: Dict, table_name: str):
                 f" {date_column_name} BETWEEN '{start_date}' AND '{end_date}' AND"
             )
         else:
-            sql_condition += f" {key} = '{value}' AND"
+            if value == True or value == False:
+                sql_condition += f" {key} = {str(value).lower()} AND"
+            else:
+                sql_condition += f" {key} = '{value}' AND"
     if sql_condition.endswith("AND"):
         sql_condition = sql_condition[1:-4]
 
