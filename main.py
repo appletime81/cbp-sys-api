@@ -24,6 +24,7 @@ from service.Suppliers.app import router as SuppliersRouter
 from service.BillMilestone.app import router as BillMilestoneRouter
 from service.CreditBalance.app import router as CreditBalanceRouter
 from service.Letter.app import router as LetterRouter
+from service.BillMaster.app import router as BillMasterRouter
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 
@@ -45,6 +46,7 @@ app.include_router(SuppliersRouter, prefix=ROOT_URL, tags=["Suppliers"])
 app.include_router(BillMilestoneRouter, prefix=ROOT_URL, tags=["BillMilestone"])
 app.include_router(CreditBalanceRouter, prefix=ROOT_URL, tags=["CreditBalance"])
 app.include_router(LetterRouter, prefix=ROOT_URL, tags=["Letter"])
+app.include_router(BillMasterRouter, prefix=ROOT_URL, tags=["BillMaster"])
 
 # allow middlewares
 app.add_middleware(
@@ -498,20 +500,23 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     }
     """
     request_data = await request.json()
-    InvoiceMasterDataList = request_data["InvoiceMaster"]
+    InvoiceMasterIdList = [
+        InvoiceMasterDictData["InvMasterID"]
+        for InvoiceMasterDictData in request_data["InvoiceMaster"]
+    ]
     BillingNo = request_data["BillingNo"]
     DueDate = request_data["DueDate"]
-    crud = CRUD(db, InvoiceDetailDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
 
-    fake_list = [1]
-    InvMasterIDList = []
-    for InvoiceMasterData in InvoiceMasterDataList:
-        InvMasterIDList.append(InvoiceMasterData["InvMasterID"])
-
-    InvoiceDetailDataList = crud.get_value_if_in_a_list(InvoiceDetailDBModel.InvDetailID, fake_list)
+    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
+        InvoiceMasterDBModel.InvMasterID, InvoiceMasterIdList
+    )
+    InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
+        InvoiceDetailDBModel.InvMasterID, InvoiceMasterIdList
+    )
     InvoiceDetailDictDataList = [
-        orm_to_dict(InvoiceDetailData)
-        for InvoiceDetailData in InvoiceDetailDataList
+        orm_to_dict(InvoiceDetailData) for InvoiceDetailData in InvoiceDetailDataList
     ]
 
     # cal FeeAmountSum
@@ -522,18 +527,71 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     # init BillMaster
     BillMasterDictData = {
         "BillingNo": BillingNo,
-        "PartyName": InvoiceMasterDataList[0]["PartyName"],
+        "PartyName": InvoiceMasterDataList[0].PartyName,
         "IssueDate": convert_time_to_str(datetime.now()),
         "DueDate": DueDate,
         "FeeAmountSum": FeeAmountSum,
         "ReceivedAmountSum": 0,
-        "IsPro": InvoiceMasterDataList[0]["IsPro"],
-        "Status": "INITIAL"
+        "IsPro": InvoiceMasterDataList[0].IsPro,
+        "Status": "INITIAL",
     }
+
+    # insert BillMaster to DB
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
+    BillMasterData = crudBillMaster.create(BillMasterPydanticData)
     print(BillMasterDictData)
 
     # init BillDetail
-
+    for InvoiceDetailData in InvoiceDetailDataList:
+        """
+        BillDetailData keys:
+        BillDetailID
+        BillMasterID
+        WKMasterID
+        InvDetailID
+        PartyName
+        SupplierName
+        SubmarineCable
+        WorkTitle
+        BillMilestone
+        FeeItem
+        OrgFeeAmount
+        DedAmount(抵扣金額)
+        FeeAmount(應收(會員繳)金額)
+        ReceivedAmount(累計實收(會員繳)金額(初始為0))
+        OverAmount(重溢繳金額 銷帳介面會自動計算帶出)
+        ShortAmount(短繳金額 銷帳介面會自動計算帶出)
+        BankFees(自行輸入)
+        ShortOverReason(短繳原因 自行輸入)
+        WriteOffDate(銷帳日期)
+        ReceiveDate(最新收款日期 自行輸入)
+        Note
+        ToCB(金額是否已存在 null or Done)
+        Status
+        """
+        BillDetailDictData = {
+            "BillMasterID": BillMasterData.BillMasterID,
+            "WKMasterID": InvoiceDetailData.WKMasterID,
+            "InvDetailID": InvoiceDetailData.InvDetailID,
+            "PartyName": InvoiceDetailData.PartyName,
+            "SupplierName": InvoiceDetailData.SupplierName,
+            "SubmarineCable": InvoiceDetailData.SubmarineCable,
+            "WorkTitle": InvoiceDetailData.WorkTitle,
+            "BillMilestone": InvoiceDetailData.BillMilestone,
+            "FeeItem": InvoiceDetailData.FeeItem,
+            "OrgFeeAmount": InvoiceDetailData.FeeAmountPost,
+            "DedAmount": 0,
+            "FeeAmount": 0,
+            "ReceivedAmount": 0,
+            "OverAmount": 0,
+            "ShortAmount": 0,
+            "WriteOffDate": None,
+            "ReceiveDate": None,
+            "Note": None,
+            "ToCB": None,
+            "Status": "INITIAL",
+        }
 
     return InvoiceDetailDictDataList
 
@@ -579,14 +637,21 @@ async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
         return {"message": "BillingNo is exist"}
 
 
-@app.router.get(ROOT_URL + "/Test/{condition}")
-async def Test(request: Request, db: Session = Depends(get_db)):
-    condition = request.path_params["condition"]
-    crud = CRUD(db, InvoiceWKMasterDBModel)
-    dict_condition = convert_url_condition_to_dict(condition)
-    print(dict_condition)
-    dataList = crud.get_with_condition(dict_condition)
-    return dataList
+# @app.router.get(ROOT_URL + "/Test/{condition}")
+# async def Test(request: Request, db: Session = Depends(get_db)):
+#     condition = request.path_params["condition"]
+#     crud = CRUD(db, InvoiceWKMasterDBModel)
+#     dict_condition = convert_url_condition_to_dict(condition)
+#     print(dict_condition)
+#     dataList = crud.get_with_condition(dict_condition)
+#     print(dataList[0].IsPro)
+#     print(dataList[0].__dict__)
+#     dictData = deepcopy(dataList[0].__dict__)
+#     df = pd.DataFrame.from_dict(dictData, orient="index").T
+#     print(df)
+#     print(type(df))
+#     df.to_csv("test.csv", index=False)
+#     return dataList
 
 
 # -------------------------------------------------------------------------------------

@@ -1,0 +1,2 @@
+_sa_instance_state,WKMasterID,SubmarineCable,ContractType,DueDate,Status,IsRecharge,TotalAmount,WorkTitle,InvoiceNo,SupplierName,IssueDate,PartyName,IsPro,IsLiability,CreateDate
+<sqlalchemy.orm.state.InstanceState object at 0x7f81d7080f40>,1,SJC2,SC,2022-11-08 12:00:00,INVALID,False,5582012.72,Construction,DT0170168-1,NEC,2022-09-09 12:00:00,,False,True,2023-02-13 15:21:23
