@@ -1,0 +1,16 @@
+{
+  "BillingNo": "testNo.",
+  "IssueDate": "2021-01-01",
+  "DueDate": "2021-01-02",
+  "InvoiceMaster": [
+    {
+      "InvMasterID": 1
+    },
+    {
+      "InvMasterID": 2
+    },
+    {
+      "InvMasterID": 3
+    }
+  ]
+}
