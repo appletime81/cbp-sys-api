@@ -601,7 +601,7 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
     """
     {
         "BillMaster": {...},
-        "BillDetailList": [
+        "BillDetailDataList": [
             {
                 "InvDetailID": "1",
                 "CBList": [
@@ -618,8 +618,18 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
         ]
     }
     """
-
     request_data = await request.json()
+    BillDetailDictDataList = request_data["BillDetailDataList"]
+
+    # init crud
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+
+    # 開始做抵扣
+    
+
     pass
 
 
