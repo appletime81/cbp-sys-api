@@ -29,16 +29,31 @@ async def getCreditBalance(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, CreditBalanceDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     table_name = "CreditBalance"
-    if urlCondition == "all":
-        CreditBalanceDataList = crud.get_all()
-    elif "start" in urlCondition or "end" in urlCondition:
-        urlCondition = convert_url_condition_to_dict(urlCondition)
-        sql_condition = convert_dict_to_sql_condition(urlCondition, table_name)
+    if "generateBillDetail=yes" not in urlCondition:
+        if urlCondition == "all":
+            CreditBalanceDataList = crud.get_all()
+        elif "start" in urlCondition or "end" in urlCondition:
+            dictCondition = convert_url_condition_to_dict(urlCondition)
+            sql_condition = convert_dict_to_sql_condition(dictCondition, table_name)
 
-        # get all CreditBalance by sql
-        CreditBalanceDataList = crud.get_all_by_sql(sql_condition)
+            # get all CreditBalance by sql
+            CreditBalanceDataList = crud.get_all_by_sql(sql_condition)
+        else:
+            urlCondition = convert_url_condition_to_dict(urlCondition)
+            CreditBalanceDataList = crud.get_with_condition(urlCondition)
     else:
-        urlCondition = convert_url_condition_to_dict(urlCondition)
-        CreditBalanceDataList = crud.get_with_condition(urlCondition)
+        # for generate BillDetail("generateBillDetail=yes" in urlCondition)
+        # if "generateBillDetail=yes" in urlCondition
+        urlCondition = urlCondition.replace("generateBillDetail=yes", "")
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(dictCondition)
+        InvoiceDetailInvoiceNoList = [
+            InvoiceDetailData.InvoiceNo for InvoiceDetailData in InvoiceDetailDataList
+        ]
+        CreditBalanceDataList = crud.get_value_if_in_a_list(
+            CreditBalanceDBModel.InvoiceNo, InvoiceDetailInvoiceNoList
+        )
+
     return CreditBalanceDataList

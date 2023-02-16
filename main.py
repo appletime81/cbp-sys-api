@@ -508,6 +508,8 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     DueDate = request_data["DueDate"]
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
 
     InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
         InvoiceMasterDBModel.InvMasterID, InvoiceMasterIdList
@@ -515,9 +517,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvMasterID, InvoiceMasterIdList
     )
-    InvoiceDetailDictDataList = [
-        orm_to_dict(InvoiceDetailData) for InvoiceDetailData in InvoiceDetailDataList
-    ]
 
     # cal FeeAmountSum
     FeeAmountSum = 0
@@ -543,6 +542,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     print(BillMasterDictData)
 
     # init BillDetail
+    BillDetailDataList = []
     for InvoiceDetailData in InvoiceDetailDataList:
         """
         BillDetailData keys:
@@ -592,8 +592,14 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
             "ToCB": None,
             "Status": "INITIAL",
         }
+        BillDetailData = crudBillDetail.create(BillDetailSchema(**BillDetailDictData))
+        BillDetailDataList.append(BillDetailData)
 
-    return InvoiceDetailDictDataList
+    return {
+        "message": "success",
+        "BillMaster": BillMasterData,
+        "BillDetailDataList": BillDetailDataList,
+    }
 
 
 @app.post(ROOT_URL + "/generateBillMaster&BillDetail")
@@ -628,7 +634,15 @@ async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
 
     # 開始做抵扣
-    
+    for info in BillDetailDictDataList:
+        InvDetailID = info["InvDetailID"]
+        CreditBalanceIdList = [CB["CBID"] for CB in info["CBList"]]
+        CreditBalanceDataList = crudCreditBalance.get_value_if_in_a_list(
+            CreditBalanceDBModel.CBID, CreditBalanceIdList
+        )
+        BillDetailData = crudBillDetail.get_with_condition(
+            {"InvDetailID": InvDetailID}
+        )[0]
 
     pass
 
