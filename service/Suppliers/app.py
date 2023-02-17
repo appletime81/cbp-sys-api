@@ -11,15 +11,18 @@ router = APIRouter()
 
 # ------------------------------ Suppliers ------------------------------
 # 查詢Suppliers
-@router.get("/Suppliers/{SuppliersCondition}")
+@router.get("/Suppliers/{urlCondition}")
 async def getSuppliers(
     request: Request,
-    SuppliersCondition: str,
+    urlCondition: str,
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, SuppliersDBModel)
-    if SuppliersCondition == "all":
+    if urlCondition == "all":
         SuppliersDataList = crud.get_all()
+    else:
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        SuppliersDataList = crud.get_with_condition(dictCondition)
     return SuppliersDataList
 
 
@@ -30,8 +33,8 @@ async def addSuppliers(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, SuppliersDBModel)
-    crud.create(SuppliersPydanticData)
-    return {"message": "Supplier successfully created"}
+    SupplierData = crud.create(SuppliersPydanticData)
+    return {"message": "Supplier successfully created", "SupplierData": SupplierData}
 
 
 @router.post("/deleteSuppliers")
@@ -39,8 +42,8 @@ async def deleteSuppliers(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    query_condition = await request.json()
-    SupplierID = query_condition.get("SupplierID")
+    request_data = await request.json()
+    SupplierID = request_data.get("SupplierID")
     crud = CRUD(db, SuppliersDBModel)
     crud.remove(SupplierID)
     return {"message": "Supplier successfully deleted"}
@@ -53,12 +56,14 @@ async def updateSuppliers(
 ):
     SuppliersDictData = await request.json()
     crud = CRUD(db, SuppliersDBModel)
-    SupplierDataList = crud.get_with_condition(
+    SupplierData = crud.get_with_condition(
         {"SupplierID": SuppliersDictData.get("SupplierID")}
-    )
-    for SupplierData in SupplierDataList:
-        crud.update(SupplierData, SuppliersDictData)
-    return {"message": "Supplier successfully updated"}
+    )[0]
+    updateSupplierData = crud.update(SupplierData, SuppliersDictData)
+    return {
+        "message": "Supplier successfully updated",
+        "updateSupplierData": updateSupplierData,
+    }
 
 
 # -----------------------------------------------------------------------

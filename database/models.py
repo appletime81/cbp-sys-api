@@ -167,6 +167,8 @@ class LiabilityDBModel(Base):
 class PartiesDBModel(Base):
     __tablename__ = "Parties"
     PartyID = Column(Integer, primary_key=True, index=True)
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
     PartyName = Column(String(100))
     Address = Column(String(512))
     Contact = Column(String(20))
@@ -178,6 +180,12 @@ class SuppliersDBModel(Base):
     __tablename__ = "Suppliers"
     SupplierID = Column(Integer, primary_key=True, index=True)
     SupplierName = Column(String(100))
+    BankAcctName = Column(String(100))
+    BankAcctNo = Column(String(32))
+    SWIFTCode = Column(String(32))
+    IBAN = Column(String(32))
+    BankName = Column(String(100))
+    BankAddress = Column(String(512))
 
 
 class CorporatesDBModel(Base):

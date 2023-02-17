@@ -25,6 +25,8 @@ from service.BillMilestone.app import router as BillMilestoneRouter
 from service.CreditBalance.app import router as CreditBalanceRouter
 from service.Letter.app import router as LetterRouter
 from service.BillMaster.app import router as BillMasterRouter
+from service.Corporates.app import router as CorporatesRouter
+from service.Contracts.app import router as ContractsRouter
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 
@@ -47,6 +49,8 @@ app.include_router(BillMilestoneRouter, prefix=ROOT_URL, tags=["BillMilestone"])
 app.include_router(CreditBalanceRouter, prefix=ROOT_URL, tags=["CreditBalance"])
 app.include_router(LetterRouter, prefix=ROOT_URL, tags=["Letter"])
 app.include_router(BillMasterRouter, prefix=ROOT_URL, tags=["BillMaster"])
+app.include_router(CorporatesRouter, prefix=ROOT_URL, tags=["Corporates"])
+app.include_router(ContractsRouter, prefix=ROOT_URL, tags=["Contracts"])
 
 # allow middlewares
 app.add_middleware(
@@ -420,13 +424,13 @@ async def compareLiability(request: Request, db: Session = Depends(get_db)):
     compareResultList = []
     crud = CRUD(db, LiabilityDBModel)
     for LiabilityDictData in LiabilityDictDataList:
-        query_condition = {
+        dictCondition = {
             "SubmarineCable": LiabilityDictData["SubmarineCable"],
             "WorkTitle": LiabilityDictData["WorkTitle"],
             "BillMilestone": LiabilityDictData["BillMilestone"],
             "PartyName": LiabilityDictData["PartyName"],
         }
-        LiabilityDataList = crud.get_with_condition(query_condition)
+        LiabilityDataList = crud.get_with_condition(dictCondition)
         if len(LiabilityDataList) != 0:
             for LiabilityData in LiabilityDataList:
                 compareResultList.append(LiabilityData)
@@ -603,7 +607,9 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
 
 
 @app.post(ROOT_URL + "/generateBillMaster&BillDetail")
-async def generateBillMaster(request: Request, db: Session = Depends(get_db)):
+async def generateBillMasterAndBillDetail(
+    request: Request, db: Session = Depends(get_db)
+):
     """
     {
         "BillMaster": {...},

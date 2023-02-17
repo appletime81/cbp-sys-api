@@ -11,15 +11,18 @@ router = APIRouter()
 
 # ------------------------------ Parties ------------------------------
 # 查詢Parties
-@router.get("/Parties/{PartiesCondition}")
+@router.get("/Parties/{urlCondition}")
 async def getParties(
     request: Request,
-    PartiesCondition: str,
+    urlCondition: str,
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, PartiesDBModel)
-    if PartiesCondition == "all":
+    if urlCondition == "all":
         PartiesDataList = crud.get_all()
+    else:
+        dictCondition = convert_url_condition_to_dict_ignore_date(urlCondition)
+        PartiesDataList = crud.get_by_condition(dictCondition)
     return PartiesDataList
 
 
@@ -30,8 +33,32 @@ async def addParties(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, PartiesDBModel)
-    crud.create(PartiesPydanticData)
-    return {"message": "Party successfully created"}
+    PartiesData = crud.create(PartiesPydanticData)
+    return {"message": "Party successfully created", "PartiesData": PartiesData}
+
+
+@router.post("/deleteParties")
+async def deletePartiesList(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    PartiesDictData = await request.json()
+    crud = CRUD(db, PartiesDBModel)
+    crud.remove_with_condition(PartiesDictData)
+    return {"message": "Party successfully deleted"}
+
+
+@router.post("/updateParties")
+async def updateParties(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    PartiesDictData = await request.json()
+    crud = CRUD(db, PartiesDBModel)
+    PartiesData = crud.get_with_condition(PartiesDictData)[0]
+    newPartiesData = crud.update(PartiesData, PartiesDictData)
+
+    return {"message": "Party successfully updated", "newPartiesData": newPartiesData}
 
 
 # ---------------------------------------------------------------------

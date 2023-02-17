@@ -157,14 +157,31 @@ class LiabilitySchema(BaseModel):
 
 
 class SuppliersSchema(BaseModel):
+    """
+    SupplierID = Column(Integer, primary_key=True, index=True)
+    SupplierName = Column(String(100))
+    BankAcctName = Column(String(100))
+    BankAcctNo = Column(String(32))
+    SWIFTCode = Column(String(32))
+    IBAN = Column(String(32))
+    BankName = Column(String(100))
+    BankAddress = Column(String(512))
+    """
+
     SupplierID: Optional[int]
-    SupplierName: str
+    SupplierName: Optional[str]
+    BankAcctName: Optional[str]
+    BankAcctNo: Optional[str]
+    SWIFTCode: Optional[str]
+    IBAN: Optional[str]
+    BankName: Optional[str]
+    BankAddress: Optional[str]
 
 
 class CorporatesSchema(BaseModel):
     CorpID: Optional[int]
     CorpName: str
-    SubmarineCable: str
+    SubmarineCable: Optional[str]
     CreateDate: datetime
 
 
@@ -177,8 +194,21 @@ class ContractsSchema(BaseModel):
 
 
 class PartiesSchema(BaseModel):
+    """
+    PartyID = Column(Integer, primary_key=True, index=True)
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
+    PartyName = Column(String(100))
+    Address = Column(String(512))
+    Contact = Column(String(20))
+    Email = Column(String(50))
+    Tel = Column(String(20))
+    """
+
     PartyID: Optional[int]
-    PartyName: str
+    SubmarineCable: Optional[str]
+    WorkTitle: Optional[str]
+    PartyName: Optional[str]
     Address: Optional[str]
     Contact: Optional[str]
     Email: Optional[str]

@@ -51,9 +51,9 @@ async def deleteInvoiceDetail(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    query_condition = await request.json()
+    request_data = await request.json()
     crud = CRUD(db, InvoiceDetailDBModel)
-    crud.remove_with_condition(query_condition)
+    crud.remove_with_condition(request_data)
     return {"message": "InvoiceDetail successfully deleted"}
 
 

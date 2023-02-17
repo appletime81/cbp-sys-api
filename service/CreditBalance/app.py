@@ -9,19 +9,6 @@ from copy import deepcopy
 router = APIRouter()
 
 
-@router.post("/CreditBalance", status_code=status.HTTP_201_CREATED)
-async def addCreditBalance(
-    request: Request,
-    CreditBalancePydanticData: CreditBalanceSchema,
-    db: Session = Depends(get_db),
-):
-    crud = CRUD(db, CreditBalanceDBModel)
-    crud.create(CreditBalancePydanticData)
-    return {
-        "message": "CreditBalance successfully created",
-    }
-
-
 @router.get("/CreditBalance/{urlCondition}", status_code=status.HTTP_200_OK)
 async def getCreditBalance(
     request: Request,
@@ -57,3 +44,16 @@ async def getCreditBalance(
         )
 
     return CreditBalanceDataList
+
+
+@router.post("/CreditBalance", status_code=status.HTTP_201_CREATED)
+async def addCreditBalance(
+    request: Request,
+    CreditBalancePydanticData: CreditBalanceSchema,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, CreditBalanceDBModel)
+    crud.create(CreditBalancePydanticData)
+    return {
+        "message": "CreditBalance successfully created",
+    }

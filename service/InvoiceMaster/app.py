@@ -52,9 +52,9 @@ async def deleteInvoiceMaster(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    query_condition = await request.json()
+    request_data = await request.json()
     crud = CRUD(db, InvoiceMasterDBModel)
-    crud.remove_with_condition(query_condition)
+    crud.remove_with_condition(request_data)
     return {"message": "InvoiceMaster successfully deleted"}
 
 
