@@ -193,7 +193,7 @@ CREATE TABLE Parties
     Contact        varchar(20),
     Email          varchar(50),
     Tel            varchar(20),
-    PRIMARY KEY (PartyName)
+    PRIMARY KEY (PartyID)
 );
 
 CREATE TABLE Contracts
@@ -219,7 +219,7 @@ CREATE TABLE WorkTitles
     TitleID int NOT NULL AUTO_INCREMENT,
     Title   varchar(20),
     Note    varchar(128),
-    PRIMARY KEY (Title)
+    PRIMARY KEY (TitleID)
 );
 
 CREATE TABLE ContractTypes
