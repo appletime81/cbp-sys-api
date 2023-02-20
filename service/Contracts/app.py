@@ -51,7 +51,7 @@ async def updateContracts(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    ContractsDictData = deepcopy(await request.json())
+    ContractsDictData = await request.json()
     crud = CRUD(db, ContractsDBModel)
     ContractsData = crud.get_with_condition(
         {"ContractID": ContractsDictData["ContractID"]}
@@ -69,7 +69,7 @@ async def deleteContracts(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    ContractsDictData = deepcopy(await request.json())
+    ContractsDictData = await request.json()
     crud = CRUD(db, ContractsDBModel)
-    crud.remove_with_condition(ContractsDictData)
+    crud.remove(ContractsDictData["ContractID"])
     return {"message": "Contracts successfully deleted"}

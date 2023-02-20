@@ -232,13 +232,76 @@ class ContractTypesSchema(BaseModel):
 
 
 class CreditBalanceSchema(BaseModel):
+    """
+    CBID           int NOT NULL AUTO_INCREMENT,
+    CBType         varchar(20),
+    BillingNo      varchar(64),
+    BLDetailID     int,
+    SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
+    InvoiceNo      varchar(64),
+    CurrAmount     decimal(12, 2),
+    PartyName      varchar(100),
+    CreateDate     datetime,
+    LastUpdDate    datetime,
+    Note           varchar(128),
+    PRIMARY KEY (CBID)
+    """
+
     CBID: Optional[int]
     CBType: str
     BillingNo: str
     BLDetailID: int
+    SubmarineCable: str
+    WorkTitle: str
     InvoiceNo: str
     CurrAmount: float
     PartyName: str
     CreateDate: datetime
-    LastUpDate: datetime
+    LastUpdDate: datetime
     Note: Optional[str]
+
+
+class PartiesByContractSchema(BaseModel):
+    """
+    ContractID int NOT NULL,
+    PartyName  varchar(100),
+    PRIMARY KEY (ContractID)
+    """
+
+    ContractID: Optional[int]
+    PartyName: str
+
+
+class CBPBankAccountSchema(BaseModel):
+    """
+    CorpID    int NOT NULL AUTO_INCREMENT,
+    CorpName  varchar(64),
+    AcctName  varchar(100),
+    AcctNo    varchar(32),
+    SWIFTCode varchar(32),
+    IBAN      varchar(32),
+    Name      varchar(100),
+    Address   varchar(512),
+    PRIMARY KEY (CorpID)
+    """
+
+    CorpID: Optional[int]
+    CorpName: Optional[str]
+    AcctName: Optional[str]
+    AcctNo: Optional[str]
+    SWIFTCode: Optional[str]
+    IBAN: Optional[str]
+    Name: Optional[str]
+    Address: Optional[str]
+
+
+class SuppliersByContractSchema(BaseModel):
+    """
+    ContractID   int not null,
+    SupplierName varchar(100),
+    PRIMARY KEY (ContractID)
+    """
+
+    ContractID: Optional[int]
+    SupplierName: str

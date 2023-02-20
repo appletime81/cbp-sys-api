@@ -213,14 +213,92 @@ class SubmarineCablesDBModel(Base):
 
 
 class CreditBalanceDBModel(Base):
+    """
+    CREATE TABLE CB
+    (
+        CBID           int NOT NULL AUTO_INCREMENT,
+        CBType         varchar(20),
+        BillingNo      varchar(64),
+        BLDetailID     int,
+        SubmarineCable varchar(10),
+        WorkTitle      varchar(50),
+        InvoiceNo      varchar(64),
+        CurrAmount     decimal(12, 2),
+        PartyName      varchar(100),
+        CreateDate     datetime,
+        LastUpdDate    datetime,
+        Note           varchar(128),
+        PRIMARY KEY (CBID)
+    );
+    """
+
     __tablename__ = "CB"
     CBID = Column(Integer, primary_key=True, index=True)
-    CBType = Column(String(100))
-    BillingNo = Column(String(128))
+    CBType = Column(String(20))
+    BillingNo = Column(String(64))
     BLDetailID = Column(Integer)
-    InvoiceNo = Column(String(20))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
+    InvoiceNo = Column(String(64))
     CurrAmount = Column(Float)
     PartyName = Column(String(100))
     CreateDate = Column(String(20))
-    LastUpDate = Column(String(20))
+    LastUpdDate = Column(String(20))
     Note = Column(String(128))
+
+
+class PartiesByContractDBModel(Base):
+    """
+    CREATE TABLE PartiesByContract
+    (
+        ContractID int NOT NULL,
+        PartyName  varchar(100),
+        PRIMARY KEY (ContractID)
+    );
+    """
+
+    __tablename__ = "PartiesByContract"
+    ContractID = Column(Integer, primary_key=True, index=True)
+    PartyName = Column(String(100))
+
+
+class CBPBankAccountDBModel(Base):
+    """
+    CREATE TABLE CBPBankAccount
+    (
+        CorpID    int NOT NULL AUTO_INCREMENT,
+        CorpName  varchar(64),
+        AcctName  varchar(100),
+        AcctNo    varchar(32),
+        SWIFTCode varchar(32),
+        IBAN      varchar(32),
+        Name      varchar(100),
+        Address   varchar(512),
+        PRIMARY KEY (CorpID)
+    );
+    """
+
+    __tablename__ = "CBPBankAccount"
+    CorpID = Column(Integer, primary_key=True, index=True)
+    CorpName = Column(String(64))
+    AcctName = Column(String(100))
+    AcctNo = Column(String(32))
+    SWIFTCode = Column(String(32))
+    IBAN = Column(String(32))
+    Name = Column(String(100))
+    Address = Column(String(512))
+
+
+class SuppliersByContractDBModel(Base):
+    """
+    CREATE TABLE SuppliersByContract
+    (
+        ContractID   int not null,
+        SupplierName varchar(100),
+        PRIMARY KEY (ContractID)
+    );
+    """
+
+    __tablename__ = "SuppliersByContract"
+    ContractID = Column(Integer, primary_key=True, index=True)
+    SupplierName = Column(String(100))

@@ -27,6 +27,11 @@ from service.Letter.app import router as LetterRouter
 from service.BillMaster.app import router as BillMasterRouter
 from service.Corporates.app import router as CorporatesRouter
 from service.Contracts.app import router as ContractsRouter
+from service.SubmarineCables.app import router as SubmarineCablesRouter
+from service.PartiesByContract.app import router as PartiesByContractRouter
+from service.CBPBankAccount.app import router as CBPBankAccountRouter
+from service.SuppliersByContract.app import router as SuppliersByContractRouter
+from service.UploadFile.app import router as UploadFileRouter
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 
@@ -51,6 +56,13 @@ app.include_router(LetterRouter, prefix=ROOT_URL, tags=["Letter"])
 app.include_router(BillMasterRouter, prefix=ROOT_URL, tags=["BillMaster"])
 app.include_router(CorporatesRouter, prefix=ROOT_URL, tags=["Corporates"])
 app.include_router(ContractsRouter, prefix=ROOT_URL, tags=["Contracts"])
+app.include_router(SubmarineCablesRouter, prefix=ROOT_URL, tags=["SubmarineCables"])
+app.include_router(PartiesByContractRouter, prefix=ROOT_URL, tags=["PartiesByContract"])
+app.include_router(CBPBankAccountRouter, prefix=ROOT_URL, tags=["CBPBankAccount"])
+app.include_router(
+    SuppliersByContractRouter, prefix=ROOT_URL, tags=["SuppliersByContract"]
+)
+app.include_router(UploadFileRouter, prefix=ROOT_URL, tags=["ReceiveFile"])
 
 # allow middlewares
 app.add_middleware(

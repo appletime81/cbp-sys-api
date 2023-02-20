@@ -52,7 +52,6 @@ CREATE TABLE InvoiceMaster
     PRIMARY KEY (InvMasterID)
 );
 
-
 CREATE TABLE InvoiceDetail
 (
     InvDetailID    int NOT NULL AUTO_INCREMENT,
@@ -116,8 +115,6 @@ CREATE TABLE BillDetail
     PRIMARY KEY (BillDetailID)
 );
 
-
-
 CREATE TABLE Liability
 (
     LBRawID        int NOT NULL AUTO_INCREMENT,
@@ -134,16 +131,18 @@ CREATE TABLE Liability
 
 CREATE TABLE CB
 (
-    CBID        int NOT NULL AUTO_INCREMENT,
-    CBType      varchar(20),
-    BillingNo   varchar(64),
-    BLDetailID  int,
-    InvoiceNo   varchar(64),
-    CurrAmount  decimal(12, 2),
-    PartyName   varchar(100),
-    CreateDate  datetime,
-    LastUpdDate datetime,
-    Note        varchar(128),
+    CBID           int NOT NULL AUTO_INCREMENT,
+    CBType         varchar(20),
+    BillingNo      varchar(64),
+    BLDetailID     int,
+    SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
+    InvoiceNo      varchar(64),
+    CurrAmount     decimal(12, 2),
+    PartyName      varchar(100),
+    CreateDate     datetime,
+    LastUpdDate    datetime,
+    Note           varchar(128),
     PRIMARY KEY (CBID)
 );
 
@@ -197,7 +196,6 @@ CREATE TABLE Parties
     PRIMARY KEY (PartyName)
 );
 
-
 CREATE TABLE Contracts
 (
     ContractID     int NOT NULL AUTO_INCREMENT,
@@ -219,8 +217,8 @@ CREATE TABLE SubmarineCables
 CREATE TABLE WorkTitles
 (
     TitleID int NOT NULL AUTO_INCREMENT,
-    Title varchar(20),
-    Note  varchar(128),
+    Title   varchar(20),
+    Note    varchar(128),
     PRIMARY KEY (Title)
 );
 
@@ -230,6 +228,35 @@ CREATE TABLE ContractTypes
     Note       varchar(128),
     PRIMARY KEY (ContractID)
 );
+
+CREATE TABLE PartiesByContract
+(
+    ContractID int NOT NULL,
+    PartyName  varchar(100),
+    PRIMARY KEY (ContractID)
+);
+
+CREATE TABLE CBPBankAccount
+(
+    CorpID    int NOT NULL AUTO_INCREMENT,
+    CorpName  varchar(64),
+    AcctName  varchar(100),
+    AcctNo    varchar(32),
+    SWIFTCode varchar(32),
+    IBAN      varchar(32),
+    Name      varchar(100),
+    Address   varchar(512),
+    PRIMARY KEY (CorpID)
+);
+
+
+CREATE TABLE SuppliersByContract
+(
+    ContractID   int not null,
+    SupplierName varchar(100),
+    PRIMARY KEY (ContractID)
+);
+
 
 /* --------------------------------------------------------------------- */
 insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)

@@ -3,7 +3,7 @@ from crud import *
 from get_db import get_db
 from sqlalchemy.orm import Session
 from utils.utils import *
-from utils.orm_pydantic_convert import orm_to_pydantic
+from utils.orm_pydantic_convert import *
 from copy import deepcopy
 
 router = APIRouter()
@@ -16,7 +16,6 @@ async def getCreditBalance(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, CreditBalanceDBModel)
-    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     table_name = "CreditBalance"
     if "generateBillDetail=yes" not in urlCondition:
         if urlCondition == "all":
@@ -31,18 +30,10 @@ async def getCreditBalance(
             urlCondition = convert_url_condition_to_dict(urlCondition)
             CreditBalanceDataList = crud.get_with_condition(urlCondition)
     else:
-        # for generate BillDetail("generateBillDetail=yes" in urlCondition)
-        # if "generateBillDetail=yes" in urlCondition
+        # urlCondition: SubmarineCable=str&WorkTitle=str&BillMilestone=str
         urlCondition = urlCondition.replace("generateBillDetail=yes", "")
         dictCondition = convert_url_condition_to_dict(urlCondition)
-        InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(dictCondition)
-        InvoiceDetailInvoiceNoList = [
-            InvoiceDetailData.InvoiceNo for InvoiceDetailData in InvoiceDetailDataList
-        ]
-        CreditBalanceDataList = crud.get_value_if_in_a_list(
-            CreditBalanceDBModel.InvoiceNo, InvoiceDetailInvoiceNoList
-        )
-
+        CreditBalanceDataList = crud.get_with_condition(dictCondition)
     return CreditBalanceDataList
 
 
