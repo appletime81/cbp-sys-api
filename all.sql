@@ -150,7 +150,6 @@ CREATE TABLE CBStatement
 (
     CBStateID   int NOT NULL AUTO_INCREMENT,
     CBID        int,
-    InvoiceNo   varchar(20),
     TransItem   varchar(20),
     OrgAmount   decimal(12, 2),
     TransAmount decimal(12, 2),

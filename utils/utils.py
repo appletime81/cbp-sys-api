@@ -133,12 +133,14 @@ def re_search_url_condition_value(urlCondition: str, conditionKey: str):
     return urlCondition, value
 
 
-def bill_detail_status(org_fee_amount):
-    pass
-
-
-# if __name__ == "__main__":
-#     url_condition = "BillMilestone=test&GGG=ttt&TTT=JJJ"
-#     url_condition, value = re_search_url_condition_value(url_condition, "BillMilestone")
-#     url = f"http://127.0.0.1:8000/api/v1/{url_condition}"
-#     print(url)
+def bill_detail_status(FeeAmount, ReceivedAmount, BankFees):
+    if FeeAmount == (ReceivedAmount + BankFees):
+        return "HANDLE_FEE"
+    if ReceivedAmount > FeeAmount:
+        return "OVER"
+    elif ReceivedAmount == FeeAmount:
+        return "OK"
+    elif ReceivedAmount < FeeAmount:
+        return "PARTIAL"
+    elif ReceivedAmount == 0 and BankFees == 0:
+        return "INCOMPLETE"

@@ -262,6 +262,31 @@ class CreditBalanceSchema(BaseModel):
     Note: Optional[str]
 
 
+class CreditBalanceStatementSchema(BaseModel):
+    """
+    CBStateID   int NOT NULL AUTO_INCREMENT,
+    CBID        int,
+    TransItem   varchar(20),
+    OrgAmount   decimal(12, 2),
+    TransAmount decimal(12, 2),
+    Note        varchar(128),
+    CreateDate  datetime,
+    Oprcode     varchar(6),
+    PRIMARY KEY (CBStateID)
+    """
+
+    CBStateID: Optional[int]
+    CBID: int
+    BillingNo: str
+    BLDetailID: int
+    TransItem: str
+    OrgAmount: float
+    TransAmount: float
+    Note: Optional[str]
+    CreateDate: datetime
+    Oprcode: Optional[str]
+
+
 class PartiesByContractSchema(BaseModel):
     """
     ContractID int NOT NULL,

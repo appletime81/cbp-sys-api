@@ -247,6 +247,35 @@ class CreditBalanceDBModel(Base):
     Note = Column(String(128))
 
 
+class CreditBalanceStatement(Base):
+    """
+    CREATE TABLE CBStatement
+    (
+        CBStateID   int NOT NULL AUTO_INCREMENT,
+        CBID        int,
+        TransItem   varchar(20),
+        OrgAmount   decimal(12, 2),
+        TransAmount decimal(12, 2),
+        Note        varchar(128),
+        CreateDate  datetime,
+        Oprcode     varchar(6),
+        PRIMARY KEY (CBStateID)
+    );
+    """
+
+    __tablename__ = "CBStatement"
+    CBStateID = Column(Integer, primary_key=True, index=True)
+    CBID = Column(Integer)
+    BillingNo = Column(String(64))
+    BLDetailID = Column(Integer)
+    TransItem = Column(String(20))
+    OrgAmount = Column(Float)
+    TransAmount = Column(Float)
+    Note = Column(String(128))
+    CreateDate = Column(String(20))
+    Oprcode = Column(String(6))
+
+
 class PartiesByContractDBModel(Base):
     """
     CREATE TABLE PartiesByContract

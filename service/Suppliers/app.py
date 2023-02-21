@@ -29,15 +29,11 @@ async def getSuppliers(
 @router.post("/Suppliers", status_code=status.HTTP_201_CREATED)
 async def addSuppliers(
     request: Request,
-    # SuppliersPydanticData: SuppliersSchema,
     db: Session = Depends(get_db),
-):  
-    data = request.json()
-    pprint(data)
-    # print(SuppliersPydanticData.dict())
-    # crud = CRUD(db, SuppliersDBModel)
-    # SupplierData = crud.create(SuppliersPydanticData)
-    pprint(request.__dict__)
+):
+    SuppliersDictData = await request.json()
+    crud = CRUD(db, SuppliersDBModel)
+    SupplierData = crud.create(SuppliersDictData)
     return {"message": "Supplier successfully created", "SupplierData": SupplierData}
 
 

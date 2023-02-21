@@ -552,7 +552,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     }
 
     # insert BillMaster to DB
-    crudBillMaster = CRUD(db, BillMasterDBModel)
     BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
     BillMasterData = crudBillMaster.create(BillMasterPydanticData)
     print(BillMasterDictData)
@@ -602,11 +601,13 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
             "ReceivedAmount": 0,
             "OverAmount": 0,
             "ShortAmount": 0,
+            "BankFees": 0,
+            "ShortOverReason": None,
             "WriteOffDate": None,
             "ReceiveDate": None,
             "Note": None,
             "ToCB": None,
-            "Status": "INITIAL",
+            "Status": "INCOMPLETE",
         }
         BillDetailData = crudBillDetail.create(BillDetailSchema(**BillDetailDictData))
         BillDetailDataList.append(BillDetailData)
@@ -654,10 +655,6 @@ async def generateBillMasterAndBillDetail(
     # 開始做抵扣
     for info in BillDetailDictDataList:
         InvDetailID = info["InvDetailID"]
-        CreditBalanceIdList = [CB["CBID"] for CB in info["CBList"]]
-        CreditBalanceDataList = crudCreditBalance.get_value_if_in_a_list(
-            CreditBalanceDBModel.CBID, CreditBalanceIdList
-        )
         DedAmount = [CB["TransAmount"] for CB in info["CBList"]]
         BillDetailData = crudBillDetail.get_with_condition(
             {"InvDetailID": InvDetailID}
@@ -667,13 +664,44 @@ async def generateBillMasterAndBillDetail(
         BillDetailDictData["FeeAmount"] = (
             BillDetailDictData["OrgFeeAmount"] - BillDetailDictData["DedAmount"]
         )
+        BillDetailDictData["Status"] = bill_detail_status(
+            BillDetailDictData["FeeAmount"],
+            BillDetailDictData["ReceivedAmount"],
+            BillDetailDictData["BillDetailDictData"],
+        )
 
-    pass
+        # insert to DB
+        crudBillDetail.update(BillDetailData, BillDetailDictData)
+
+        # update CB and generate CBStatement
+        for CB in info["CBList"]:
+            # update CB
+            CreditBalanceData = crudCreditBalance.get_with_condition(
+                {"CBID": CB["CBID"]}
+            )[0]
+            CreditBalanceDictData = orm_to_dict(CreditBalanceData)
+            OrgAmount = CreditBalanceDictData["CurrAmount"]
+            CreditBalanceDictData["CurrAmount"] -= CB["TransAmount"]
+            CreditBalanceDictData["LastUpDate"] = convert_time_to_str(datetime.now())
+            crudCreditBalance.update(
+                CreditBalanceData, CreditBalanceDictData
+            )  # insert to DB
+
+            # generate CBStatement
+            CBStatementDictData = {
+                "CBID": CB["CBID"],
+                "TransItem": "帳單金額抵扣",
+                "OrgAmount": OrgAmount,
+                "TransAmount": CB["TransAmount"],
+                "Note": None,
+                "CreateDate": convert_time_to_str(datetime.now()),
+            }
+
+            # TODO: Continue here
 
 
-@app.get(
-    ROOT_URL + "/checkBillingNo/{BillingNo}"
-)  # check input BillingNo is existed or not
+# check input BillingNo is existed or not
+@app.get(ROOT_URL + "/checkBillingNo/{BillingNo}")
 async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
     BillingNo = request.path_params["BillingNo"]
     print(BillingNo)
