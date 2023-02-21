@@ -4,8 +4,8 @@ from sqlalchemy.orm import sessionmaker
 
 
 # DB_URL = "mysql+pymysql://cbpadmin:cbpadmin1234@cbp-db.cluster-crxjgn1izzc0.ap-northeast-1.rds.amazonaws.com:3306/cbp_db"
-# DB_URL = "mysql+pymysql://root:1234@localhost:3306/cbp_db"
-DB_URL = "mysql+pymysql://root@localhost:3306/cbp-db"
+DB_URL = "mysql+pymysql://root:1234@localhost:3306/cbp_db"
+# DB_URL = "mysql+pymysql://root@localhost:3306/cbp-db"
 engine = create_engine(DB_URL)
 
 SessionLocal = sessionmaker(

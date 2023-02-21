@@ -658,9 +658,15 @@ async def generateBillMasterAndBillDetail(
         CreditBalanceDataList = crudCreditBalance.get_value_if_in_a_list(
             CreditBalanceDBModel.CBID, CreditBalanceIdList
         )
+        DedAmount = [CB["TransAmount"] for CB in info["CBList"]]
         BillDetailData = crudBillDetail.get_with_condition(
             {"InvDetailID": InvDetailID}
         )[0]
+        BillDetailDictData = orm_to_dict(BillDetailData)
+        BillDetailDictData["DedAmount"] = DedAmount
+        BillDetailDictData["FeeAmount"] = (
+            BillDetailDictData["OrgFeeAmount"] - BillDetailDictData["DedAmount"]
+        )
 
     pass
 

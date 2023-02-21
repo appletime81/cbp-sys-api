@@ -27,10 +27,10 @@ async def getCreditBalance(
             # get all CreditBalance by sql
             CreditBalanceDataList = crud.get_all_by_sql(sql_condition)
         else:
-            urlCondition = convert_url_condition_to_dict(urlCondition)
-            CreditBalanceDataList = crud.get_with_condition(urlCondition)
+            dictCondition = convert_url_condition_to_dict(urlCondition)
+            CreditBalanceDataList = crud.get_with_condition(dictCondition)
     else:
-        # urlCondition: SubmarineCable=str&WorkTitle=str&BillMilestone=str
+        # urlCondition: SubmarineCable=str&WorkTitle=str&BillMilestone=str&PartyName=str
         urlCondition = urlCondition.replace("generateBillDetail=yes", "")
         dictCondition = convert_url_condition_to_dict(urlCondition)
         CreditBalanceDataList = crud.get_with_condition(dictCondition)

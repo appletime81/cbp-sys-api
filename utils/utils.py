@@ -133,6 +133,10 @@ def re_search_url_condition_value(urlCondition: str, conditionKey: str):
     return urlCondition, value
 
 
+def bill_detail_status(org_fee_amount):
+    pass
+
+
 # if __name__ == "__main__":
 #     url_condition = "BillMilestone=test&GGG=ttt&TTT=JJJ"
 #     url_condition, value = re_search_url_condition_value(url_condition, "BillMilestone")
