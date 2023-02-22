@@ -542,6 +542,8 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     # init BillMaster
     BillMasterDictData = {
         "BillingNo": BillingNo,
+        "SubmarineCable": InvoiceMasterDataList[0].SubmarineCable,
+        "WorkTitle": InvoiceMasterDataList[0].WorkTitle,
         "PartyName": InvoiceMasterDataList[0].PartyName,
         "IssueDate": convert_time_to_str(datetime.now()),
         "DueDate": DueDate,
@@ -671,7 +673,7 @@ async def generateBillMasterAndBillDetail(
         )
 
         # insert to DB
-        crudBillDetail.update(BillDetailData, BillDetailDictData)
+        BillDetailData = crudBillDetail.update(BillDetailData, BillDetailDictData)
 
         # update CB and generate CBStatement
         for CB in info["CBList"]:
@@ -690,12 +692,16 @@ async def generateBillMasterAndBillDetail(
             # generate CBStatement
             CBStatementDictData = {
                 "CBID": CB["CBID"],
+                "BillingNO": BillDetailData.BillingNo,
+                "BLDetailID":  BillDetailData.BillDetailID,
                 "TransItem": "帳單金額抵扣",
                 "OrgAmount": OrgAmount,
                 "TransAmount": CB["TransAmount"],
                 "Note": None,
-                "CreateDate": convert_time_to_str(datetime.now()),
+                "CreateDate": convert_time_to_str(datetime.now())
             }
+            CBStatementPydanticData = CreditBalanceStatementSchema(**CBStatementDictData)
+            CBStatementData = crudBillDetail.create(CBStatementPydanticData)
 
             # TODO: Continue here
 
@@ -711,23 +717,6 @@ async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
         return {"message": "BillingNo is not exist"}
     else:
         return {"message": "BillingNo is exist"}
-
-
-# @app.router.get(ROOT_URL + "/Test/{condition}")
-# async def Test(request: Request, db: Session = Depends(get_db)):
-#     condition = request.path_params["condition"]
-#     crud = CRUD(db, InvoiceWKMasterDBModel)
-#     dict_condition = convert_url_condition_to_dict(condition)
-#     print(dict_condition)
-#     dataList = crud.get_with_condition(dict_condition)
-#     print(dataList[0].IsPro)
-#     print(dataList[0].__dict__)
-#     dictData = deepcopy(dataList[0].__dict__)
-#     df = pd.DataFrame.from_dict(dictData, orient="index").T
-#     print(df)
-#     print(type(df))
-#     df.to_csv("test.csv", index=False)
-#     return dataList
 
 
 # -------------------------------------------------------------------------------------

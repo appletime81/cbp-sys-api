@@ -1,10 +1,7 @@
-DROP TABLE `billmaster`, `contracts`, `contracttypes`, `corporates`, `invoicedetail`, `invoicemaster`, `invoicewkdetail`, `invoicewkmaster`, `liability`, `parties`, `submarinecables`, `suppliers`, `worktitles`;
-DROP TABLE `invoicewkdetail`, `invoicewkmaster`;
-
 CREATE TABLE InvoiceWKMaster
 (
     WKMasterID     int NOT NULL AUTO_INCREMENT,
-    InvoiceNo      varchar(20),
+    InvoiceNo      varchar(64),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
     WorkTitle      varchar(50),
@@ -12,20 +9,23 @@ CREATE TABLE InvoiceWKMaster
     IssueDate      datetime,
     DueDate        datetime,
     PartyName      varchar(100),
-    Status         varchar(20),
-    IsPro          TINYINT(1),
-    IsRecharge     TINYINT(1),
-    IsLiability    TINYINT(1),
-    TotalAmount    decimal(65, 2),
+    IsPro          tinyint(1),
+    IsRecharge     tinyint(1),
+    IsLiability    tinyint(1),
+    TotalAmount    decimal(12, 2),
+    PaidAmount     decimal(12, 2),
     CreateDate     datetime,
+    PaidDate       datetime,
+    Status         varchar(20),
     PRIMARY KEY (WKMasterID)
 );
+
 
 CREATE TABLE InvoiceWKDetail
 (
     WKDetailID     int NOT NULL AUTO_INCREMENT,
     WKMasterID     int NOT NULL,
-    InvoiceNo      varchar(20),
+    InvoiceNo      varchar(64),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
     WorkTitle      varchar(50),
@@ -39,7 +39,7 @@ CREATE TABLE InvoiceMaster
 (
     InvMasterID    int NOT NULL AUTO_INCREMENT,
     WKMasterID     int,
-    InvoiceNo      varchar(20),
+    InvoiceNo      varchar(64),
     PartyName      varchar(100),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
@@ -47,8 +47,8 @@ CREATE TABLE InvoiceMaster
     ContractType   varchar(20),
     IssueDate      datetime,
     DueDate        datetime,
+    IsPro          tinyint(1),
     Status         varchar(20),
-    IsPro          TINYINT(1),
     PRIMARY KEY (InvMasterID)
 );
 
@@ -58,7 +58,7 @@ CREATE TABLE InvoiceDetail
     InvMasterID    int NOT NULL,
     WKMasterID     int,
     WKDetailID     int,
-    InvoiceNo      varchar(20),
+    InvoiceNo      varchar(64),
     PartyName      varchar(100),
     SupplierName   varchar(100),
     SubmarineCable varchar(10),
@@ -76,13 +76,14 @@ CREATE TABLE BillMaster
 (
     BillMasterID      int NOT NULL AUTO_INCREMENT,
     BillingNo         varchar(64),
+    SubmarineCable    varchar(10),
+    WorkTitle         varchar(50),
     PartyName         varchar(100),
-    CreateDate        datetime,
     IssueDate         datetime,
     DueDate           datetime,
     FeeAmountSum      decimal(12, 2),
     ReceivedAmountSum decimal(12, 2),
-    IsPro             TINYINT(1),
+    IsPro             tinyint(1),
     Status            varchar(20),
     PRIMARY KEY (BillMasterID)
 );
@@ -115,6 +116,88 @@ CREATE TABLE BillDetail
     PRIMARY KEY (BillDetailID)
 );
 
+CREATE TABLE CollectStatement
+(
+    CollectID       int NOT NULL AUTO_INCREMENT,
+    BLMasterID      int NOT NULL,
+    PartyName       varchar(100),
+    SupplierName    varchar(100),
+    SubmarineCable  varchar(10),
+    WorkTitle       varchar(50),
+    BillMilestone   varchar(20),
+    FeeItem         varchar(100),
+    FeeAmount       decimal(12, 2),
+    ReceivedAmount  decimal(12, 2),
+    BankFees        decimal(12, 2),
+    ShortOverReason varchar(128),
+    ReceivedDate    datetime,
+    Note            varchar(128),
+    Status          varchar(20),
+    PRIMARY KEY (CollectID)
+);
+
+
+CREATE TABLE PayMaster
+(
+    PayMID      int NOT NULL AUTO_INCREMENT,
+    SupplierNam varchar(100),
+    FeeAmount   decimal(65, 2),
+    PaidAmount  decimal(12, 2),
+    PaidDate    datetime,
+    Note        varchar(128),
+    PRIMARY KEY (PayMID)
+);
+
+
+CREATE TABLE PayStatement
+(
+    PaySID     int NOT NULL AUTO_INCREMENT,
+    PayMID     int,
+    InvoiceNo  varchar(64),
+    FeeAmount  decimal(65, 2),
+    PaidAmount decimal(12, 2),
+    PaidDate   datetime,
+    Note       varchar(128),
+    Status     varchar(20),
+    PRIMARY KEY (PaySID)
+);
+
+
+CREATE TABLE PayDraft
+(
+    PayDraftID      int NOT NULL AUTO_INCREMENT,
+    SupplierName    varchar(100),
+    CableInfo       varchar(64),
+    TotalFeeAmount  decimal(12, 2),
+    Subject         varchar(128),
+    CtactPerson     varchar(10),
+    Tel             varchar(20),
+    email           varchar(64),
+    IssueDate       varchar(32),
+    IssueNo         varchar(32),
+    OriginalTo      varchar(64),
+    CBPBankAcctNo   varchar(20),
+    SupBankAcctName varchar(100),
+    SupBankName     varchar(100),
+    SupBankAddress  varchar(512),
+    SupBankAcctNo   varchar(32),
+    SupIBAN         varchar(32),
+    SupSWIFTCode    varchar(32),
+    Status          varchar(20),
+    PRIMARY KEY (PayDraftID)
+);
+
+
+CREATE TABLE PayDraftDetail
+(
+    PayDraftDetailID int NOT NULL AUTO_INCREMENT,
+    PayDraftID       int,
+    InvoiceNo        varchar(20),
+    FeeAmount        varchar(20),
+    PRIMARY KEY (PayDraftDetailID)
+);
+
+
 CREATE TABLE Liability
 (
     LBRawID        int NOT NULL AUTO_INCREMENT,
@@ -129,6 +212,7 @@ CREATE TABLE Liability
     PRIMARY KEY (LBRawID)
 );
 
+
 CREATE TABLE CB
 (
     CBID           int NOT NULL AUTO_INCREMENT,
@@ -137,29 +221,92 @@ CREATE TABLE CB
     BLDetailID     int,
     SubmarineCable varchar(10),
     WorkTitle      varchar(50),
+    BillMilestone  varchar(20),
+    PartyName      varchar(100),
     InvoiceNo      varchar(64),
     CurrAmount     decimal(12, 2),
-    PartyName      varchar(100),
     CreateDate     datetime,
     LastUpdDate    datetime,
     Note           varchar(128),
     PRIMARY KEY (CBID)
 );
 
+
 CREATE TABLE CBStatement
 (
     CBStateID   int NOT NULL AUTO_INCREMENT,
     CBID        int,
+    BillingNo   varchar(64),
+    BLDetailID  int,
     TransItem   varchar(20),
     OrgAmount   decimal(12, 2),
     TransAmount decimal(12, 2),
     Note        varchar(128),
     CreateDate  datetime,
-    Oprcode     varchar(6),
     PRIMARY KEY (CBStateID)
 );
 
-/* --------------------------------------------------------------------- */
+
+CREATE TABLE CNStatement
+(
+    CNStateID  int NOT NULL AUTO_INCREMENT,
+    CNID       int,
+    CBID       int,
+    CBType     varchar(20),
+    BillingNo  varchar(64),
+    InvoiceNo  varchar(64),
+    CurrAmount decimal(12, 2),
+    IssueDate  datetime,
+    DueDate    datetime,
+    CBNote     varchar(128),
+    PRIMARY KEY (CNStateID)
+);
+
+
+CREATE TABLE CN
+(
+    CNID       int NOT NULL AUTO_INCREMENT,
+    CNNo       varchar(128),
+    PartyName  varchar(100),
+    CurrAmount decimal(12, 2),
+    CreateDate datetime,
+    Note       varchar(128),
+    PRIMARY KEY (CNID)
+);
+
+
+CREATE TABLE SignRecords
+(
+    SignID   int NOT NULL AUTO_INCREMENT,
+    DocNo    varchar(128),
+    DocType  varchar(8),
+    SignDate datetime,
+    PRIMARY KEY (SignID)
+);
+
+
+CREATE TABLE UndoActions
+(
+    UndoID  int NOT NULL AUTO_INCREMENT,
+    DocNo   varchar(128),
+    DocType varchar(8),
+    Status  varchar(20),
+    Action  varchar(8),
+    ExeDate datetime,
+    PRIMARY KEY (UndoID)
+);
+
+
+CREATE TABLE Corporates
+(
+    CorpID         int NOT NULL AUTO_INCREMENT,
+    CorpName       varchar(20),
+    SubmarineCable varchar(10),
+    CreateDate     datetime,
+    PRIMARY KEY (CorpID)
+);
+
+
 CREATE TABLE Suppliers
 (
     SupplierID   int NOT NULL AUTO_INCREMENT,
@@ -173,27 +320,6 @@ CREATE TABLE Suppliers
     PRIMARY KEY (SupplierID)
 );
 
-CREATE TABLE Corporates
-(
-    CorpID         int NOT NULL AUTO_INCREMENT,
-    CorpName       varchar(20),
-    SubmarineCable varchar(20),
-    CreateDate     datetime,
-    PRIMARY KEY (CorpID)
-);
-
-CREATE TABLE Parties
-(
-    PartyID        int          NOT NULL AUTO_INCREMENT,
-    SubmarineCable varchar(10),
-    WorkTitle      varchar(50),
-    PartyName      varchar(100) NOT NULL,
-    Address        varchar(512),
-    Contact        varchar(20),
-    Email          varchar(50),
-    Tel            varchar(20),
-    PRIMARY KEY (PartyID)
-);
 
 CREATE TABLE Contracts
 (
@@ -204,6 +330,21 @@ CREATE TABLE Contracts
     CreateDate     datetime,
     PRIMARY KEY (ContractID)
 );
+
+
+CREATE TABLE Parties
+(
+    PartyID        int NOT NULL AUTO_INCREMENT,
+    SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
+    PartyName      varchar(100),
+    Address        varchar(512),
+    Contact        varchar(20),
+    Email          varchar(50),
+    Tel            varchar(20),
+    PRIMARY KEY (PartyID)
+);
+
 
 CREATE TABLE SubmarineCables
 (
@@ -223,9 +364,10 @@ CREATE TABLE WorkTitles
 
 CREATE TABLE ContractTypes
 (
-    ContractID varchar(20),
-    Note       varchar(128),
-    PRIMARY KEY (ContractID)
+    ContractTypeID int NOT NULL AUTO_INCREMENT,
+    ContractName   varchar(20),
+    Note           varchar(128),
+    PRIMARY KEY (ContractTypeID)
 );
 
 CREATE TABLE PartiesByContract
@@ -234,6 +376,15 @@ CREATE TABLE PartiesByContract
     PartyName  varchar(100),
     PRIMARY KEY (ContractID)
 );
+
+
+CREATE TABLE SuppliersByContract
+(
+    ContractID   int NOT NULL,
+    SupplierName varchar(100),
+    PRIMARY KEY (ContractID)
+);
+
 
 CREATE TABLE CBPBankAccount
 (
@@ -246,14 +397,6 @@ CREATE TABLE CBPBankAccount
     Name      varchar(100),
     Address   varchar(512),
     PRIMARY KEY (CorpID)
-);
-
-
-CREATE TABLE SuppliersByContract
-(
-    ContractID   int not null,
-    SupplierName varchar(100),
-    PRIMARY KEY (ContractID)
 );
 
 
@@ -343,4 +486,3 @@ insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, Create
 values ('SJC2', 'BM0', 'TRUE', 7.1428571429, '2022-12-27 14:30:00', null, null);
 insert into liability (SubmarineCable, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
 values ('SJC2', 'BM0', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
- */
