@@ -655,6 +655,7 @@ async def generateBillMasterAndBillDetail(
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
 
     # 開始做抵扣
+    FeeAmountSum = 0
     for info in BillDetailDictDataList:
         InvDetailID = info["InvDetailID"]
         DedAmount = [CB["TransAmount"] for CB in info["CBList"]]
@@ -671,6 +672,7 @@ async def generateBillMasterAndBillDetail(
             BillDetailDictData["ReceivedAmount"],
             BillDetailDictData["BillDetailDictData"],
         )
+        FeeAmountSum += BillDetailDictData["FeeAmount"]
 
         # insert to DB
         BillDetailData = crudBillDetail.update(BillDetailData, BillDetailDictData)
@@ -693,17 +695,19 @@ async def generateBillMasterAndBillDetail(
             CBStatementDictData = {
                 "CBID": CB["CBID"],
                 "BillingNO": BillDetailData.BillingNo,
-                "BLDetailID":  BillDetailData.BillDetailID,
+                "BLDetailID": BillDetailData.BillDetailID,
                 "TransItem": "帳單金額抵扣",
                 "OrgAmount": OrgAmount,
                 "TransAmount": CB["TransAmount"],
                 "Note": None,
-                "CreateDate": convert_time_to_str(datetime.now())
+                "CreateDate": convert_time_to_str(datetime.now()),
             }
-            CBStatementPydanticData = CreditBalanceStatementSchema(**CBStatementDictData)
+            CBStatementPydanticData = CreditBalanceStatementSchema(
+                **CBStatementDictData
+            )
             CBStatementData = crudBillDetail.create(CBStatementPydanticData)
 
-            # TODO: Continue here
+            # TODO: Update BillMaster's info
 
 
 # check input BillingNo is existed or not
