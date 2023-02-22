@@ -647,6 +647,7 @@ async def generateBillMasterAndBillDetail(
     """
     request_data = await request.json()
     BillDetailDictDataList = request_data["BillDetailDataList"]
+    BillMasterDictData = request_data["BillMaster"]
 
     # init crud
     crudBillMaster = CRUD(db, BillMasterDBModel)
@@ -656,6 +657,9 @@ async def generateBillMasterAndBillDetail(
 
     # 開始做抵扣
     FeeAmountSum = 0
+    newBillDetailDataList = []
+    newCBStatementDataList = []
+    newCBList = []
     for info in BillDetailDictDataList:
         InvDetailID = info["InvDetailID"]
         DedAmount = [CB["TransAmount"] for CB in info["CBList"]]
@@ -676,6 +680,7 @@ async def generateBillMasterAndBillDetail(
 
         # insert to DB
         BillDetailData = crudBillDetail.update(BillDetailData, BillDetailDictData)
+        newBillDetailDataList.append(BillDetailData)
 
         # update CB and generate CBStatement
         for CB in info["CBList"]:
@@ -687,9 +692,10 @@ async def generateBillMasterAndBillDetail(
             OrgAmount = CreditBalanceDictData["CurrAmount"]
             CreditBalanceDictData["CurrAmount"] -= CB["TransAmount"]
             CreditBalanceDictData["LastUpDate"] = convert_time_to_str(datetime.now())
-            crudCreditBalance.update(
+            newCreditBalanceData = crudCreditBalance.update(
                 CreditBalanceData, CreditBalanceDictData
             )  # insert to DB
+            newCBList.append(newCreditBalanceData)
 
             # generate CBStatement
             CBStatementDictData = {
@@ -706,8 +712,21 @@ async def generateBillMasterAndBillDetail(
                 **CBStatementDictData
             )
             CBStatementData = crudBillDetail.create(CBStatementPydanticData)
+            newCBStatementDataList.append(CBStatementData)
 
-            # TODO: Update BillMaster's info
+    # TODO: Update BillMaster's info
+    BillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+    )[0]
+    BillMasterDictData["FeeAmountSum"] = FeeAmountSum
+    newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
+    return {
+        "message": "success",
+        "BillMaster": newBillMasterData,
+        "BillDetail": newBillDetailDataList,
+        "CBStatement": newCBStatementDataList,
+        "CB": newCBList,
+    }
 
 
 # check input BillingNo is existed or not
