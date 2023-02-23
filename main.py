@@ -468,6 +468,17 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 
 
 # ------------------------------ BillMaster & BillDetail ------------------------------
+# get InvoiceMaster and InvoiceDetail data
+@app.post(ROOT_URL + "/getInvoiceMaster&InvoiceDetail/{urlCondition}")
+async def getInvoiceMasterAndInvoiceDetail(
+    request: Request, urlCondition: str, db: Session = Depends(get_db)
+):
+    InvoiceMasterDataList = await InvoiceMasterApp.getInvoiceMaster(
+        request, urlCondition, db
+    )
+    # TODO: Start to get InvoiceDetail data
+
+
 @app.post(ROOT_URL + "/checkInitBillMaster&BillDetail")
 async def checkInitBillMasterAndBillDetail(
     request: Request, db: Session = Depends(get_db)
@@ -621,6 +632,40 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     }
 
 
+# get BillMaster and BillDetail
+@app.get(ROOT_URL + "/getBillMaster&BillDetail/{urlCondition}")
+async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(get_db)):
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    getResult = []
+    if urlCondition == "all":
+        BillMasterDataList = crudBillMaster.get_all()
+        for BillMasterData in BillMasterDataList:
+            BillDetailDataList = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillMasterData.BillMasterID}
+            )
+            getResult.append(
+                {
+                    "BillMaster": BillMasterData,
+                    "BillDetail": BillDetailDataList,
+                }
+            )
+    else:
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        BillMasterDataList = crudBillMaster.get_with_condition(dictCondition)
+        for BillMasterData in BillMasterDataList:
+            BillDetailDataList = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillMasterData.BillMasterID}
+            )
+            getResult.append(
+                {
+                    "BillMaster": BillMasterData,
+                    "BillDetail": BillDetailDataList,
+                }
+            )
+    return getResult
+
+
 @app.post(ROOT_URL + "/generateBillMaster&BillDetail")
 async def generateBillMasterAndBillDetail(
     request: Request, db: Session = Depends(get_db)
@@ -719,6 +764,7 @@ async def generateBillMasterAndBillDetail(
         {"BillMasterID": BillMasterDictData["BillMasterID"]}
     )[0]
     BillMasterDictData["FeeAmountSum"] = FeeAmountSum
+    BillMasterDictData["Status"] = "RATED"
     newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
     return {
         "message": "success",

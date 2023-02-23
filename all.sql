@@ -107,11 +107,11 @@ CREATE TABLE BillDetail
     OverAmount      decimal(12, 2),
     ShortAmount     decimal(12, 2),
     BankFees        decimal(12, 2),
+    ToCBAmount      decimal(12, 2),
     ShortOverReason varchar(128),
     WriteOffDate    datetime,
     ReceiveDate     datetime,
     Note            varchar(128),
-    ToCB            varchar(10),
     Status          varchar(20),
     PRIMARY KEY (BillDetailID)
 );
