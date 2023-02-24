@@ -134,76 +134,98 @@ async def searchInvoiceWKMaster(
     db: Session = Depends(get_db),
 ):
     getResult = []
-    BillMilestoneValue = None
-    checkBillMilestoneInvoiceWKDetailDictDataList = None
-    if "BillMilestone" in urlCondition:
-        urlCondition, BillMilestoneValue = re_search_url_condition_value(
-            urlCondition, "BillMilestone"
-        )
 
-    # get InvoiceWKMaster
-    InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
-        request, urlCondition, db
-    )
+    # init CRUD
+    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
+    crudInvoiceWKDetail = CRUD(db, InvoiceWKDetailDBModel)
 
-    InvoiceWKMasterDictDataList = [
-        orm_to_pydantic(InvoiceWKMasterData, InvoiceWKMasterSchema).dict()
-        for InvoiceWKMasterData in InvoiceWKMasterDataList
-    ]
-
-    # 只查詢 TEMPORARY 和 VALIDATED 的資料(篩選)
-    if "Status" not in urlCondition:
-        newInvoiceWKMasterDictDataList = []
-        for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
-            # TODO: 這邊要改成所有的狀態都要顯示
-            # if (
-            #     InvoiceWKMasterDictData["Status"] == "TEMPORARY"
-            #     or InvoiceWKMasterDictData["Status"] == "VALIDATED"
-            # ):
-            #     newInvoiceWKMasterDictDataList.append(InvoiceWKMasterDictData)
-            newInvoiceWKMasterDictDataList.append(InvoiceWKMasterDictData)
-        InvoiceWKMasterDictDataList = newInvoiceWKMasterDictDataList
-
-    # get InvoiceWKDetail
-    for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
-        InvoiceWKDetailDataList = await InvoiceWKDetailApp.getInvoiceWKDetail(
-            request, f"WKMasterID={InvoiceWKMasterDictData.get('WKMasterID')}", db
-        )
-        InvoiceWKDetailDictDataList = [
-            orm_to_pydantic(InvoiceWKDetailData, InvoiceWKDetailSchema).dict()
-            for InvoiceWKDetailData in InvoiceWKDetailDataList
-        ]
-        newInvoiceWKDetailDictDataList = []
-        for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
-            InvoiceWKDetailDictData.pop("WKDetailID")
-            newInvoiceWKDetailDictDataList.append(InvoiceWKDetailDictData)
-        InvoiceWKDetailDictDataList = newInvoiceWKDetailDictDataList
-        # generate InvoiceMaster & InvoiceDetail result
-        InvoiceWKMasterDictData = convert_dict_data_date_to_normal_str(
-            InvoiceWKMasterDictData
-        )
-
-        # filter BillMilestone
-        if BillMilestoneValue:
-            checkBillMilestoneInvoiceWKDetailDictDataList = [
-                InvoiceWKDetailData
-                for InvoiceWKDetailData in InvoiceWKDetailDictDataList
-                if InvoiceWKDetailData["BillMilestone"] == BillMilestoneValue
-            ]
-            if checkBillMilestoneInvoiceWKDetailDictDataList:
-                getResult.append(
-                    {
-                        "InvoiceWKMaster": InvoiceWKMasterDictData,
-                        "InvoiceWKDetail": InvoiceWKDetailDictDataList,
-                    }
-                )
-        else:
+    # get query condition
+    if urlCondition == "all":
+        InvoiceWKMasterDataList = crudInvoiceWKMaster.get_all()
+        InvoiceWKDetailDataList = crudInvoiceWKDetail.get_all()
+        for InvoiceWKMasterData in InvoiceWKMasterDataList:
             getResult.append(
                 {
-                    "InvoiceWKMaster": InvoiceWKMasterDictData,
-                    "InvoiceWKDetail": InvoiceWKDetailDictDataList,
+                    "InvoiceWKMaster": InvoiceWKMasterData,
+                    "InvoiceWKDetail": list(
+                        filter(
+                            lambda x: x.WKMasterID == InvoiceWKMasterData.WKMasterID,
+                            InvoiceWKDetailDataList,
+                        )
+                    ),
                 }
             )
+        return getResult
+    else:
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+
+    date_condition = dict(filter(lambda x: "Date" in x[0], dictCondition.items()))
+    status_condition = dict(filter(lambda x: "Status" in x[0], dictCondition.items()))
+    newDictCondition = dict(
+        filter(
+            lambda x: "Date" not in x[0] and "Status" not in x[0], dictCondition.items()
+        )
+    )
+
+    # -------------------------- get data from db --------------------------
+    # get InvoiceWKDetail data from db
+    InvoiceWKDetailDataList = crudInvoiceWKDetail.get_with_condition(newDictCondition)
+    WKMasterIDList = [
+        InvoiceWKDetailData.WKMasterID
+        for InvoiceWKDetailData in InvoiceWKDetailDataList
+    ]
+    WKMasterIDList = list(set(WKMasterIDList))
+
+    # get InvoiceWKMaster data from db
+    InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
+        InvoiceWKMasterDBModel.WKMasterID, WKMasterIDList
+    )
+
+    if status_condition:
+        if isinstance(status_condition["Status"], str):
+            InvoiceWKMasterDataList = [
+                InvoiceWKMasterData
+                for InvoiceWKMasterData in InvoiceWKMasterDataList
+                if InvoiceWKMasterData.Status == status_condition["Status"]
+            ]
+        else:
+            InvoiceWKMasterDataList = [
+                InvoiceWKMasterData
+                for InvoiceWKMasterData in InvoiceWKMasterDataList
+                if InvoiceWKMasterData.Status in status_condition["Status"]
+            ]
+
+    if date_condition:
+        key = list(date_condition.keys())[0]
+        col_name = key.replace("range", "")
+        print(date_condition)
+        if date_condition[key]["gte"] == date_condition[key]["lte"]:
+            date_condition[key]["gte"] = date_condition[key]["gte"][:10] + " 23:59:59"
+        print(str_time_convert_to_int(date_condition[key]["lte"]))
+        print(str_time_convert_to_int(orm_to_dict(InvoiceWKMasterDataList[0])[col_name]))
+        print(str_time_convert_to_int(date_condition[key]["gte"]))
+        InvoiceWKMasterDataList = [
+            InvoiceWKMasterData
+            for InvoiceWKMasterData in InvoiceWKMasterDataList
+            if str_time_convert_to_int(date_condition[key]["gte"])
+            <= str_time_convert_to_int(orm_to_dict(InvoiceWKMasterData)[col_name])
+            <= str_time_convert_to_int(date_condition[key]["lte"])
+        ]
+
+    # generate result
+    for InvoiceWKMasterData in InvoiceWKMasterDataList:
+        InvoiceWKDetailDataList = list(
+            filter(
+                lambda x: x.WKMasterID == InvoiceWKMasterData.WKMasterID,
+                InvoiceWKDetailDataList,
+            )
+        )
+        getResult.append(
+            {
+                "InvoiceWKMaster": InvoiceWKMasterData,
+                "InvoiceWKDetail": InvoiceWKDetailDataList,
+            }
+        )
 
     return getResult
 

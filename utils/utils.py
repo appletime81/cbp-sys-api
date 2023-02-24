@@ -9,6 +9,12 @@ def convert_time_to_str(datetime_data):
     return datetime_data.strftime(TIME_FORMAT)
 
 
+def str_time_convert_to_int(str_time):
+    return int(
+        str_time.replace("-", "").replace(":", "").replace(" ", "").replace("T", "")
+    )
+
+
 def convert_dict_data_date_to_normal_str(dict_data: Dict):
     for key, value in dict_data.items():
         if "Date" in key:
@@ -36,7 +42,13 @@ def convert_url_condition_to_dict(url_condition):
                 value = True
             elif value == "false":
                 value = False
-            dict_condition[key] = value
+            if key not in dict_condition:
+                dict_condition[key] = value
+            else:
+                if isinstance(dict_condition[key], list):
+                    dict_condition[key].append(value)
+                else:
+                    dict_condition[key] = [dict_condition[key], value]
 
     return dict_condition
 
