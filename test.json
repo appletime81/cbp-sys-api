@@ -1,44 +1,88 @@
 [
   {
-    "InvoiceWKMaster": {
-      "WorkTitle": "Construction",
-      "InvoiceNo": "DT0170168-1",
+    "InvoiceMaster": {
       "SupplierName": "NEC",
-      "IssueDate": "2023-02-24T09:56:44",
-      "PartyName": "",
-      "IsPro": false,
-      "IsLiability": true,
-      "TotalAmount": 5582012.72,
-      "SubmarineCable": "SJC2",
       "WKMasterID": 1,
+      "InvoiceNo": "DT0170168-1",
+      "SubmarineCable": "SJC2",
       "ContractType": "SC",
       "DueDate": "2023-02-24T09:56:44",
-      "Status": "TEMPORARY",
-      "IsRecharge": false,
-      "CreateDate": "2023-02-24T09:58:21"
-    },
-    "InvoiceWKDetail": [
+      "IsPro": false,
+      "InvMasterID": 8,
+      "PartyName": "CHT",
+      "WorkTitle": "Construction",
+      "IssueDate": "2023-02-24T09:56:44",
+      "Status": "TO_MERGE"
+    }
+]
+    "InvoiceDetail": [
       {
+        "WKDetailID": 1,
+        "InvDetailID": 29,
+        "PartyName": "CHT",
         "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+        "FeeItem": "test",
+        "LBRatio": 7.1428571429,
+        "Difference": 0.0,
+        "InvMasterID": 8,
         "WKMasterID": 1,
         "InvoiceNo": "DT0170168-1",
-        "BillMilestone": "BM9a",
-        "FeeAmount": 1178227.94,
         "SupplierName": "NEC",
-        "WKDetailID": 2,
-        "WorkTitle": "Construction",
-        "FeeItem": "test"
+        "BillMilestone": "BM12",
+        "FeeAmountPre": 1487661.54,
+        "FeeAmountPost": 106261.54
       },
       {
+        "WKDetailID": 2,
+        "InvDetailID": 30,
+        "PartyName": "CHT",
         "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+        "FeeItem": "test",
+        "LBRatio": 7.1428571429,
+        "Difference": 0.0,
+        "InvMasterID": 8,
         "WKMasterID": 1,
         "InvoiceNo": "DT0170168-1",
-        "BillMilestone": "BM9a",
-        "FeeAmount": 1288822.32,
         "SupplierName": "NEC",
+        "BillMilestone": "BM9a",
+        "FeeAmountPre": 1178227.94,
+        "FeeAmountPost": 84159.14
+      },
+      {
         "WKDetailID": 3,
+        "InvDetailID": 31,
+        "PartyName": "CHT",
+        "SubmarineCable": "SJC2",
         "WorkTitle": "Construction",
-        "FeeItem": "test"
+        "FeeItem": "test",
+        "LBRatio": 7.1428571429,
+        "Difference": 0.0,
+        "InvMasterID": 8,
+        "WKMasterID": 1,
+        "InvoiceNo": "DT0170168-1",
+        "SupplierName": "NEC",
+        "BillMilestone": "BM9a",
+        "FeeAmountPre": 1288822.32,
+        "FeeAmountPost": 92058.74
+      },
+      {
+        "WKDetailID": 4,
+        "InvDetailID": 32,
+        "PartyName": "CHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+        "FeeItem": "test",
+        "LBRatio": 7.1428571429,
+        "Difference": 0.0,
+        "InvMasterID": 8,
+        "WKMasterID": 1,
+        "InvoiceNo": "DT0170168-1",
+        "SupplierName": "NEC",
+        "BillMilestone": "BM12",
+        "FeeAmountPre": 1627300.92,
+        "FeeAmountPost": 116235.78
       }
     ]
   }

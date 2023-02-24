@@ -1,77 +1,447 @@
-@app.get(ROOT_URL + "/getInvoiceWKMaster&InvoiceWKDetail/{urlCondition}")
-async def searchInvoiceWKMaster(
-    request: Request,
-    urlCondition: str,
-    db: Session = Depends(get_db),
-):
-    # get query condition
-    dictCondition = convert_url_condition_to_dict(urlCondition)
-    date_condition = dict(filter(lambda x: "Date" in x[0], dictCondition.items()))
-    status_condition = dict(filter(lambda x: "Status" in x[0], dictCondition.items()))
-    newDictCondition = dict(
-        filter(
-            lambda x: "Date" not in x[0] and "Status" not in x[0], dictCondition.items()
-        )
-    )
-    pprint(newDictCondition)
+import datetime
 
-    # -------------------------- get data from db --------------------------
-    # init CRUD
-    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
-    crudInvoiceWKDetail = CRUD(db, InvoiceWKDetailDBModel)
+a = [
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 11,
+        "ModifyNote": None,
+        "PartyName": "CHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 12,
+        "ModifyNote": None,
+        "PartyName": "CMI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 13,
+        "ModifyNote": None,
+        "PartyName": "DHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 14,
+        "ModifyNote": None,
+        "PartyName": "Edge",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 0.0793650794,
+        "LBRawID": 15,
+        "ModifyNote": None,
+        "PartyName": "KDDI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.0634920635,
+        "LBRawID": 16,
+        "ModifyNote": None,
+        "PartyName": "Singtel",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 17,
+        "ModifyNote": None,
+        "PartyName": "SKB",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 18,
+        "ModifyNote": None,
+        "PartyName": "Telin",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 19,
+        "ModifyNote": None,
+        "PartyName": "TRUE",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 20,
+        "ModifyNote": None,
+        "PartyName": "VNPT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 1,
+        "ModifyNote": None,
+        "PartyName": "CHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 2,
+        "ModifyNote": None,
+        "PartyName": "CMI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 3,
+        "ModifyNote": None,
+        "PartyName": "DHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 4,
+        "ModifyNote": None,
+        "PartyName": "Edge",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 0.0793650794,
+        "LBRawID": 5,
+        "ModifyNote": None,
+        "PartyName": "KDDI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.0634920635,
+        "LBRawID": 6,
+        "ModifyNote": None,
+        "PartyName": "Singtel",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 7,
+        "ModifyNote": None,
+        "PartyName": "SKB",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 8,
+        "ModifyNote": None,
+        "PartyName": "Telin",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 9,
+        "ModifyNote": None,
+        "PartyName": "TRUE",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 10,
+        "ModifyNote": None,
+        "PartyName": "VNPT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 1,
+        "ModifyNote": None,
+        "PartyName": "CHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 2,
+        "ModifyNote": None,
+        "PartyName": "CMI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 3,
+        "ModifyNote": None,
+        "PartyName": "DHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 4,
+        "ModifyNote": None,
+        "PartyName": "Edge",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 0.0793650794,
+        "LBRawID": 5,
+        "ModifyNote": None,
+        "PartyName": "KDDI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.0634920635,
+        "LBRawID": 6,
+        "ModifyNote": None,
+        "PartyName": "Singtel",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 7,
+        "ModifyNote": None,
+        "PartyName": "SKB",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 8,
+        "ModifyNote": None,
+        "PartyName": "Telin",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 9,
+        "ModifyNote": None,
+        "PartyName": "TRUE",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM9a",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 10,
+        "ModifyNote": None,
+        "PartyName": "VNPT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 11,
+        "ModifyNote": None,
+        "PartyName": "CHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 12,
+        "ModifyNote": None,
+        "PartyName": "CMI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 13,
+        "ModifyNote": None,
+        "PartyName": "DHT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 28.5714285714,
+        "LBRawID": 14,
+        "ModifyNote": None,
+        "PartyName": "Edge",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 0.0793650794,
+        "LBRawID": 15,
+        "ModifyNote": None,
+        "PartyName": "KDDI",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.0634920635,
+        "LBRawID": 16,
+        "ModifyNote": None,
+        "PartyName": "Singtel",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 17,
+        "ModifyNote": None,
+        "PartyName": "SKB",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 3.5714285714,
+        "LBRawID": 18,
+        "ModifyNote": None,
+        "PartyName": "Telin",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 19,
+        "ModifyNote": None,
+        "PartyName": "TRUE",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+    {
+        "BillMilestone": "BM12",
+        "CreateDate": datetime.datetime(2022, 12, 27, 14, 30),
+        "EndDate": None,
+        "LBRatio": 7.1428571429,
+        "LBRawID": 20,
+        "ModifyNote": None,
+        "PartyName": "VNPT",
+        "SubmarineCable": "SJC2",
+        "WorkTitle": "Construction",
+    },
+]
 
-    # get InvoiceWKDetail data from db
-    InvoiceWKDetailDataList = crudInvoiceWKDetail.get_with_condition(newDictCondition)
-    pprint(InvoiceWKDetailDataList)
-    WKMasterIDList = [
-        InvoiceWKDetailData.WKMasterID
-        for InvoiceWKDetailData in InvoiceWKDetailDataList
-    ]
-    pprint(WKMasterIDList)
-    # get InvoiceWKMaster data from db
-    InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
-        InvoiceWKMasterDBModel.WKMasterID, WKMasterIDList
-    )
-    if status_condition:
-        if isinstance(status_condition["Status"], str):
-            InvoiceWKMasterDataList = [
-                InvoiceWKMasterData
-                for InvoiceWKMasterData in InvoiceWKMasterDataList
-                if InvoiceWKMasterData.Status == status_condition["Status"]
-            ]
-        else:
-            InvoiceWKMasterDataList = [
-                InvoiceWKMasterData
-                for InvoiceWKMasterData in InvoiceWKMasterDataList
-                if InvoiceWKMasterData.Status in status_condition["Status"]
-            ]
-    if date_condition:
-        key = list(date_condition.keys())[0]
-        col_name = key.replace("range", "")
-        if date_condition[key]["gte"] == date_condition[key]["lte"]:
-            date_condition[key]["lte"] = date_condition[key]["lte"][:10] + " 23:59:59"
-        InvoiceWKMasterDataList = [
-            InvoiceWKMasterData
-            for InvoiceWKMasterData in InvoiceWKMasterDataList
-            if date_condition[key]["gte"]
-            <= orm_to_dict(InvoiceWKMasterData)[col_name]
-            <= date_condition[key]["lte"]
-        ]
-
-    # generate result
-    getResult = []
-    for InvoiceWKMasterData in InvoiceWKMasterDataList:
-        InvoiceWKDetailData = list(
-            filter(
-                lambda x: x.WKMasterID == InvoiceWKMasterData.WKMasterID,
-                InvoiceWKDetailDataList,
-            )
-        )[0]
-        getResult.append(
-            {
-                "InvoiceWKMaster": InvoiceWKMasterData,
-                "InvoiceWKDetail": InvoiceWKDetailData,
-            }
-        )
-
-    return getResult
+print(len(a))
+print(list(set(a)))

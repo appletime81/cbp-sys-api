@@ -198,12 +198,8 @@ async def searchInvoiceWKMaster(
     if date_condition:
         key = list(date_condition.keys())[0]
         col_name = key.replace("range", "")
-        print(date_condition)
         if date_condition[key]["gte"] == date_condition[key]["lte"]:
             date_condition[key]["gte"] = date_condition[key]["gte"][:10] + " 23:59:59"
-        print(str_time_convert_to_int(date_condition[key]["lte"]))
-        print(str_time_convert_to_int(orm_to_dict(InvoiceWKMasterDataList[0])[col_name]))
-        print(str_time_convert_to_int(date_condition[key]["gte"]))
         InvoiceWKMasterDataList = [
             InvoiceWKMasterData
             for InvoiceWKMasterData in InvoiceWKMasterDataList
@@ -231,7 +227,7 @@ async def searchInvoiceWKMaster(
 
 
 @app.get(ROOT_URL + "/getInvoiceMaster&InvoiceDetailStream/WKMasterID={WKMasterID}")
-async def getInvoiceMasterInvoiceDetailStram(
+async def getInvoiceMasterInvoiceDetailStream(
     request: Request,
     WKMasterID: int,
     db: Session = Depends(get_db),
@@ -240,7 +236,7 @@ async def getInvoiceMasterInvoiceDetailStram(
     InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
         request, f"WKMasterID={WKMasterID}", db
     )
-    # print(InvoiceWKMasterDataList)
+
     InvoiceWKMasterData = InvoiceWKMasterDataList[0]
     InvoiceWKMasterDictData = orm_to_pydantic(
         InvoiceWKMasterData, InvoiceWKMasterSchema
@@ -248,7 +244,6 @@ async def getInvoiceMasterInvoiceDetailStram(
     TotalAmount = InvoiceWKMasterDictData.get("TotalAmount")
     WorkTitle = InvoiceWKMasterDictData["WorkTitle"]
     SubmarineCable = InvoiceWKMasterDictData["SubmarineCable"]
-    # pprint(InvoiceWKMasterDictData)
 
     # Step2. Get InvoiceWKDetail
     InvoiceWKDetailDataList = await InvoiceWKDetailApp.getInvoiceWKDetail(
@@ -292,6 +287,9 @@ async def getInvoiceMasterInvoiceDetailStram(
             for LiabilityDictData in LiabilityDictDataList
         ]
         LiabilityDataFrameData = dflist_to_df(LiabilityDataFrameDataList)
+        LiabilityDataFrameData = (
+            LiabilityDataFrameData.drop_duplicates()
+        )  # remove duplicates
         LiabilityDataFrameData.to_csv("LiabilityDataFrameData.csv", index=False)
         # get all PartyName
         PartyNameList = list(
@@ -404,7 +402,6 @@ async def getInvoiceMasterInvoiceDetailStram(
             }
             InvoiceDetailDictDataList.append(InvoiceDetailDictData)
 
-    print(len(InvoiceDetailDictDataList))
     streamResponse = {
         "TotalAmount": TotalAmount,
         "InvoiceMaster": InvoiceMasterDictDataList,
@@ -491,14 +488,62 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 
 # ------------------------------ BillMaster & BillDetail ------------------------------
 # get InvoiceMaster and InvoiceDetail data
-@app.post(ROOT_URL + "/getInvoiceMaster&InvoiceDetail/{urlCondition}")
+@app.get(ROOT_URL + "/getInvoiceMaster&InvoiceDetail/{urlCondition}")
 async def getInvoiceMasterAndInvoiceDetail(
     request: Request, urlCondition: str, db: Session = Depends(get_db)
 ):
-    InvoiceMasterDataList = await InvoiceMasterApp.getInvoiceMaster(
-        request, urlCondition, db
-    )
-    # TODO: Start to get InvoiceDetail data
+    getResult = []
+    if urlCondition != "all":
+        if "BillMilestone" in urlCondition:
+            urlCondition, BillMilestone = re_search_url_condition_value(
+                urlCondition, "BillMilestone"
+            )
+        InvoiceMasterDataList = await InvoiceMasterApp.getInvoiceMaster(
+            request, urlCondition, db
+        )
+        # TODO: Start to get InvoiceDetail data
+        for InvoiceMasterData in InvoiceMasterDataList:
+            InvoiceDetailDataList = await InvoiceDetailApp.getInvoiceDetail(
+                request, f"InvMasterID={InvoiceMasterData.InvMasterID}", db
+            )
+            getResult.append(
+                {
+                    "InvoiceMaster": InvoiceMasterData,
+                    "InvoiceDetail": InvoiceDetailDataList,
+                }
+            )
+        if "BillMilestone" in urlCondition:
+            InvMasterIDList = [
+                data["InvoiceMaster"].InvMasterID
+                for data in getResult
+                for InvoiceDetailData in data["InvoiceDetail"]
+                if InvoiceDetailData.BillMilestone == BillMilestone
+            ]
+        else:
+            InvMasterIDList = [
+                data["InvoiceMaster"].InvMasterID for data in getResult
+            ]
+        InvMasterIDList = list(set(InvMasterIDList))
+        getResult = [
+            data
+            for data in getResult
+            if data["InvoiceMaster"].InvMasterID in InvMasterIDList
+        ]
+    else:
+        InvoiceMasterDataList = await InvoiceMasterApp.getInvoiceMaster(
+            request, urlCondition, db
+        )
+        for InvoiceMasterData in InvoiceMasterDataList:
+            InvoiceDetailDataList = await InvoiceDetailApp.getInvoiceDetail(
+                request, f"InvMasterID={InvoiceMasterData.InvMasterID}", db
+            )
+            getResult.append(
+                {
+                    "InvoiceMaster": InvoiceMasterData,
+                    "InvoiceDetail": InvoiceDetailDataList,
+                }
+            )
+    return getResult
 
 
 @app.post(ROOT_URL + "/checkInitBillMaster&BillDetail")
@@ -534,7 +579,7 @@ async def checkInitBillMasterAndBillDetail(
     return alert_msg
 
 
-@app.post(ROOT_URL + "/initBillMaster&BillDetail")
+@app.post(ROOT_URL + "/getBillMaster&BillDetailStream")
 async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(get_db)):
     """
     {
@@ -586,10 +631,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         "Status": "INITIAL",
     }
 
-    # insert BillMaster to DB
-    BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
-    BillMasterData = crudBillMaster.create(BillMasterPydanticData)
-    print(BillMasterDictData)
 
     # init BillDetail
     BillDetailDataList = []
@@ -621,7 +662,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         Status
         """
         BillDetailDictData = {
-            "BillMasterID": BillMasterData.BillMasterID,
+            # "BillMasterID": BillMasterData.BillMasterID,
             "WKMasterID": InvoiceDetailData.WKMasterID,
             "InvDetailID": InvoiceDetailData.InvDetailID,
             "PartyName": InvoiceDetailData.PartyName,
@@ -644,12 +685,12 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
             "ToCB": None,
             "Status": "INCOMPLETE",
         }
-        BillDetailData = crudBillDetail.create(BillDetailSchema(**BillDetailDictData))
-        BillDetailDataList.append(BillDetailData)
+        # BillDetailData = crudBillDetail.create(BillDetailSchema(**BillDetailDictData))
+        BillDetailDataList.append(BillDetailDictData)
 
     return {
         "message": "success",
-        "BillMaster": BillMasterData,
+        "BillMaster": BillMasterDictData,
         "BillDetailDataList": BillDetailDataList,
     }
 
@@ -801,7 +842,6 @@ async def generateBillMasterAndBillDetail(
 @app.get(ROOT_URL + "/checkBillingNo/{BillingNo}")
 async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
     BillingNo = request.path_params["BillingNo"]
-    print(BillingNo)
     crud = CRUD(db, BillMasterDBModel)
     BillMasterDataList = crud.get_with_condition({"BillingNo": BillingNo})
     if not BillMasterDataList:
