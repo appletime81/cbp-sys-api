@@ -83,7 +83,8 @@ class BillMasterSchema(BaseModel):
     BillMasterID: Optional[int]
     BillingNo: str
     PartyName: str
-    CreateDate: datetime
+    SubmarineCable: str
+    WorkTitle: str
     IssueDate: datetime
     DueDate: datetime
     FeeAmountSum: float
@@ -140,7 +141,7 @@ class BillDetailSchema(BaseModel):
     WriteOffDate: Optional[datetime]
     ReceiveDate: Optional[datetime]
     Note: Optional[str]
-    ToCB: Optional[str]
+    ToCBAmount: Optional[str]
     Status: str
 
 
@@ -250,15 +251,16 @@ class CreditBalanceSchema(BaseModel):
 
     CBID: Optional[int]
     CBType: str
-    BillingNo: str
-    BLDetailID: int
+    BillingNo: Optional[str]
+    BLDetailID: Optional[int]
     SubmarineCable: str
     WorkTitle: str
-    InvoiceNo: str
+    BillMilestone: str
+    InvoiceNo: Optional[str]
     CurrAmount: float
     PartyName: str
     CreateDate: datetime
-    LastUpdDate: datetime
+    LastUpdDate: Optional[datetime]
     Note: Optional[str]
 
 

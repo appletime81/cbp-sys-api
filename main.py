@@ -520,9 +520,7 @@ async def getInvoiceMasterAndInvoiceDetail(
                 if InvoiceDetailData.BillMilestone == BillMilestone
             ]
         else:
-            InvMasterIDList = [
-                data["InvoiceMaster"].InvMasterID for data in getResult
-            ]
+            InvMasterIDList = [data["InvoiceMaster"].InvMasterID for data in getResult]
         InvMasterIDList = list(set(InvMasterIDList))
         getResult = [
             data
@@ -608,9 +606,16 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
         InvoiceMasterDBModel.InvMasterID, InvoiceMasterIdList
     )
+
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvMasterID, InvoiceMasterIdList
     )
+
+    # change InvoiceMaster status to "MERGED"
+    for InvoiceMasterData in InvoiceMasterDataList:
+        InvoiceMasterDictData = orm_to_dict(InvoiceMasterData)
+        InvoiceMasterDictData["Status"] = "MERGED"
+        newInvoiceMasterData = crudInvoiceMaster.update(InvoiceMasterData, InvoiceMasterDictData)
 
     # cal FeeAmountSum
     FeeAmountSum = 0
@@ -630,7 +635,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         "IsPro": InvoiceMasterDataList[0].IsPro,
         "Status": "INITIAL",
     }
-
 
     # init BillDetail
     BillDetailDataList = []
@@ -691,7 +695,35 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     return {
         "message": "success",
         "BillMaster": BillMasterDictData,
-        "BillDetailDataList": BillDetailDataList,
+        "BillDetail": BillDetailDataList,
+    }
+
+
+@app.post(ROOT_URL + "/initBillMaster&BillDetail")
+async def generateInitBillMasterAndBillDetail(
+    request: Request, db: Session = Depends(get_db)
+):
+    request_data = await request.json()
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    BillMasterDictData = request_data["BillMaster"]
+    BillDetailDataList = request_data["BillDetail"]
+
+    # convert BillMasterDictData to BillMasterPydanticData and insert to db
+    BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
+    BillMasterData = crudBillMaster.create(BillMasterPydanticData)
+
+    newBillDetailDataList = []
+    for BillDetailData in BillDetailDataList:
+        BillDetailData["BillMasterID"] = BillMasterData.BillMasterID
+        BillDetailPydanticData = BillDetailSchema(**BillDetailData)
+        BillDetailData = crudBillDetail.create(BillDetailPydanticData)
+        newBillDetailDataList.append(BillDetailData)
+
+    return {
+        "message": "success",
+        "BillMaster": BillMasterData,
+        "BillDetail": newBillDetailDataList
     }
 
 

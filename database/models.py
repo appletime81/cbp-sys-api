@@ -88,7 +88,8 @@ class BillMasterDBModel(Base):
     BillMasterID = Column(Integer, primary_key=True, index=True)
     BillingNo = Column(String(64))
     PartyName = Column(String(100))
-    CreateDate = Column(String(20))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
     IssueDate = Column(String(20))
     DueDate = Column(String(20))
     FeeAmountSum = Column(Float)
@@ -147,7 +148,7 @@ class BillDetailDBModel(Base):
     WriteOffDate = Column(String(20))
     ReceiveDate = Column(String(20))
     Note = Column(String(128))
-    ToCB = Column(String(10))
+    ToCBAmount = Column(Float)
     Status = Column(String(20))
 
 
@@ -239,6 +240,7 @@ class CreditBalanceDBModel(Base):
     BLDetailID = Column(Integer)
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
+    BillMilestone = Column(String(20))
     InvoiceNo = Column(String(64))
     CurrAmount = Column(Float)
     PartyName = Column(String(100))

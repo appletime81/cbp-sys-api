@@ -48,3 +48,15 @@ async def addCreditBalance(
     return {
         "message": "CreditBalance successfully created",
     }
+
+
+@router.post("/updateCreditBalance", status_code=status.HTTP_200_OK)
+async def updateCreditBalance(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    CBDictData = await request.json()
+    crud = CRUD(db, CreditBalanceDBModel)
+    CBData = crud.get_with_condition({"CBID": CBDictData["CBID"]})[0]
+    newCBData = crud.update(CBData, CBDictData)
+    return {"message": "CreditBalance successfully updated", "newCBData": newCBData}
