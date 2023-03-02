@@ -286,7 +286,6 @@ class CreditBalanceStatementSchema(BaseModel):
     TransAmount: float
     Note: Optional[str]
     CreateDate: datetime
-    Oprcode: Optional[str]
 
 
 class PartiesByContractSchema(BaseModel):

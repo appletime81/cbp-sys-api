@@ -249,7 +249,7 @@ class CreditBalanceDBModel(Base):
     Note = Column(String(128))
 
 
-class CreditBalanceStatement(Base):
+class CreditBalanceStatementDBModel(Base):
     """
     CREATE TABLE CBStatement
     (
@@ -275,7 +275,6 @@ class CreditBalanceStatement(Base):
     TransAmount = Column(Float)
     Note = Column(String(128))
     CreateDate = Column(String(20))
-    Oprcode = Column(String(6))
 
 
 class PartiesByContractDBModel(Base):

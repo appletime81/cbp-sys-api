@@ -10,6 +10,22 @@ router = APIRouter()
 
 
 # ------------------------------ BillMaster ------------------------------
+@router.get("/BillMaster/{urlCondition}")
+async def getBillMaster(
+    request: Request,
+    urlCondition: str,
+    db: Session = Depends(get_db),
+):
+    crud = CRUD(db, BillMasterDBModel)
+    if urlCondition == "all":
+        BillMasterDataList = crud.get_all()
+    else:
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        BillMasterDataList = crud.get_with_condition(dictCondition)
+
+    return BillMasterDataList
+
+
 @router.post("/generateBillingNo")
 async def generateBillingNo(
     request: Request,

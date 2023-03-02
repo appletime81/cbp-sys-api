@@ -577,6 +577,7 @@ async def checkInitBillMasterAndBillDetail(
     return alert_msg
 
 
+# 待抵扣階段(for 產生預覽畫面)
 @app.post(ROOT_URL + "/getBillMaster&BillDetailStream")
 async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(get_db)):
     """
@@ -615,7 +616,9 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     for InvoiceMasterData in InvoiceMasterDataList:
         InvoiceMasterDictData = orm_to_dict(InvoiceMasterData)
         InvoiceMasterDictData["Status"] = "MERGED"
-        newInvoiceMasterData = crudInvoiceMaster.update(InvoiceMasterData, InvoiceMasterDictData)
+        newInvoiceMasterData = crudInvoiceMaster.update(
+            InvoiceMasterData, InvoiceMasterDictData
+        )
 
     # cal FeeAmountSum
     FeeAmountSum = 0
@@ -699,6 +702,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     }
 
 
+# 待抵扣階段(for 產生初始檔存入資料庫)
 @app.post(ROOT_URL + "/initBillMaster&BillDetail")
 async def generateInitBillMasterAndBillDetail(
     request: Request, db: Session = Depends(get_db)
@@ -723,11 +727,11 @@ async def generateInitBillMasterAndBillDetail(
     return {
         "message": "success",
         "BillMaster": BillMasterData,
-        "BillDetail": newBillDetailDataList
+        "BillDetail": newBillDetailDataList,
     }
 
 
-# get BillMaster and BillDetail
+# get BillMaster and BillDetail(查詢帳單主檔&帳單明細檔)
 @app.get(ROOT_URL + "/getBillMaster&BillDetail/{urlCondition}")
 async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(get_db)):
     crudBillMaster = CRUD(db, BillMasterDBModel)
@@ -761,6 +765,7 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
     return getResult
 
 
+# 已抵扣階段(for 執行抵扣，更新初始化的帳單主檔及帳單明細資料庫)
 @app.post(ROOT_URL + "/generateBillMaster&BillDetail")
 async def generateBillMasterAndBillDetail(
     request: Request, db: Session = Depends(get_db)
@@ -768,32 +773,31 @@ async def generateBillMasterAndBillDetail(
     """
     {
         "BillMaster": {...},
-        "BillDetailDataList": [
-            {
-                "InvDetailID": "1",
-                "CBList": [
-                    {
-                        "CBID": "1",
-                        "TransAmount": 1000,
-                    },
-                    {...},
-                    {...},
-                ]
-            },
+        "BillDetail": [
             {...},
-            {...}
+            {...},
         ]
+        "CB": [
+            {
+                "CBID": 1,
+                TransAmount: 1000,
+            }
+
+        ]
+
     }
     """
     request_data = await request.json()
-    BillDetailDictDataList = request_data["BillDetailDataList"]
+    BillDetailDictDataList = request_data["BillDetail"]
     BillMasterDictData = request_data["BillMaster"]
+    CBList = request_data["CB"]
 
     # init crud
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCBStatement = CRUD(db, CreditBalanceStatementDBModel)
 
     # 開始做抵扣
     FeeAmountSum = 0
@@ -802,7 +806,7 @@ async def generateBillMasterAndBillDetail(
     newCBList = []
     for info in BillDetailDictDataList:
         InvDetailID = info["InvDetailID"]
-        DedAmount = [CB["TransAmount"] for CB in info["CBList"]]
+        DedAmount = sum([CB["TransAmount"] for CB in CBList])
         BillDetailData = crudBillDetail.get_with_condition(
             {"InvDetailID": InvDetailID}
         )[0]
@@ -814,7 +818,7 @@ async def generateBillMasterAndBillDetail(
         BillDetailDictData["Status"] = bill_detail_status(
             BillDetailDictData["FeeAmount"],
             BillDetailDictData["ReceivedAmount"],
-            BillDetailDictData["BillDetailDictData"],
+            BillDetailDictData["BankFees"],
         )
         FeeAmountSum += BillDetailDictData["FeeAmount"]
 
@@ -823,7 +827,7 @@ async def generateBillMasterAndBillDetail(
         newBillDetailDataList.append(BillDetailData)
 
         # update CB and generate CBStatement
-        for CB in info["CBList"]:
+        for CB in CBList:
             # update CB
             CreditBalanceData = crudCreditBalance.get_with_condition(
                 {"CBID": CB["CBID"]}
@@ -840,9 +844,9 @@ async def generateBillMasterAndBillDetail(
             # generate CBStatement
             CBStatementDictData = {
                 "CBID": CB["CBID"],
-                "BillingNO": BillDetailData.BillingNo,
+                "BillingNo": BillMasterDictData["BillingNo"],
                 "BLDetailID": BillDetailData.BillDetailID,
-                "TransItem": "帳單金額抵扣",
+                "TransItem": "DEDUCT",  # 帳單金額抵扣
                 "OrgAmount": OrgAmount,
                 "TransAmount": CB["TransAmount"],
                 "Note": None,
@@ -851,10 +855,9 @@ async def generateBillMasterAndBillDetail(
             CBStatementPydanticData = CreditBalanceStatementSchema(
                 **CBStatementDictData
             )
-            CBStatementData = crudBillDetail.create(CBStatementPydanticData)
+            CBStatementData = crudCBStatement.create(CBStatementPydanticData)
             newCBStatementDataList.append(CBStatementData)
 
-    # TODO: Update BillMaster's info
     BillMasterData = crudBillMaster.get_with_condition(
         {"BillMasterID": BillMasterDictData["BillMasterID"]}
     )[0]
@@ -868,6 +871,52 @@ async def generateBillMasterAndBillDetail(
         "CBStatement": newCBStatementDataList,
         "CB": newCBList,
     }
+
+
+# 待抵扣階段退回
+@app.post(ROOT_URL + "/returnBillMaster&BillDetail")
+async def returnBillMasterAndBillDetail(
+    request: Request, db: Session = Depends(get_db)
+):
+    """
+    {
+        "BillMaster": {},
+        "ReturnStage": "VALIDATED" or "TO_MERGE"
+    }
+    """
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+
+    InvDetailIDList = []
+    BillMasterDictData = (await request.json())["BillMaster"]
+    ReturnStage = (await request.json())["ReturnStage"]
+
+    # get BillDetailDataList
+    BillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+    )
+    for BillDetailData in BillDetailDataList:
+        InvDetailIDList.append(BillDetailData.InvDetailID)
+
+    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(InvoiceMasterDBModel.InvDetailID, InvDetailIDList)
+
+    if ReturnStage == "TO_MERGE":
+        # 更新發票主檔狀態為"TO_MERGE"
+        for InvoiceMasterData in InvoiceMasterDataList:
+            InvoiceMasterDictData = orm_to_dict(InvoiceMasterData)
+            InvoiceMasterDictData["Status"] = "TO_MERGE"
+            newInvoiceMasterData =crudInvoiceMaster.update(InvoiceMasterData, InvoiceMasterDictData)
+
+        # 刪除BillMaster、BillDetail
+        crudBillMaster.remove(BillMasterDictData["BillMasterID"])
+        for BillDetailData in BillDetailDataList:
+            crudBillDetail.remove(BillDetailData.BillDetailID)
+    elif ReturnStage == "VALIDATED":
+        pass  # TODO: 待抵扣階段退回(Continue)
+
+
 
 
 # check input BillingNo is existed or not

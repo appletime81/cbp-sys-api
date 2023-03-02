@@ -1,15 +1,6 @@
-import json
+from docxtpl import DocxTemplate
 
-from pprint import pprint
-
-# open json file
-with open("test2.json") as f:
-    data = json.load(f)
-
-
-BillDetailDataList = data["BillDetailDataList"]
-
-total_amt = 0
-for BillDetailData in BillDetailDataList:
-    total_amt += BillDetailData["OrgFeeAmount"]
-print(float("{:.2f}".format(total_amt)))
+doc = DocxTemplate("test_template.docx")
+context = {'name': "World company"}
+doc.render(context)
+doc.save("generated_doc.docx")
