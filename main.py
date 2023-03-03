@@ -900,23 +900,32 @@ async def returnBillMasterAndBillDetail(
     for BillDetailData in BillDetailDataList:
         InvDetailIDList.append(BillDetailData.InvDetailID)
 
-    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(InvoiceMasterDBModel.InvDetailID, InvDetailIDList)
+    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
+        InvoiceMasterDBModel.InvDetailID, InvDetailIDList
+    )
 
     if ReturnStage == "TO_MERGE":
         # 更新發票主檔狀態為"TO_MERGE"
         for InvoiceMasterData in InvoiceMasterDataList:
             InvoiceMasterDictData = orm_to_dict(InvoiceMasterData)
             InvoiceMasterDictData["Status"] = "TO_MERGE"
-            newInvoiceMasterData =crudInvoiceMaster.update(InvoiceMasterData, InvoiceMasterDictData)
-
-        # 刪除BillMaster、BillDetail
-        crudBillMaster.remove(BillMasterDictData["BillMasterID"])
-        for BillDetailData in BillDetailDataList:
-            crudBillDetail.remove(BillDetailData.BillDetailID)
+            newInvoiceMasterData = crudInvoiceMaster.update(
+                InvoiceMasterData, InvoiceMasterDictData
+            )
     elif ReturnStage == "VALIDATED":
-        pass  # TODO: 待抵扣階段退回(Continue)
+        # 刪除發票主檔、發票明細檔
+        for InvoiceMasterData in InvoiceMasterDataList:
+            InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(
+                {"InvMasterID": InvoiceMasterData.InvMasterID}
+            )
+            for InvoiceDetailData in InvoiceDetailDataList:
+                crudInvoiceDetail.remove(InvoiceDetailData.InvDetailID)
+            crudInvoiceMaster.remove(InvoiceMasterData.InvMasterID)
 
-
+    # 刪除BillMaster、BillDetail
+    crudBillMaster.remove(BillMasterDictData["BillMasterID"])
+    for BillDetailData in BillDetailDataList:
+        crudBillDetail.remove(BillDetailData.BillDetailID)
 
 
 # check input BillingNo is existed or not
