@@ -1,21 +1,15 @@
 {
-    "BillingNo": "testNo",
-    "IssueData": "2019-01-01T02:00:00+08:00",
-    "DueDate": "2019-05-01T02:00:00+08:00",
-    "InvoiceMaster": [
-        {
-            "WKMasterID": 1,
-            "InvoiceNo": "DT0170168-1",
-            "SupplierName": "NEC",
-            "WorkTitle": "Construction",
-            "ContractType": "SC",
-            "DueDate": "2022-11-08T12:00:00",
-            "IsPro": true,
-            "InvMasterID": 2,
-            "PartyName": "CHT",
-            "SubmarineCable": "SJC2",
-            "IssueDate": "2022-09-09T12:00:00",
-            "Status": "TO_MERGE"
-        }
-    ]
+  "CBID": 1,
+  "BLDetailID": null,
+  "WorkTitle": "Construction",
+  "InvoiceNo": null,
+  "PartyName": "CHT",
+  "LastUpdDate": null,
+  "SubmarineCable": "SJC2",
+  "CBType": "重溢繳",
+  "BillingNo": null,
+  "BillMilestone": "BM9a",
+  "CurrAmount": 1000.0,
+  "CreateDate": "2023-03-01T00:00:00",
+  "Note": null
 }

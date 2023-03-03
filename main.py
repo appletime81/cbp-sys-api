@@ -210,7 +210,7 @@ async def searchInvoiceWKMaster(
 
     # generate result
     for InvoiceWKMasterData in InvoiceWKMasterDataList:
-        InvoiceWKDetailDataList = list(
+        tempInvoiceWKDetailDataList = list(
             filter(
                 lambda x: x.WKMasterID == InvoiceWKMasterData.WKMasterID,
                 InvoiceWKDetailDataList,
@@ -219,7 +219,7 @@ async def searchInvoiceWKMaster(
         getResult.append(
             {
                 "InvoiceWKMaster": InvoiceWKMasterData,
-                "InvoiceWKDetail": InvoiceWKDetailDataList,
+                "InvoiceWKDetail": tempInvoiceWKDetailDataList,
             }
         )
 
@@ -874,7 +874,7 @@ async def generateBillMasterAndBillDetail(
 
 
 # 待抵扣階段退回
-@app.post(ROOT_URL + "/returnBillMaster&BillDetail")
+@app.post(ROOT_URL + "/returnBillMaster&BillDetail/beforeDeduct")
 async def returnBillMasterAndBillDetail(
     request: Request, db: Session = Depends(get_db)
 ):
@@ -926,6 +926,37 @@ async def returnBillMasterAndBillDetail(
     crudBillMaster.remove(BillMasterDictData["BillMasterID"])
     for BillDetailData in BillDetailDataList:
         crudBillDetail.remove(BillDetailData.BillDetailID)
+
+    if ReturnStage == "TO_MERGE":
+        return {"message": "success to return to TO_MERGE stage"}
+    elif ReturnStage == "VALIDATED":
+        return {"message": "success return to VALIDATED stage"}
+    else:
+        return {"message": "fail to return"}
+
+# 已抵扣階段退回
+@app.post(ROOT_URL + "/returnBillMaster&BillDetail/afterDeduct")
+async def returnBillMasterAndBillDetail(
+    request: Request, db: Session = Depends(get_db)
+):
+    """
+    {
+        "BillMaster": {},
+        "ReturnStage": "VALIDATED" or "TO_MERGE" or "INITIAL"
+    }
+    """
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCBStatement = CRUD(db, CreditBalanceStatementDBModel)
+
+    # 做CB返還
+    BillMasterID = (await request.json())["BillMaster"]["BillMasterID"]
+    CBDataList = crudCBStatement.get_with_condition({"BillMasterID": BillMasterID})
+
+    
 
 
 # check input BillingNo is existed or not

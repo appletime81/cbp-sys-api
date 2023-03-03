@@ -44,9 +44,13 @@ async def addCreditBalance(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, CreditBalanceDBModel)
-    crud.create(CreditBalancePydanticData)
+    CreditBalanceDictData = CreditBalancePydanticData.dict()
+    CreditBalanceDictData["CreateDate"] = convert_time_to_str(datetime.now())
+    CreditBalancePydanticData = CreditBalanceSchema(**CreditBalanceDictData)
+    CreditBalanceData = crud.create(CreditBalancePydanticData)
     return {
         "message": "CreditBalance successfully created",
+        "CreditBalance": CreditBalanceData,
     }
 
 
