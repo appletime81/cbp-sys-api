@@ -77,8 +77,7 @@ app.add_middleware(
 # ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail ------------------------------
 @app.post(f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail")
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
-    request: Request,
-    db: Session = Depends(get_db),
+    request: Request, db: Session = Depends(get_db),
 ):
     invoice_data = await request.json()
     CreateDate = convert_time_to_str(datetime.now())
@@ -129,9 +128,7 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
 @app.get(ROOT_URL + "/getInvoiceWKMaster&InvoiceWKDetail/{urlCondition}")
 async def searchInvoiceWKMaster(
-    request: Request,
-    urlCondition: str,
-    db: Session = Depends(get_db),
+    request: Request, urlCondition: str, db: Session = Depends(get_db),
 ):
     getResult = []
 
@@ -228,9 +225,7 @@ async def searchInvoiceWKMaster(
 
 @app.get(ROOT_URL + "/getInvoiceMaster&InvoiceDetailStream/WKMasterID={WKMasterID}")
 async def getInvoiceMasterInvoiceDetailStream(
-    request: Request,
-    WKMasterID: int,
-    db: Session = Depends(get_db),
+    request: Request, WKMasterID: int, db: Session = Depends(get_db),
 ):
     # Step1. Get InvoiceWKMaster
     InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
@@ -744,10 +739,7 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
                 {"BillMasterID": BillMasterData.BillMasterID}
             )
             getResult.append(
-                {
-                    "BillMaster": BillMasterData,
-                    "BillDetail": BillDetailDataList,
-                }
+                {"BillMaster": BillMasterData, "BillDetail": BillDetailDataList,}
             )
     else:
         dictCondition = convert_url_condition_to_dict(urlCondition)
@@ -757,10 +749,7 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
                 {"BillMasterID": BillMasterData.BillMasterID}
             )
             getResult.append(
-                {
-                    "BillMaster": BillMasterData,
-                    "BillDetail": BillDetailDataList,
-                }
+                {"BillMaster": BillMasterData, "BillDetail": BillDetailDataList,}
             )
     return getResult
 
@@ -1034,9 +1023,14 @@ async def returnBillMasterAndBillDetail(
     newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
     recordProcessing["newBillMasterData"] = newBillMasterData
 
-    if ReturnStage == "TO_MERGE":
+    if ReturnStage == "TO_MERGE" or ReturnStage == "VALIDATED":
         newBillDetailDataList = recordProcessing["newBillDetailData"]
         newBillMasterData = recordProcessing["newBillMasterData"]
+
+        # 刪除BillMaster
+        crudBillMaster.remove(newBillMasterData.BillMasterID)
+
+        # get InvoiceMaster & InvoiceDetail data
         InvDetailIDList = [
             newBillDetailData.InvDetailID for newBillDetailData in newBillDetailDataList
         ]
@@ -1046,12 +1040,31 @@ async def returnBillMasterAndBillDetail(
         InvMasterIDList = [
             InvoiceDetailData.InvMasterID for InvoiceDetailData in InvoiceDetailDataList
         ]
-        InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(InvoiceMasterDBModel.InvMasterID, InvMasterIDList)
-        for InvoiceMasterData in InvoiceMasterDataList:
-            InvoiceMasterData.Status = "TO_MERGE"
-            newInvoiceMasterData = crudInvoiceMaster.update(InvoiceMasterData, orm_to_dict(InvoiceMasterData))
-            recordProcessing["newInvoiceMasterData"].append(newInvoiceMasterData)
-        # 刪除BillMaster
+        InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
+            InvoiceMasterDBModel.InvMasterID, InvMasterIDList
+        )
+
+        if ReturnStage == "TO_MERGE":
+            # 更改InvoiceMaster狀態
+            for InvoiceMasterData in InvoiceMasterDataList:
+                InvoiceMasterData.Status = "TO_MERGE"
+                newInvoiceMasterData = crudInvoiceMaster.update(
+                    InvoiceMasterData, orm_to_dict(InvoiceMasterData)
+                )
+                recordProcessing["newInvoiceMasterData"].append(newInvoiceMasterData)
+        elif ReturnStage == "VALIDATED":
+            # 刪除InvoiceMaster & InvoiceDetail
+            for InvoiceMasterData in InvoiceMasterDataList:
+                crudInvoiceMaster.remove(InvoiceMasterData.InvMasterID)
+            for InvoiceDetailData in InvoiceDetailDataList:
+                crudInvoiceDetail.remove(InvoiceDetailData.InvDetailID)
+            # 更改InvoiceMaster狀態
+            for InvoiceMasterData in InvoiceMasterDataList:
+                InvoiceMasterData.Status = "VALIDATED"
+                newInvoiceMasterData = crudInvoiceMaster.update(
+                    InvoiceMasterData, orm_to_dict(InvoiceMasterData)
+                )
+                recordProcessing["newInvoiceMasterData"].append(newInvoiceMasterData)
 
 
 # check input BillingNo is existed or not

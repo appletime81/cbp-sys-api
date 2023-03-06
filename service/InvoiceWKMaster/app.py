@@ -71,7 +71,6 @@ async def updateInvoiceWKMasterStatusAndInvoiceMasterStatus(
     db: Session = Depends(get_db),
 ):
     update_dict_condition = await request.json()
-    print(update_dict_condition)
     crud = CRUD(db, InvoiceWKMasterDBModel)
     InvoiceWKMasterDataList = crud.get_with_condition(
         {"WKMasterID": update_dict_condition["WKMasterID"]}
