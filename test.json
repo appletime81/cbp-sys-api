@@ -1,15 +1,17 @@
-{
-  "CBID": 1,
-  "BLDetailID": null,
-  "WorkTitle": "Construction",
-  "InvoiceNo": null,
-  "PartyName": "CHT",
-  "LastUpdDate": null,
-  "SubmarineCable": "SJC2",
-  "CBType": "重溢繳",
-  "BillingNo": null,
-  "BillMilestone": "BM9a",
-  "CurrAmount": 1000.0,
-  "CreateDate": "2023-03-01T00:00:00",
-  "Note": null
-}
+[
+  {
+    "CBID": 1,
+    "CBType": "重溢繳",
+    "BillingNo": null,
+    "BLDetailID": null,
+    "SubmarineCable": "SJC2",
+    "WorkTitle": "Construction",
+    "BillMilestone": "BM9a",
+    "PartyName": "CHT",
+    "InvoiceNo": null,
+    "CurrAmount": 1000.0,
+    "CreateDate": "2023-03-01T00:00:00",
+    "LastUpdDate": null,
+    "Note": null
+  }
+]

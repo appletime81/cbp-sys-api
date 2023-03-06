@@ -16,7 +16,7 @@ async def getCreditBalance(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, CreditBalanceDBModel)
-    table_name = "CreditBalance"
+    table_name = "CB"
     if "generateBillDetail=yes" not in urlCondition:
         if urlCondition == "all":
             CreditBalanceDataList = crud.get_all()

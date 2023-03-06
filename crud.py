@@ -1,7 +1,9 @@
+import pandas as pd
+
 from pprint import pprint
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.sync import update
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, text
 
 from database.engine import engine
 from database.models import *
@@ -123,7 +125,10 @@ class CRUD:
 
     @staticmethod
     def get_all_by_sql(sql: str):
-        return engine.execute(sql).all()
+        with engine.begin() as conn:
+            df = pd.read_sql_query(sql=text(f"""{sql}"""), con=conn)
+        getResult = [row_dict for row_dict in df.to_dict(orient="records")]
+        return getResult
 
     def get_max_id(self, model_id):
         return self.db.query(func.max(model_id)).scalar()
