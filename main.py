@@ -32,6 +32,7 @@ from service.PartiesByContract.app import router as PartiesByContractRouter
 from service.CBPBankAccount.app import router as CBPBankAccountRouter
 from service.SuppliersByContract.app import router as SuppliersByContractRouter
 from service.UploadFile.app import router as UploadFileRouter
+from service.Users.app import router as UsersRouter
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 
@@ -63,6 +64,7 @@ app.include_router(
     SuppliersByContractRouter, prefix=ROOT_URL, tags=["SuppliersByContract"]
 )
 app.include_router(UploadFileRouter, prefix=ROOT_URL, tags=["ReceiveFile"])
+app.include_router(UsersRouter, prefix=ROOT_URL, tags=["Users"])
 
 # allow middlewares
 app.add_middleware(
@@ -77,7 +79,8 @@ app.add_middleware(
 # ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail ------------------------------
 @app.post(f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail")
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
-    request: Request, db: Session = Depends(get_db),
+    request: Request,
+    db: Session = Depends(get_db),
 ):
     invoice_data = await request.json()
     CreateDate = convert_time_to_str(datetime.now())
@@ -128,7 +131,9 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
 @app.get(ROOT_URL + "/getInvoiceWKMaster&InvoiceWKDetail/{urlCondition}")
 async def searchInvoiceWKMaster(
-    request: Request, urlCondition: str, db: Session = Depends(get_db),
+    request: Request,
+    urlCondition: str,
+    db: Session = Depends(get_db),
 ):
     getResult = []
 
@@ -225,7 +230,9 @@ async def searchInvoiceWKMaster(
 
 @app.get(ROOT_URL + "/getInvoiceMaster&InvoiceDetailStream/WKMasterID={WKMasterID}")
 async def getInvoiceMasterInvoiceDetailStream(
-    request: Request, WKMasterID: int, db: Session = Depends(get_db),
+    request: Request,
+    WKMasterID: int,
+    db: Session = Depends(get_db),
 ):
     # Step1. Get InvoiceWKMaster
     InvoiceWKMasterDataList = await InvoiceWKMasterApp.getInvoiceWKMaster(
@@ -739,7 +746,10 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
                 {"BillMasterID": BillMasterData.BillMasterID}
             )
             getResult.append(
-                {"BillMaster": BillMasterData, "BillDetail": BillDetailDataList,}
+                {
+                    "BillMaster": BillMasterData,
+                    "BillDetail": BillDetailDataList,
+                }
             )
     else:
         dictCondition = convert_url_condition_to_dict(urlCondition)
@@ -749,7 +759,10 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
                 {"BillMasterID": BillMasterData.BillMasterID}
             )
             getResult.append(
-                {"BillMaster": BillMasterData, "BillDetail": BillDetailDataList,}
+                {
+                    "BillMaster": BillMasterData,
+                    "BillDetail": BillDetailDataList,
+                }
             )
     return getResult
 

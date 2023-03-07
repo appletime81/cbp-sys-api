@@ -332,3 +332,25 @@ class SuppliersByContractDBModel(Base):
     __tablename__ = "SuppliersByContract"
     ContractID = Column(Integer, primary_key=True, index=True)
     SupplierName = Column(String(100))
+
+
+class UserDBModel(Base):
+    __tablename__ = "User"
+    UserID = Column(Integer, primary_key=True, index=True)
+    UserName = Column(String(20))
+    Password = Column(String(20))
+    CreateDate = Column(String(20))
+    Note = Column(String(128))
+
+    """
+    SQL:
+    CREATE TABLE User
+    (
+        UserID   int NOT NULL AUTO_INCREMENT,
+        UserName varchar(20),
+        Password varchar(20),
+        CreateDate datetime,
+        Note varchar(128),
+        PRIMARY KEY (UserID)
+    );
+    """

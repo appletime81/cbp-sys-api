@@ -331,3 +331,23 @@ class SuppliersByContractSchema(BaseModel):
 
     ContractID: Optional[int]
     SupplierName: str
+
+
+class UserSchema(BaseModel):
+    """
+    CREATE TABLE User
+    (
+        UserID   int NOT NULL AUTO_INCREMENT,
+        UserName varchar(20),
+        Password varchar(20),
+        CreateDate datetime,
+        Note varchar(128),
+        PRIMARY KEY (UserID)
+    );
+    """
+
+    UserID: Optional[int]
+    UserName: str
+    Password: str
+    CreateDate: datetime
+    Note: Optional[str]
