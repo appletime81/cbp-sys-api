@@ -947,13 +947,11 @@ async def returnBillMasterAndBillDetail(
         "BillMaster": {},
         "ReturnStage": "VALIDATED" or "TO_MERGE" or "INITIAL"
         "Note": "Reason for return"
-        "TransItem": "DEDUCT" or "RETURN" or "REFUND"
     }
     """
     request_data = await request.json()
     BillMasterDictData = deepcopy(request_data["BillMaster"])
     Note = request_data["Note"]
-    TransItem = request_data["TransItem"]
     ReturnStage = request_data["ReturnStage"]
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
@@ -999,7 +997,7 @@ async def returnBillMasterAndBillDetail(
                 "CBID": returnCBDictData["CBID"],
                 "BillingNo": BillMasterDictData["BillingNo"],
                 "BLDetailID": BillDetailData.BillDetailID,
-                "TransItem": TransItem,
+                "TransItem": "RETURN",
                 "OrgAmount": returnCBDictData["CurrAmount"],
                 "TransAmount": abs(CBStatementData.TransAmount),
                 "Note": Note,
@@ -1089,6 +1087,9 @@ async def returnBillMasterAndBillDetail(
                     InvoiceWKMasterData, orm_to_dict(InvoiceMasterData)
                 )
                 recordProcessing["newInvoiceMasterData"].append(newInvoiceWKMasterData)
+
+    return {"message": "success", "data": recordProcessing}
+
 
 
 # check input BillingNo is existed or not
