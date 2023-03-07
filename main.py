@@ -957,6 +957,7 @@ async def returnBillMasterAndBillDetail(
     ReturnStage = request_data["ReturnStage"]
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
@@ -1057,6 +1058,16 @@ async def returnBillMasterAndBillDetail(
             InvoiceMasterDBModel.InvMasterID, InvMasterIDList
         )
 
+        # get InvoiceWKMasterData
+        InvWKMasterIDList = [
+            InvoiceMasterData.InvWKMasterID for InvoiceMasterData in InvoiceMasterDataList
+        ]
+        InvWKMasterIDList = list(set(InvWKMasterIDList))
+        InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
+            InvoiceWKMasterDBModel.InvWKMasterID, InvWKMasterIDList
+        )
+
+
         if ReturnStage == "TO_MERGE":
             # 更改InvoiceMaster狀態
             for InvoiceMasterData in InvoiceMasterDataList:
@@ -1071,13 +1082,13 @@ async def returnBillMasterAndBillDetail(
                 crudInvoiceMaster.remove(InvoiceMasterData.InvMasterID)
             for InvoiceDetailData in InvoiceDetailDataList:
                 crudInvoiceDetail.remove(InvoiceDetailData.InvDetailID)
-            # 更改InvoiceMaster狀態
-            for InvoiceMasterData in InvoiceMasterDataList:
-                InvoiceMasterData.Status = "VALIDATED"
-                newInvoiceMasterData = crudInvoiceMaster.update(
-                    InvoiceMasterData, orm_to_dict(InvoiceMasterData)
+            # 更改InvoiceWKMaster狀態
+            for InvoiceWKMasterData in InvoiceWKMasterDataList:
+                InvoiceWKMasterData.Status = "VALIDATED"
+                newInvoiceWKMasterData = crudInvoiceWKMaster.update(
+                    InvoiceWKMasterData, orm_to_dict(InvoiceMasterData)
                 )
-                recordProcessing["newInvoiceMasterData"].append(newInvoiceMasterData)
+                recordProcessing["newInvoiceMasterData"].append(newInvoiceWKMasterData)
 
 
 # check input BillingNo is existed or not
