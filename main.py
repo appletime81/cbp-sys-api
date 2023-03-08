@@ -959,6 +959,10 @@ async def returnBillMasterAndBillDetail(
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
     recordProcessing = {
+        # -----------------------------
+        "InvoiceMaster": list(),
+        "InvoiceDetail": list(),
+        # -----------------------------
         "originalBillMaster": list(),
         "originalBillDetail": list(),
         "newBillDetail": list(),
@@ -988,6 +992,7 @@ async def returnBillMasterAndBillDetail(
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvWKMasterID, InvWKMasterIDList
     )
+    recordProcessing["InvoiceDetail"].extend(InvoiceDetailDataList)
 
     # ----- 重新抓取發票明細檔ID -----
     InvDetailIDList = [
@@ -1045,6 +1050,10 @@ async def returnBillMasterAndBillDetail(
             tempBillDetailData.BillStatus = "INCOMPLETE"
             tempBillDetailData.FeeAmount = tempBillDetailData.OrgFeeAmount
             recordProcessing["newBillDetail"].append(tempBillDetailData)
+    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
+        InvoiceMasterDBModel.InvWKMasterID, InvWKMasterIDList
+    )
+    recordProcessing["InvoiceMaster"].extend(InvoiceMasterDataList)
     # TODO : 把變更的資料或要新增或刪除的資料寫入資料庫
     return recordProcessing
 
