@@ -1,6 +1,9 @@
-from docxtpl import DocxTemplate
+from datetime import datetime
 
-doc = DocxTemplate("test_template.docx")
-context = {"name": "World company"}
-doc.render(context)
-doc.save("generated_doc.docx")
+
+
+
+
+
+a = [datetime(2022, 3, 1), datetime(2022, 3, 2)]
+print(max(a))
