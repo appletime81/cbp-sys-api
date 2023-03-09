@@ -966,6 +966,16 @@ async def returnToValidatedBillMasterAndBillDetail(
         "oldCBDataList": [],
         "newCBDataList": [],
         # ------------------
+        "oldCBStatementDataList": [],
+        "newCBStatementDataList": [],
+        # ------------------
+        "BillDataList": [
+            # {
+            #    "BillMaster": {}, 
+            #    "oldBillDetailDataList": [], 
+            #    "newBillDetailDataList": []
+            # }
+        ],
     }
     # 擷取受波及的BillMaster(透過勾選的BillMaster所對應的InvWKMaster底下所對應的所有BillMaster)
     BillDetailDataList = crudBillDetail.get_with_condition(
@@ -1001,24 +1011,69 @@ async def returnToValidatedBillMasterAndBillDetail(
         BillMasterDBModel.BillMasterID, affectedBillMasterIDList
     )
     for affectedBillMasterData in affectedBillMasterDataList:
+        tempBillDataRecord = {
+            "BillMaster": affectedBillMasterData,
+            "oldBillDetailDataList": [],
+            "newBillDetailDataList": [],
+        }
         tempAffectedBillDetailDataList = list(
             filter(
                 lambda x: x.BillMasterID == affectedBillMasterData.BillMasterID,
                 affectedBillDetailDataList,
             )
         )
+        tempBillDataRecord["oldBillDetailDataList"].extend(
+            tempAffectedBillDetailDataList
+        )
         for tempAffectedBillDetailData in tempAffectedBillDetailDataList:
             tempCBDataList = crudCreditBalance.get_with_condition(
                 {"BLDetailID": tempAffectedBillDetailData.BillDetailID}
             )
-            for tempCBData in tempCBDataList:
-                tempCBStatementDataList = crudCreditBalanceStatement.get_with_condition(
-                    {"CBID": tempCBData.CBID}
+            if tempCBDataList:
+                recordOldNewData["oldCBDataList"].extend(tempCBDataList)
+                for tempCBData in tempCBDataList:
+                    # Step2. CB返還
+                    tempCBStatementDataList = (
+                        crudCreditBalanceStatement.get_with_condition(
+                            {"CBID": tempCBData.CBID}
+                        )
+                    )
+                    tempCBStatementData = max(
+                        tempCBStatementDataList, key=lambda x: x.CreateDate
+                    )
+                    newCBStatementDictData = {
+                        "CBID": tempCBData.CBID,
+                        "BillingNo": tempCBData.BillingNo,
+                        "BLDetailID": tempAffectedBillDetailData.BillDetailID,
+                        "TransItem": "RETURN",
+                        "OrgAmount": tempCBData.CurrAmount,
+                        "TranAmount": abs(tempCBStatementData.TransAmount),
+                    }
+                    tempCBData.CurrAmount += abs(tempCBStatementData.TransAmount)
+
+                    # Step3. 更新BillDetail
+                    tempAffectedBillDetailData.DedAmount -= abs(
+                        tempCBStatementData.TransAmount
+                    )
+                    tempAffectedBillDetailData.FeeAmount += abs(
+                        tempCBStatementData.TransAmount
+                    )
+
+                    # 紀錄剛剛更新的CBData、新產生的CBStatementData
+                    recordOldNewData["newCBDataList"].append(tempCBData)
+                    recordOldNewData["newCBStatementDataList"].append(
+                        newCBStatementDictData
+                    )
+            if tempCBDataList:
+                tempAffectedBillDetailData.Status = "INCOMPLETE"
+                tempBillDataRecord["newBillDetailDataList"].append(
+                    tempAffectedBillDetailData
                 )
-                # find the latest CBStatementData
-                tempCBStatementData = max(
-                    tempCBStatementDataList, key=lambda x: x.CreateDate
-                )
+    """
+    TODO: 被勾選的InvoiceWKMaster，處理掉其底下的所有InvoiceMaster、InvoiceDetail、BillMaster、BillDetail
+          被勾選的InvoiceWKMaster，處理掉其底下的所有InvoiceMaster、InvoiceDetail
+    """
+    
 
 
 # check input BillingNo is existed or not
