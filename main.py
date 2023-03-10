@@ -937,143 +937,147 @@ async def returnBillMasterAndBillDetail(
         return {"message": "fail to return"}
 
 
-# 已抵扣階段退回
-@app.post(ROOT_URL + "/returnToValidatedBillMaster&BillDetail/afterDeduct")
-async def returnToValidatedBillMasterAndBillDetail(
+# 已抵扣階段退回(選擇帳單)
+@app.post(
+    ROOT_URL + "/returnToValidatedBillMaster&BillDetail/afterDeduct/choiceBillMaster"
+)
+async def returnToValidatedBillMasterAndBillDetailChoiceBillMaster(
     request: Request, db: Session = Depends(get_db)
 ):
-    BillMasterDictData = (await request.json())["BillMaster"]
-    Note = (await request.json())["Note"]
-    ConfirmExecute = (await request.json())["ConfirmExecute"]
+    """
+    {
+        "BillMaster": {},
+    }
+    """
     crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
-    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
-    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+
+    BillMasterDictData = (await request.json())["BillMaster"]
+    BillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+    )[0]
+    BillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": BillMasterData.BillMasterID}
+    )
+    InvoiceWKMasterIDList = [
+        BillDetailData.WKMasterID for BillDetailData in BillDetailDataList
+    ]
+    InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
+        InvoiceWKMasterDBModel.WKMasterID, InvoiceWKMasterIDList
+    )
+    return {
+        "BillMaster": BillMasterData,
+        "InvoiceWKMaster": InvoiceWKMasterDataList,
+    }
+
+
+# 已抵扣階段退回(選擇發票工作主檔)
+@app.post(
+    ROOT_URL
+    + "/returnToValidatedBillMaster&BillDetail/afterDeduct/choiceInvoiceWKMaster"
+)
+async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
+    request: Request, db: Session = Depends(get_db)
+):
+    """
+    {
+        InvoiceWKMaster: [
+            {...},
+            {...},
+        ]
+        "Confirm": True / False
+    }
+    """
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudBillMaster = CRUD(db, BillMasterDBModel)
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
-    """
-    recordProcessing = [
-        {
-            "mainAffectedBillMaster": BillMasterDictData,
-            "InvoiceWKMaster": []
-        },
-        {...}
+    confirm = (await request.json())["Confirm"]
+    confirmStream = [
+        # {
+        #     InvoiceWKMasterData: {},
+        #     BillMasterDataList: [
+        #         {
+        #             "BillMaster": {},
+        #             "BillDetail": []
+        #         },
+        #         {...}
+        #     ]
+        # }
     ]
-    """
-    recordResponse = []
-    recordOldNewData = {
-        "oldCBDataList": [],
-        "newCBDataList": [],
-        # ------------------
-        "oldCBStatementDataList": [],
-        "newCBStatementDataList": [],
-        # ------------------
-        "BillDataList": [
-            # {
-            #    "BillMaster": {}, 
-            #    "oldBillDetailDataList": [], 
-            #    "newBillDetailDataList": []
-            # }
-        ],
-    }
-    # 擷取受波及的BillMaster(透過勾選的BillMaster所對應的InvWKMaster底下所對應的所有BillMaster)
-    BillDetailDataList = crudBillDetail.get_with_condition(
-        {"BillMasterID": BillMasterDictData["BillMasterID"]}
-    )
-    InvWKMasterIDList = [
-        BillDetailData.InvWKMasterID for BillDetailData in BillDetailDataList
+    InvoiceWKMasterDictDataList = (await request.json())["InvoiceWKMaster"]
+    InvoiceWKMasterIDList = [
+        InvoiceWKMasterData["WKMasterID"]
+        for InvoiceWKMasterData in InvoiceWKMasterDictDataList
     ]
-    InvWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
-        InvoiceWKMasterDBModel.InvWKMasterID, InvWKMasterIDList
+    BillDetailDataList = crudBillDetail.get_value_if_in_a_list(
+        BillDetailDBModel.WKMasterID, InvoiceWKMasterIDList
     )
-    recordResponse.append(
-        {
-            "mainAffectedBillMaster": BillMasterDictData,
-            "InvoiceWKMaster": InvWKMasterDataList,
-        }
+    BillDetailIDList = list(
+        set([BillDetailData.BillDetailID for BillDetailData in BillDetailDataList])
+    )
+    BillMasterDataList = crudBillMaster.get_value_if_in_a_list(
+        BillMasterDBModel.BillMasterID, BillDetailIDList
     )
 
-    # ----------- 做CB返還 -----------
-    # 1.Step1 取出所有受影響的BillMaster
-    affectedBillDetailDataList = crudBillDetail.get_value_if_in_a_list(
-        BillDetailDBModel.InvWKMasterID, InvWKMasterIDList
-    )
-    affectedBillMasterIDList = list(
-        set(
-            [
-                affectedBillDetailData.BillMasterID
-                for affectedBillDetailData in affectedBillDetailDataList
-            ]
+    streamResponse = []
+    for InvoiceWKMasterDictData in InvoiceWKMasterDictDataList:
+        streamDictData = {
+            "InvoiceWKMaster": InvoiceWKMasterDictData,
+            "BillMasterDataList": [],
+        }
+        tempBillDetailDataList = list(
+            filter(
+                lambda x: x.WKMasterID == InvoiceWKMasterDictData["WKMasterID"],
+                BillDetailDataList,
+            )
         )
-    )
-    affectedBillMasterDataList = crudBillMaster.get_value_if_in_a_list(
-        BillMasterDBModel.BillMasterID, affectedBillMasterIDList
-    )
-    for affectedBillMasterData in affectedBillMasterDataList:
-        tempBillDataRecord = {
-            "BillMaster": affectedBillMasterData,
+        tempBillMadterIDList = list(
+            set(
+                [
+                    tempBillDetailData.BillMasterID
+                    for tempBillDetailData in tempBillDetailDataList
+                ]
+            )
+        )
+        for tempBillMadterID in tempBillMadterIDList:
+            tempBillMasterData = list(
+                filter(lambda x: x.BillMasterID == tempBillMadterID, BillMasterDataList)
+            )[0]
+            tempBillDetailDataList = list(
+                filter(lambda x: x.BillMasterID == tempBillMadterID, BillDetailDataList)
+            )
+            streamDictData["BillMasterDataList"].append(
+                {
+                    "BillMaster": tempBillMasterData,
+                    "BillDetail": tempBillDetailDataList,
+                }
+            )
+        streamResponse.append(streamDictData)
+    if not confirm:
+        return streamResponse
+    if confirm:
+        dataToBeProcessed = {
+            "oldBillMasterDataList": [],
+            "newBillMasterDataList": [],
+            # --------------------------
             "oldBillDetailDataList": [],
             "newBillDetailDataList": [],
+            # --------------------------
+            "oldInvoiceWKMasterDataList": [],
+            "newInvoiceWKMasterDataList": [],
+            # --------------------------
+            "newCBStatementDataList": [],
         }
-        tempAffectedBillDetailDataList = list(
-            filter(
-                lambda x: x.BillMasterID == affectedBillMasterData.BillMasterID,
-                affectedBillDetailDataList,
-            )
-        )
-        tempBillDataRecord["oldBillDetailDataList"].extend(
-            tempAffectedBillDetailDataList
-        )
-        for tempAffectedBillDetailData in tempAffectedBillDetailDataList:
-            tempCBDataList = crudCreditBalance.get_with_condition(
-                {"BLDetailID": tempAffectedBillDetailData.BillDetailID}
-            )
-            if tempCBDataList:
-                recordOldNewData["oldCBDataList"].extend(tempCBDataList)
-                for tempCBData in tempCBDataList:
-                    # Step2. CB返還
-                    tempCBStatementDataList = (
-                        crudCreditBalanceStatement.get_with_condition(
-                            {"CBID": tempCBData.CBID}
-                        )
-                    )
-                    tempCBStatementData = max(
-                        tempCBStatementDataList, key=lambda x: x.CreateDate
-                    )
-                    newCBStatementDictData = {
-                        "CBID": tempCBData.CBID,
-                        "BillingNo": tempCBData.BillingNo,
-                        "BLDetailID": tempAffectedBillDetailData.BillDetailID,
-                        "TransItem": "RETURN",
-                        "OrgAmount": tempCBData.CurrAmount,
-                        "TranAmount": abs(tempCBStatementData.TransAmount),
-                    }
-                    tempCBData.CurrAmount += abs(tempCBStatementData.TransAmount)
-
-                    # Step3. 更新BillDetail
-                    tempAffectedBillDetailData.DedAmount -= abs(
-                        tempCBStatementData.TransAmount
-                    )
-                    tempAffectedBillDetailData.FeeAmount += abs(
-                        tempCBStatementData.TransAmount
-                    )
-
-                    # 紀錄剛剛更新的CBData、新產生的CBStatementData
-                    recordOldNewData["newCBDataList"].append(tempCBData)
-                    recordOldNewData["newCBStatementDataList"].append(
-                        newCBStatementDictData
-                    )
-            if tempCBDataList:
-                tempAffectedBillDetailData.Status = "INCOMPLETE"
-                tempBillDataRecord["newBillDetailDataList"].append(
-                    tempAffectedBillDetailData
+        for tempOldBillMasterData in BillMasterDataList:
+            dataToBeProcessed["oldBillMasterDataList"].append(tempOldBillMasterData)
+            tmepOldBillDetailDataList = list(
+                filter(
+                    lambda x: x.BillMasterID == tempOldBillMasterData.BillMasterID,
+                    BillDetailDataList,
                 )
-    """
-    TODO: 被勾選的InvoiceWKMaster，處理掉其底下的所有InvoiceMaster、InvoiceDetail、BillMaster、BillDetail
-          被勾選的InvoiceWKMaster，處理掉其底下的所有InvoiceMaster、InvoiceDetail
-    """
-    
+            )
 
 
 # check input BillingNo is existed or not
