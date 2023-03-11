@@ -952,7 +952,7 @@ async def returnToValidatedBillMasterAndBillDetail(
         "Note": "string",
         "ConfirmExecute": True / False
     }
-    
+
     """
     BillMasterDictData = (await request.json())["BillMaster"]
     Note = (await request.json())["Note"]
@@ -983,8 +983,8 @@ async def returnToValidatedBillMasterAndBillDetail(
         # ------------------
         "BillDataList": [
             # {
-            #    "BillMaster": {}, 
-            #    "oldBillDetailDataList": [], 
+            #    "BillMaster": {},
+            #    "oldBillDetailDataList": [],
             #    "newBillDetailDataList": []
             # }
         ],
@@ -1081,7 +1081,6 @@ async def returnToValidatedBillMasterAndBillDetail(
                 tempBillDataRecord["newBillDetailDataList"].append(
                     tempAffectedBillDetailData
                 )
-    
 
 
 # check input BillingNo is existed or not
