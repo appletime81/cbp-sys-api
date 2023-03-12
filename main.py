@@ -1188,6 +1188,19 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
         return {"message": "success", "data": dataToBeProcessed}
 
 
+@app.post(ROOT_URL + "/returnToMergeBillMaster&BillDetail/afterDeduct")
+async def returnToMergeBillMasterAndBillDetailAfterDeduct(
+    request: Request, db: Session = Depends(get_db)
+):
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    BillMasterDictData = await request.json()
+    BillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+    )[0]
+
+    return
+
+
 # check input BillingNo is existed or not
 @app.get(ROOT_URL + "/checkBillingNo/{BillingNo}")
 async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
