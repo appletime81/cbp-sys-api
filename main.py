@@ -600,7 +600,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         for InvoiceMasterDictData in request_data["InvoiceMaster"]
     ]
     BillingNo = request_data["BillingNo"]
-    DueDate = request_data["DueDate"]
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
     crudBillMaster = CRUD(db, BillMasterDBModel)
@@ -618,9 +617,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     for InvoiceMasterData in InvoiceMasterDataList:
         InvoiceMasterDictData = orm_to_dict(InvoiceMasterData)
         InvoiceMasterDictData["Status"] = "MERGED"
-        newInvoiceMasterData = crudInvoiceMaster.update(
-            InvoiceMasterData, InvoiceMasterDictData
-        )
 
     # cal FeeAmountSum
     FeeAmountSum = 0
@@ -634,7 +630,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         "WorkTitle": InvoiceMasterDataList[0].WorkTitle,
         "PartyName": InvoiceMasterDataList[0].PartyName,
         "IssueDate": convert_time_to_str(datetime.now()),
-        "DueDate": DueDate,
+        "DueDate": None,
         "FeeAmountSum": FeeAmountSum,
         "ReceivedAmountSum": 0,
         "IsPro": InvoiceMasterDataList[0].IsPro,
@@ -710,12 +706,15 @@ async def generateInitBillMasterAndBillDetail(
     request: Request, db: Session = Depends(get_db)
 ):
     request_data = await request.json()
+    DueDate = request_data["DueDate"]
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
     BillMasterDictData = request_data["BillMaster"]
     BillDetailDataList = request_data["BillDetail"]
 
     # convert BillMasterDictData to BillMasterPydanticData and insert to db
+    BillMasterDictData["DueDate"] = DueDate
+    BillMasterDictData["IssueDate"] = convert_time_to_str(datetime.now())
     BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
     BillMasterData = crudBillMaster.create(BillMasterPydanticData)
 
@@ -1208,7 +1207,7 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     dataToBeProcessed = {
         "oldCBDataList": list(),
         "newCBDataList": list(),
-        "newCBStatementDataList": list()
+        "newCBStatementDataList": list(),
     }
 
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)

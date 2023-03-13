@@ -33,6 +33,34 @@ async def getInvoiceMaster(
     return InvoiceMasterDataList
 
 
+@router.get("/InvoiceMasterWithInvoiceDetail/{InvoiceMasterCondition}")
+async def getInvoiceMasterWithInvoiceDetail(
+    request: Request, InvoiceMasterCondition: str, db: Session = Depends(get_db)
+):
+    """
+    getResult element:
+    {
+        "InvoiceMaster": InvoiceMasterData,
+        "InvoiceDetail": InvoiceDetailDataList
+    }
+    """
+    getResult = []
+    crud = CRUD(db, InvoiceDetailDBModel)
+    InvoiceMasterDataList = await getInvoiceMaster(request, InvoiceMasterCondition, db)
+
+    for InvoiceMasterData in InvoiceMasterDataList:
+        InvoiceDetailDataList = crud.get_with_condition(
+            {"InvMasterID": InvoiceMasterData.InvMasterID}
+        )
+        getResult.append(
+            {
+                "InvoiceMaster": InvoiceMasterData,
+                "InvoiceDetail": InvoiceDetailDataList,
+            }
+        )
+    return getResult
+
+
 # 新增發票主檔
 @router.post("/InvoiceMaster", status_code=status.HTTP_201_CREATED)
 async def addInvoiceMaster(
