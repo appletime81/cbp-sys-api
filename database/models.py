@@ -167,14 +167,46 @@ class LiabilityDBModel(Base):
 
 class PartiesDBModel(Base):
     __tablename__ = "Parties"
+    """
+    PartyID        int          NOT NULL AUTO_INCREMENT,
+    SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
+    PartyCode      varchar(4)   NOT NULL,
+    PartyName      varchar(100) NOT NULL,
+    Address        varchar(512),
+    Contact        varchar(20),
+    Email          varchar(50),
+    Tel            varchar(20),
+    BankAcctName   varchar(100),
+    BankAcctNo     varchar(32),
+    SavingAcctNo   varchar(32),
+    SWIFTCode      varchar(32),
+    IBAN           varchar(32),
+    ACHNo          varchar(32),
+    WireRouting    varchar(32),
+    BankName       varchar(100),
+    Branch         varchar(100),
+    BankAddress    varchar(512),
+    """
     PartyID = Column(Integer, primary_key=True, index=True)
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
+    PartyCode = Column(String(4))
     PartyName = Column(String(100))
     Address = Column(String(512))
     Contact = Column(String(20))
     Email = Column(String(50))
     Tel = Column(String(20))
+    BankAcctName = Column(String(100))
+    BankAcctNo = Column(String(32))
+    SavingAcctNo = Column(String(32))
+    SWIFTCode = Column(String(32))
+    IBAN = Column(String(32))
+    ACHNo = Column(String(32))
+    WireRouting = Column(String(32))
+    BankName = Column(String(100))
+    Branch = Column(String(100))
+    BankAddress = Column(String(512))
 
 
 class SuppliersDBModel(Base):
@@ -335,13 +367,6 @@ class SuppliersByContractDBModel(Base):
 
 
 class UserDBModel(Base):
-    __tablename__ = "User"
-    UserID = Column(Integer, primary_key=True, index=True)
-    UserName = Column(String(20))
-    Password = Column(String(20))
-    CreateDate = Column(String(20))
-    Note = Column(String(128))
-
     """
     SQL:
     CREATE TABLE User
@@ -354,3 +379,10 @@ class UserDBModel(Base):
         PRIMARY KEY (UserID)
     );
     """
+    __tablename__ = "User"
+    UserID = Column(Integer, primary_key=True, index=True)
+    UserName = Column(String(20))
+    Password = Column(String(20))
+    CreateDate = Column(String(20))
+    Note = Column(String(128))
+

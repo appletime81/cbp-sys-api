@@ -17,7 +17,7 @@ async def getCreditBalance(
 ):
     crud = CRUD(db, CreditBalanceDBModel)
     table_name = "CB"
-    if "generateBillDetail=yes" not in urlCondition:
+    if "getByBillDetail=yes" not in urlCondition:
         if urlCondition == "all":
             CreditBalanceDataList = crud.get_all()
         elif "start" in urlCondition or "end" in urlCondition:
@@ -31,7 +31,7 @@ async def getCreditBalance(
             CreditBalanceDataList = crud.get_with_condition(dictCondition)
     else:
         # urlCondition: SubmarineCable=str&WorkTitle=str&BillMilestone=str&PartyName=str
-        urlCondition = urlCondition.replace("generateBillDetail=yes", "")
+        urlCondition = urlCondition.replace("getByBillDetail=yes", "")
         dictCondition = convert_url_condition_to_dict(urlCondition)
         CreditBalanceDataList = crud.get_with_condition(dictCondition)
     return CreditBalanceDataList

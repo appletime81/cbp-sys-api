@@ -22,7 +22,7 @@ async def getParties(
         PartiesDataList = crud.get_all()
     else:
         dictCondition = convert_url_condition_to_dict_ignore_date(urlCondition)
-        PartiesDataList = crud.get_by_condition(dictCondition)
+        PartiesDataList = crud.get_with_condition(dictCondition)
     return PartiesDataList
 
 

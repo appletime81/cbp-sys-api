@@ -199,21 +199,42 @@ class PartiesSchema(BaseModel):
     PartyID = Column(Integer, primary_key=True, index=True)
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
+    PartyCode = Column(String(4))
     PartyName = Column(String(100))
     Address = Column(String(512))
     Contact = Column(String(20))
     Email = Column(String(50))
     Tel = Column(String(20))
+    BankAcctName = Column(String(100))
+    BankAcctNo = Column(String(32))
+    SavingAcctNo = Column(String(32))
+    SWIFTCode = Column(String(32))
+    IBAN = Column(String(32))
+    ACHNo = Column(String(32))
+    WireRouting = Column(String(32))
+    BankName = Column(String(100))
+    Branch = Column(String(100))
+    BankAddress = Column(String(512))
     """
-
     PartyID: Optional[int]
     SubmarineCable: Optional[str]
     WorkTitle: Optional[str]
+    PartyCode: Optional[str]
     PartyName: Optional[str]
     Address: Optional[str]
     Contact: Optional[str]
     Email: Optional[str]
     Tel: Optional[str]
+    BankAcctName: Optional[str]
+    BankAcctNo: Optional[str]
+    SavingAcctNo: Optional[str]
+    SWIFTCode: Optional[str]
+    IBAN: Optional[str]
+    ACHNo: Optional[str]
+    WireRouting: Optional[str]
+    BankName: Optional[str]
+    Branch: Optional[str]
+    BankAddress: Optional[str]
 
 
 class SubmarineCablesSchema(BaseModel):
