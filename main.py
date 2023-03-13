@@ -1149,7 +1149,7 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
             tempNewBillMasterData.Status = "INITIAL"
             if FeeAmountSum:
                 tempNewBillMasterData.FeeAmountSum = FeeAmountSum
-            dataToBeProcessed["newBillDetailDataList"].append(tempNewBillMasterData)
+            dataToBeProcessed["newBillMasterDataList"].append(tempNewBillMasterData)
 
         # TODO: 更改發票工作主檔狀態 & 刪除發票主檔 & 發票明細檔
         InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
@@ -1208,7 +1208,7 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     dataToBeProcessed = {
         "oldCBDataList": list(),
         "newCBDataList": list(),
-        "newCBStatementDataList": list(),
+        "newCBStatementDataList": list()
     }
 
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
@@ -1314,14 +1314,115 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
 async def returnToInitialBillMasterAndBillDetailAfterDeduct(
     request: Request, db: Session = Depends(get_db)
 ):
+    dataToBeProcessed = {
+        "oldBillMasterDataList": [],
+        "newBillMasterDataList": [],
+        # --------------------------
+        "oldBillDetailDataList": [],
+        "newBillDetailDataList": [],
+        # --------------------------
+        "oldCBDataList": [],
+        "newCBDataList": [],
+        # --------------------------
+        "newCBStatementDataList": [],
+    }
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
 
     BillMasterDictData = await request.json()
     BillMasterData = crudBillMaster.get_with_condition(
         {"BillMasterID": BillMasterDictData["BillMasterID"]}
     )[0]
+    dataToBeProcessed["oldBillMasterDataList"].append(BillMasterData)
+    BillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": BillMasterData.BillMasterID}
+    )
+    BillDetailIDList = [
+        BillDetailData.BillDetailID for BillDetailData in BillDetailDataList
+    ]
+    CBDataList = crudCreditBalance.get_value_if_in_a_list(
+        CreditBalanceDBModel.BLDetailID, BillDetailIDList
+    )
+    CBIDList = [CBData.CBID for CBData in CBDataList]
+    CBStatementDataList = crudCreditBalanceStatement.get_value_if_in_a_list(
+        CreditBalanceStatementDBModel.CBID, CBIDList
+    )
+    dataToBeProcessed["oldBillDetailDataList"].extend(BillDetailDataList)
+    FeeAmountSum = 0
+    for BillDetailData in BillDetailDataList:
+        tempOldCBDataList = list(
+            filter(lambda x: x.BLDetailID == BillDetailData.BillDetailID, CBDataList)
+        )
+        for tempOldCBData in tempOldCBDataList:
+            tempOldCBStatementDataList = list(
+                filter(lambda x: x.CBID == tempOldCBData.CBID, CBStatementDataList)
+            )
+            tempOldCBStatementData = max(
+                tempOldCBStatementDataList, key=lambda x: x.CreateDate
+            )
+            newCBStatementTransAmount = tempOldCBStatementData.TransAmount * (-1)
+            newCBStatementData = CreditBalanceStatementDBModel(
+                CBID=tempOldCBData.CBID,
+                BillingNo=BillMasterData.BillingNo,
+                BLDetailID=BillDetailData.BillDetailID,
+                TransItem="RETURN",
+                OrgAmount=tempOldCBData.CurrAmount + newCBStatementTransAmount,
+                TransAmount=newCBStatementTransAmount,
+                Note="",
+                CreateDate=convert_time_to_str(datetime.now()),
+            )
+            tempNewCBData = deepcopy(tempOldCBData)
+            tempNewCBData.CurrAmount = (
+                newCBStatementData.OrgAmount + newCBStatementData.TransAmount
+            )
+            # ---------------------------- BillDetail更新 ----------------------------
+            BillDetailData.DedAmount -= newCBStatementTransAmount
+            BillDetailData.FeeAmount = (
+                BillDetailData.OrgFeeAmount - BillDetailData.DedAmount
+            )
+            BillDetailData.Status = "INCOMPLETE"
 
+            # ---------------------------- record data to be processed ----------------------------
+            dataToBeProcessed["oldCBDataList"].append(tempOldCBData)
+            dataToBeProcessed["newCBDataList"].append(tempNewCBData)
+            dataToBeProcessed["newCBStatementDataList"].append(newCBStatementData)
+        dataToBeProcessed["newBillDetailDataList"].append(BillDetailData)
+        FeeAmountSum += BillDetailData.FeeAmount
+
+    BillMasterData.Status = "INITIAL"
+    if FeeAmountSum:
+        BillMasterData.FeeAmountSum = FeeAmountSum
+    dataToBeProcessed["newBillMasterDataList"].append(BillMasterData)
+
+    # ---------------------------- 更新BillMaster -------------------------------
+    for oldBillMasterData, newBillMasterData in zip(
+        dataToBeProcessed["oldBillMasterDataList"],
+        dataToBeProcessed["newBillMasterDataList"],
+    ):
+        crudBillMaster.update(oldBillMasterData, orm_to_dict(newBillMasterData))
+
+    # ---------------------------- 更新BillDetail -------------------------------
+    for oldBillDetailData, newBillDetailData in zip(
+        dataToBeProcessed["oldBillDetailDataList"],
+        dataToBeProcessed["newBillDetailDataList"],
+    ):
+        crudBillDetail.update(oldBillDetailData, orm_to_dict(newBillDetailData))
+
+    # ---------------------------- 更新CB -------------------------------
+    for oldCBData, newCBData in zip(
+        dataToBeProcessed["oldCBDataList"], dataToBeProcessed["newCBDataList"]
+    ):
+        crudCreditBalance.update(oldCBData, orm_to_dict(newCBData))
+
+    # ---------------------------- 新增CBStatement -------------------------------
+    for newCBStatementData in dataToBeProcessed["newCBStatementDataList"]:
+        newCBStatementPydanticData = orm_to_pydantic(
+            newCBStatementData, CreditBalanceStatementSchema
+        )
+        crudCreditBalanceStatement.create(newCBStatementPydanticData)
+    return {"message": "success"}
 
 
 # check input BillingNo is existed or not
