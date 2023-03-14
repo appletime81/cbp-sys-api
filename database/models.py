@@ -379,10 +379,10 @@ class UserDBModel(Base):
         PRIMARY KEY (UserID)
     );
     """
+
     __tablename__ = "User"
     UserID = Column(Integer, primary_key=True, index=True)
     UserName = Column(String(20))
     Password = Column(String(20))
     CreateDate = Column(String(20))
     Note = Column(String(128))
-

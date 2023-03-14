@@ -494,48 +494,37 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
 async def getInvoiceMasterAndInvoiceDetail(
     request: Request, urlCondition: str, db: Session = Depends(get_db)
 ):
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     getResult = []
-    if urlCondition != "all":
-        if "BillMilestone" in urlCondition:
-            urlCondition, BillMilestone = re_search_url_condition_value(
-                urlCondition, "BillMilestone"
-            )
-        InvoiceMasterDataList = await InvoiceMasterApp.getInvoiceMaster(
-            request, urlCondition, db
+    if "BillMilestone" in urlCondition:
+        newUrlCondition, BillMilestone = re_search_url_condition_value(
+            urlCondition, "BillMilestone"
         )
-        # TODO: Start to get InvoiceDetail data
+        dictCondition = convert_url_condition_to_dict(newUrlCondition)
+        InvoiceMasterDataList = crudInvoiceMaster.get_with_condition(dictCondition)
         for InvoiceMasterData in InvoiceMasterDataList:
-            InvoiceDetailDataList = await InvoiceDetailApp.getInvoiceDetail(
-                request, f"InvMasterID={InvoiceMasterData.InvMasterID}", db
+            InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(
+                {"InvMasterID": InvoiceMasterData.InvMasterID}
             )
-            getResult.append(
-                {
-                    "InvoiceMaster": InvoiceMasterData,
-                    "InvoiceDetail": InvoiceDetailDataList,
-                }
+            checkBillMilestone = list(
+                filter(
+                    lambda x: x.BillMilestone == BillMilestone, InvoiceDetailDataList
+                )
             )
-        if "BillMilestone" in urlCondition:
-            InvMasterIDList = [
-                data["InvoiceMaster"].InvMasterID
-                for data in getResult
-                for InvoiceDetailData in data["InvoiceDetail"]
-                if InvoiceDetailData.BillMilestone == BillMilestone
-            ]
-        else:
-            InvMasterIDList = [data["InvoiceMaster"].InvMasterID for data in getResult]
-        InvMasterIDList = list(set(InvMasterIDList))
-        getResult = [
-            data
-            for data in getResult
-            if data["InvoiceMaster"].InvMasterID in InvMasterIDList
-        ]
+            if checkBillMilestone:
+                getResult.append(
+                    {
+                        "InvoiceMaster": InvoiceMasterData,
+                        "InvoiceDetail": InvoiceDetailDataList,
+                    }
+                )
     else:
-        InvoiceMasterDataList = await InvoiceMasterApp.getInvoiceMaster(
-            request, urlCondition, db
-        )
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        InvoiceMasterDataList = crudInvoiceMaster.get_with_condition(dictCondition)
         for InvoiceMasterData in InvoiceMasterDataList:
-            InvoiceDetailDataList = await InvoiceDetailApp.getInvoiceDetail(
-                request, f"InvMasterID={InvoiceMasterData.InvMasterID}", db
+            InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(
+                {"InvMasterID": InvoiceMasterData.InvMasterID}
             )
             getResult.append(
                 {
@@ -543,6 +532,7 @@ async def getInvoiceMasterAndInvoiceDetail(
                     "InvoiceDetail": InvoiceDetailDataList,
                 }
             )
+
     return getResult
 
 
@@ -599,7 +589,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         InvoiceMasterDictData["InvMasterID"]
         for InvoiceMasterDictData in request_data["InvoiceMaster"]
     ]
-    BillingNo = request_data["BillingNo"]
+
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
     crudBillMaster = CRUD(db, BillMasterDBModel)
@@ -612,6 +602,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvMasterID, InvoiceMasterIdList
     )
+    BillingNo = f"{InvoiceMasterDataList[0].SubmarineCable}{InvoiceMasterDataList[0].WorkTitle}-CBP-{InvoiceMasterDataList[0].PartyName}-{convert_time_to_str(datetime.now()).replace(' 00:00:00', '')}"
 
     # change InvoiceMaster status to "MERGED"
     for InvoiceMasterData in InvoiceMasterDataList:
@@ -774,104 +765,149 @@ async def generateBillMasterAndBillDetail(
     """
     {
         "BillMaster": {...},
-        "BillDetail": [
-            {...},
-            {...},
-        ]
-        "CB": [
+        "Deduct": [
             {
-                "CBID": 1,
-                TransAmount: 1000,
-            }
-
+                "BillDetailID": 1,
+                "CB": [
+                    {
+                        "CBID": 1,
+                        "TransAmount": 1000
+                    },
+                    {...},
+                    {...}
+                ]
+            },
+            {...},
+            {...}
         ]
-
     }
     """
-    request_data = await request.json()
-    BillDetailDictDataList = request_data["BillDetail"]
-    BillMasterDictData = request_data["BillMaster"]
-    CBList = request_data["CB"]
-
-    # init crud
+    dataToBeUpdated = {
+        "oldBillMasterData": None,
+        "newBillMasterData": None,
+        "oldCBDataList": [],
+        "newCBDataList": [],
+        "newCBStatementDataList" "oldBillDetailDataList": [],
+        "newBillDetailDataList": [],
+    }
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
-    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
-    crudCBStatement = CRUD(db, CreditBalanceStatementDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
 
-    # 開始做抵扣
-    FeeAmountSum = 0
-    newBillDetailDataList = []
-    newCBStatementDataList = []
-    newCBList = []
-    for info in BillDetailDictDataList:
-        InvDetailID = info["InvDetailID"]
-        DedAmount = sum([CB["TransAmount"] for CB in CBList])
-        BillDetailData = crudBillDetail.get_with_condition(
-            {"InvDetailID": InvDetailID}
-        )[0]
-        BillDetailDictData = orm_to_dict(BillDetailData)
-        BillDetailDictData["DedAmount"] = DedAmount
-        BillDetailDictData["FeeAmount"] = (
-            BillDetailDictData["OrgFeeAmount"] - BillDetailDictData["DedAmount"]
-        )
-        BillDetailDictData["Status"] = bill_detail_status(
-            BillDetailDictData["FeeAmount"],
-            BillDetailDictData["ReceivedAmount"],
-            BillDetailDictData["BankFees"],
-        )
-        FeeAmountSum += BillDetailDictData["FeeAmount"]
-
-        # insert to DB
-        BillDetailData = crudBillDetail.update(BillDetailData, BillDetailDictData)
-        newBillDetailDataList.append(BillDetailData)
-
-        # update CB and generate CBStatement
-        for CB in CBList:
-            # update CB
-            CreditBalanceData = crudCreditBalance.get_with_condition(
-                {"CBID": CB["CBID"]}
-            )[0]
-            CreditBalanceDictData = orm_to_dict(CreditBalanceData)
-            OrgAmount = CreditBalanceDictData["CurrAmount"]
-            CreditBalanceDictData["CurrAmount"] -= CB["TransAmount"]
-            CreditBalanceDictData["LastUpDate"] = convert_time_to_str(datetime.now())
-            newCreditBalanceData = crudCreditBalance.update(
-                CreditBalanceData, CreditBalanceDictData
-            )  # insert to DB
-            newCBList.append(newCreditBalanceData)
-
-            # generate CBStatement
-            CBStatementDictData = {
-                "CBID": CB["CBID"],
-                "BillingNo": BillMasterDictData["BillingNo"],
-                "BLDetailID": BillDetailData.BillDetailID,
-                "TransItem": "DEDUCT",  # 帳單金額抵扣
-                "OrgAmount": OrgAmount,
-                "TransAmount": CB["TransAmount"] * -1,
-                "Note": None,
-                "CreateDate": convert_time_to_str(datetime.now()),
-            }
-            CBStatementPydanticData = CreditBalanceStatementSchema(
-                **CBStatementDictData
-            )
-            CBStatementData = crudCBStatement.create(CBStatementPydanticData)
-            newCBStatementDataList.append(CBStatementData)
-
+    BillMasterDictData = (await request.json())["BillMaster"]
     BillMasterData = crudBillMaster.get_with_condition(
         {"BillMasterID": BillMasterDictData["BillMasterID"]}
     )[0]
-    BillMasterDictData["FeeAmountSum"] = FeeAmountSum
-    BillMasterDictData["Status"] = "RATED"
-    newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
-    return {
-        "message": "success",
-        "BillMaster": newBillMasterData,
-        "BillDetail": newBillDetailDataList,
-        "CBStatement": newCBStatementDataList,
-        "CB": newCBList,
+    dataToBeUpdated["oldBillMasterData"] = BillMasterData
+    deductDataList = (await request.json())["Deduct"]
+
+    for deductData in deductDataList:
+        BillDetailData = crudBillDetail.get_with_condition(
+            {"BillDetailID": deductData["BillDetailID"]}
+        )[0]
+        dataToBeUpdated["oldBillDetailDataList"].append(BillDetailData)
+
+        DedAmount = 0
+        CBDataList = deductData["CB"]
+        for CBData in CBDataList:
+            CBData = crudCreditBalance.get_with_condition({"CBID": CBData["CBID"]})[0]
+            dataToBeUpdated["oldCBDataList"].append(CBData)
+
+            # update CBData and insert new CBStatementData
+            TransAmount = CBData["TransAmount"] * (-1)
+            DedAmount += TransAmount
+            # generate new CBStatementData
+            newCBStatementData = CreditBalanceStatementDBModel(
+                CBID=CBData.CBID,
+                BillingNo=BillMasterData.BillingNo,
+                BLDetailID=BillDetailData.BillDetailID,
+                TransItem="DEDUCT",
+                OrgAmount=CBData.CurrAmount,
+                TransAmount=TransAmount,
+                Note="",
+                CreateDate=convert_time_to_str(datetime.now()),
+            )
+            dataToBeUpdated["newCBStatementDataList"].append(newCBStatementData)
+
+            # update CBData
+            CBData.CurrAmount += TransAmount
+            CBData.LastUpdDate = convert_time_to_str(datetime.now())
+            dataToBeUpdated["newCBDataList"].append(CBData)
+
+        # update BillDetailData
+        BillDetailData.DedAmount = abs(DedAmount)
+        BillDetailData.FeeAmount = BillDetailData.OrgFeeAmount - abs(DedAmount)
+        BillDetailData.Status = bill_detail_status(
+            BillDetailData.FeeAmount,
+            BillDetailData.ReceivedAmount,
+            BillDetailData.BankFees,
+        )
+        dataToBeUpdated["newBillDetailDataList"].append(BillDetailData)
+
+    # update BillMasterData
+    BillMasterData.Status = "RATED"
+    dataToBeUpdated["newBillMasterData"] = BillMasterData
+
+    # ------------------- 更新CB -------------------
+    for oldCBData, newCBData in zip(
+        dataToBeUpdated["oldCBDataList"], dataToBeUpdated["newCBDataList"]
+    ):
+        crudCreditBalance.update(oldCBData, orm_to_dict(newCBData))
+
+    # ------------------- 新增CBStatement -------------------
+    for newCBStatementData in dataToBeUpdated["newCBStatementDataList"]:
+        crudCreditBalanceStatement.create(newCBStatementData)
+
+    # ------------------- 更新BillDetail -------------------
+    for oldBillDetailData, newBillDetailData in zip(
+        dataToBeUpdated["oldBillDetailDataList"],
+        dataToBeUpdated["newBillDetailDataList"],
+    ):
+        crudBillDetail.update(oldBillDetailData, orm_to_dict(newBillDetailData))
+
+    # ------------------- 更新BillMaster -------------------
+    crudBillMaster.update(
+        dataToBeUpdated["oldBillMasterData"],
+        orm_to_dict(dataToBeUpdated["newBillMasterData"]),
+    )
+
+    return {"message": "success", **dataToBeUpdated}
+
+
+@app.post(ROOT_URL + "/getBillMaster&BillDetailWithCBData")
+async def getBillMasterAndBillDetailWithCBData(
+    request: Request, db: Session = Depends(get_db)
+):
+    """
+    {
+        "BillMasterID": 1
     }
+    """
+    getResult = []
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+
+    BillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": (await request.json())["BillMasterID"]}
+    )[0]
+    BillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": BillMasterData.BillMasterID}
+    )
+    for BillDetailData in BillDetailDataList:
+        CBDataList = crudCreditBalance.get_with_condition(
+            {"BLDetailID": BillDetailData.BillDetailID}
+        )
+
+        getResult.append(
+            {
+                "BillDetail": BillDetailData,
+                "CBData": CBDataList,
+            }
+        )
+    return getResult
 
 
 # 待抵扣階段退回

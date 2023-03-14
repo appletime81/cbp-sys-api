@@ -216,6 +216,7 @@ class PartiesSchema(BaseModel):
     Branch = Column(String(100))
     BankAddress = Column(String(512))
     """
+
     PartyID: Optional[int]
     SubmarineCable: Optional[str]
     WorkTitle: Optional[str]
