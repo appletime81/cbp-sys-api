@@ -875,38 +875,45 @@ async def generateBillMasterAndBillDetail(
     return {"message": "success", **dataToBeUpdated}
 
 
-@app.post(ROOT_URL + "/getBillMaster&BillDetailWithCBData")
+@app.get(ROOT_URL + "/getBillMaster&BillDetailWithCBData/{urlCondition}")
 async def getBillMasterAndBillDetailWithCBData(
-    request: Request, db: Session = Depends(get_db)
+    request: Request, urlCondition: str, db: Session = Depends(get_db)
 ):
-    """
-    {
-        "BillMasterID": 1
-    }
-    """
-    getResult = []
+    getResult = list()
+
+    table_name = "BillMaster"
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
-    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
 
-    BillMasterData = crudBillMaster.get_with_condition(
-        {"BillMasterID": (await request.json())["BillMasterID"]}
-    )[0]
-    BillDetailDataList = crudBillDetail.get_with_condition(
-        {"BillMasterID": BillMasterData.BillMasterID}
-    )
-    for BillDetailData in BillDetailDataList:
-        CBDataList = crudCreditBalance.get_with_condition(
-            {"BLDetailID": BillDetailData.BillDetailID}
-        )
+    # ---------- get BillMaster ----------
+    if urlCondition == "all":
+        BillMasterDataList = crudBillMaster.get_all()
+    elif "start" in urlCondition and "end" in urlCondition:
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        sql_condition = convert_dict_to_sql_condition(dictCondition, table_name)
+        BillMasterDataList = crudBillMaster.get_all_by_sql(sql_condition)
+    else:
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        BillMasterDataList = crudBillMaster.get_with_condition(dictCondition)
 
-        getResult.append(
-            {
-                "BillDetail": BillDetailData,
-                "CBData": CBDataList,
-            }
+    for BillMasterData in BillMasterDataList:
+        tempDictData = {"BillMaster": BillMasterData}
+        tempListData = list()
+        tempBillDetailDataList = crudBillDetail.get_with_condition(
+            {"BillMasterID": BillMasterData.BillMasterID}
         )
+        for tempBillDetailData in tempBillDetailDataList:
+            tempCBDataList = crudCreditBalance.get_with_condition(
+                {"BLDetailID": tempBillDetailData.BillDetailID}
+            )
+            tempListData.append(
+                {"BillDetail": tempBillDetailData, "CB": tempCBDataList}
+            )
+
+        tempDictData["data"] = tempListData
+        getResult.append(tempDictData)
+
     return getResult
 
 
@@ -1478,7 +1485,8 @@ async def test(request: Request, db: Session = Depends(get_db)):
     InvoiceWKMasterData = crud.get_all()[0]
     InvoiceWKMasterDictData = orm_to_dict(InvoiceWKMasterData)
     crud.update(InvoiceWKMasterData, InvoiceWKMasterDictData)
-    return {"message": "test"}
+    InvoiceWKMasterData = dict_to_orm(InvoiceWKMasterDictData, InvoiceWKMasterDBModel)
+    return {"message": "test", "InvoiceWKMasterData": InvoiceWKMasterData}
 
 
 # -------------------------------------------------------------------------------------

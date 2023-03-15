@@ -1,109 +1,13 @@
 import pandas as pd
 
 from pprint import pprint
+from copy import deepcopy
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.sync import update
 from sqlalchemy.sql import func, text
-
 from database.engine import engine
 from database.models import *
 from schemas import *
-from copy import deepcopy
-
-
-# ------------------------------ BillMaster ------------------------------
-def create_bill_master(db: Session, bill_master: BillMasterSchema):
-    db_bill_master = BillMasterDBModel(**bill_master.dict())
-    db.add(db_bill_master)
-    db.commit()
-    db.refresh(db_bill_master)
-
-
-def get_bill_master_with_condition(db: Session, condition: dict):
-    return db.query(BillMasterDBModel).filter_by(**condition).first()
-
-
-# ------------------------------------------------------------------------
-
-
-# ------------------------------ Parties ------------------------------
-def get_all_party(db: Session):
-    return db.query(PartiesDBModel).all()
-
-
-def create_party(db: Session, party: PartiesSchema):
-    db_party = PartiesDBModel(
-        PartyName=party.PartyName,
-        Address=party.Address,
-        Contact=party.Contact,
-        Email=party.Email,
-        Tel=party.Tel,
-    )
-    db.add(db_party)
-    db.commit()
-    db.refresh(db_party)
-
-
-# ---------------------------------------------------------------------
-
-
-# ------------------------------ Suppliers ------------------------------
-def get_all_supplier(db: Session):
-    return db.query(SuppliersDBModel).all()
-
-
-def create_supplier(db: Session, supplier: SuppliersSchema):
-    db_supplier = SuppliersDBModel(
-        SupplierID=supplier.SupplierID,
-        SupplierName=supplier.SupplierName,
-    )
-    db.add(db_supplier)
-    db.commit()
-    db.refresh(db_supplier)
-
-
-# -----------------------------------------------------------------------
-
-
-# ------------------------------ Corporates ------------------------------
-def get_all_corporate(db: Session):
-    return db.query(CorporatesDBModel).all()
-
-
-def create_corporate(db: Session, corporate: CorporatesSchema):
-    db_corporate = CorporatesDBModel(
-        CorpID=corporate.CorpID,
-        CorpName=corporate.CorpName,
-        SubmarineCable=corporate.SubmarineCable,
-        CreateDate=corporate.CreateDate,
-    )
-    db.add(db_corporate)
-    db.commit()
-    db.refresh(db_corporate)
-
-
-# ------------------------------------------------------------------------
-
-
-# ------------------------------ Contracts ------------------------------
-def get_all_contract(db: Session):
-    return db.query(ContractsDBModel).all()
-
-
-def create_contract(db: Session, contract: ContractsSchema):
-    db_contract = ContractsDBModel(
-        ContractID=contract.ContractID,
-        ContractName=contract.ContractName,
-        SubmarineCable=contract.SubmarineCable,
-        WorkTitle=contract.WorkTitle,
-        CreateDate=contract.CreateDate,
-    )
-    db.add(db_contract)
-    db.commit()
-    db.refresh(db_contract)
-
-
-# -----------------------------------------------------------------------
 
 
 class CRUD:
@@ -123,11 +27,13 @@ class CRUD:
     def get_all_distinct(self, distinct_field):
         return self.db.query(distinct_field).distinct().all()
 
-    @staticmethod
-    def get_all_by_sql(sql: str):
+    def get_all_by_sql(self, sql: str):
+        print(sql)
         with engine.begin() as conn:
             df = pd.read_sql_query(sql=text(f"""{sql}"""), con=conn)
-        getResult = [row_dict for row_dict in df.to_dict(orient="records")]
+        getResult = [
+            self.model(**row_dict) for row_dict in df.to_dict(orient="records")
+        ]
         return getResult
 
     def get_max_id(self, model_id):

@@ -1,17 +1,70 @@
 [
-  {
-    "CBID": 1,
-    "CBType": "重溢繳",
-    "BillingNo": null,
-    "BLDetailID": null,
-    "SubmarineCable": "SJC2",
-    "WorkTitle": "Construction",
-    "BillMilestone": "BM9a",
-    "PartyName": "CHT",
-    "InvoiceNo": null,
-    "CurrAmount": 1000.0,
-    "CreateDate": "2023-03-01T00:00:00",
-    "LastUpdDate": null,
-    "Note": null
-  }
+    {
+        "BillMaster": {
+            "BillMasterID": 1,
+            "BillingNo": "string",
+            "PartyName": "string",
+            "SubmarineCable": "string",
+            "WorkTitle": "string",
+            "IssueDate": "2023-01-01 00:00:00",
+            "DueDate": "2023-01-01 00:00:00",
+            "FeeAmountSum": 123.45,
+            "ReceivedAmountSum": 123.45,
+            "IsPro": 0,
+            "Status": "string"
+        },
+        "data": [
+            {
+                "BillDetail": {
+                    "BillDetailID": 1,
+                    "BillMasterID": 1,
+                    "WKMasterID": 1,
+                    "InvDetailID": 1,
+                    "PartyName": "string",
+                    "SupplierName": "string",
+                    "SubmarineCable": "string",
+                    "WorkTitle": "string",
+                    "BillMilestone": "string",
+                    "FeeItem": "string",
+                    "OrgFeeAmount": 123.45,
+                    "DedAmount": 123.45,
+                    "FeeAmount": 123.45,
+                    "ReceivedAmount": 123.45,
+                    "OverAmount": 123.45,
+                    "ShortAmount": 123.45,
+                    "BankFees": 123.45,
+                    "ShortOverReason": "string",
+                    "WriteOffDate": "2023-03-01 00:00:00",
+                    "ReceiveDate": "2023-03-01 00:00:00",
+                    "Note": "string",
+                    "ToCBAmount": 123.45,
+                    "Status": "string"
+
+                },
+                "CB": [
+                    {
+                        "CBID": 1,
+                        "CBType": "string",
+                        "BillingNo": "string",
+                        "BLDetailID": 1,
+                        "SubmarineCable": "string",
+                        "WorkTitle": "string",
+                        "BillMilestone": "string",
+                        "InvoiceNo": "string",
+                        "CurrAmount": 123.45,
+                        "PartyName": "string",
+                        "CreateDate": "2023-04-01 00:00:00",
+                        "LastUpdDate": "2023-04-01 00:00:00",
+                        "Note": "string"
+                    },
+                    {...},
+                    {...}
+                ]
+            },
+            {...},
+            {...}
+        ]
+    },
+    {...},
+    {...}
 ]

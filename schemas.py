@@ -4,8 +4,28 @@ from typing import Optional
 
 
 class InvoiceWKMasterSchema(BaseModel):
+    """
+    WKMasterID = Column(Integer, primary_key=True, index=True)
+    InvoiceNo = Column(String(20))
+    SupplierName = Column(String(6))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
+    ContractType = Column(String(20))
+    IssueDate = Column(String(20))
+    DueDate = Column(String(20))
+    PartyName = Column(String(100))
+    IsPro = Column(Boolean)
+    IsRecharge = Column(Boolean)
+    IsLiability = Column(Boolean)
+    TotalAmount = Column(Float)
+    PaidAmount = Column(Float)
+    CreateDate = Column(String(20))
+    PaidDate = Column(String(20))
+    Status = Column(String(20))
+    """
+
     WKMasterID: Optional[int]
-    InvoiceNo: Optional[str]
+    InvoiceNo: str
     SupplierName: str
     SubmarineCable: str
     WorkTitle: str
@@ -13,12 +33,14 @@ class InvoiceWKMasterSchema(BaseModel):
     IssueDate: datetime
     DueDate: datetime
     PartyName: str
-    Status: str
     IsPro: bool
     IsRecharge: bool
     IsLiability: bool
     TotalAmount: float
+    PaidAmount: Optional[float] = 0.0
     CreateDate: Optional[datetime]
+    PaidDate: Optional[datetime]
+    Status: str
 
 
 class InvoiceWKDetailSchema(BaseModel):
@@ -94,32 +116,6 @@ class BillMasterSchema(BaseModel):
 
 
 class BillDetailSchema(BaseModel):
-    """
-    BillDetailID = Column(Integer, primary_key=True, index=True)
-    BillMasterID = Column(Integer)
-    WKMasterID = Column(Integer)
-    InvDetailID = Column(Integer)
-    PartyName = Column(String(100))
-    SupplierName = Column(String(100))
-    SubmarineCable = Column(String(10))
-    WorkTitle = Column(String(50))
-    BillMilestone = Column(String(20))
-    FeeItem = Column(String(100))
-    OrgFeeAmount = Column(Float)
-    DedAmount = Column(Float)
-    FeeAmount = Column(Float)
-    ReceivedAmount = Column(Float)
-    OverAmount = Column(Float)
-    ShortAmount = Column(Float)
-    BankFees = Column(Float)
-    ShortOverReason = Column(String(128))
-    WriteOffDate = Column(String(20))
-    ReceiveDate = Column(String(20))
-    Note = Column(String(128))
-    ToCB = Column(String(10))
-    Status = Column(String(20))
-    """
-
     BillDetailID: Optional[int]
     BillMasterID: int
     WKMasterID: int
@@ -141,7 +137,7 @@ class BillDetailSchema(BaseModel):
     WriteOffDate: Optional[datetime]
     ReceiveDate: Optional[datetime]
     Note: Optional[str]
-    ToCBAmount: Optional[str]
+    ToCBAmount: Optional[float]
     Status: str
 
 

@@ -13,7 +13,7 @@ CREATE TABLE InvoiceWKMaster
     IsRecharge     tinyint(1),
     IsLiability    tinyint(1),
     TotalAmount    decimal(12, 2),
-    PaidAmount     decimal(12, 2),
+    PaidAmount     decimal(12, 2) NOT NULL DEFAULT 0,
     CreateDate     datetime,
     PaidDate       datetime,
     Status         varchar(20),

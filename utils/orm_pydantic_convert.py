@@ -12,3 +12,7 @@ def orm_to_dict(db_model):
 
 def pydantic_to_orm(pydantic_model, db_model):
     return db_model(**pydantic_model.dict())
+
+
+def dict_to_orm(dict_model, db_model):
+    return db_model(**dict_model)

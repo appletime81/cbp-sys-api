@@ -3,6 +3,26 @@ from .engine import Base
 
 
 class InvoiceWKMasterDBModel(Base):
+    """
+    WKMasterID     int NOT NULL AUTO_INCREMENT,
+    InvoiceNo      varchar(64),
+    SupplierName   varchar(100),
+    SubmarineCable varchar(10),
+    WorkTitle      varchar(50),
+    ContractType   varchar(20),
+    IssueDate      datetime,
+    DueDate        datetime,
+    PartyName      varchar(100),
+    IsPro          tinyint(1),
+    IsRecharge     tinyint(1),
+    IsLiability    tinyint(1),
+    TotalAmount    decimal(12, 2),
+    PaidAmount     decimal(12, 2),
+    CreateDate     datetime,
+    PaidDate       datetime,
+    Status         varchar(20),
+    """
+
     __tablename__ = "InvoiceWKMaster"
     WKMasterID = Column(Integer, primary_key=True, index=True)
     InvoiceNo = Column(String(20))
@@ -13,12 +33,14 @@ class InvoiceWKMasterDBModel(Base):
     IssueDate = Column(String(20))
     DueDate = Column(String(20))
     PartyName = Column(String(100))
-    Status = Column(String(20))
     IsPro = Column(Boolean)
     IsRecharge = Column(Boolean)
     IsLiability = Column(Boolean)
     TotalAmount = Column(Float)
+    PaidAmount = Column(Float)
     CreateDate = Column(String(20))
+    PaidDate = Column(String(20))
+    Status = Column(String(20))
 
 
 class InvoiceWKDetailDBModel(Base):
