@@ -574,9 +574,6 @@ async def checkInitBillMasterAndBillDetail(
 async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(get_db)):
     """
     {
-        "BillingNo": "testNo.",
-        "IssueDate": "2021-01-01",
-        "DueDate": "2021-01-02",
         "InvoiceMaster": [
             {...},
             {...},
@@ -602,7 +599,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvMasterID, InvoiceMasterIdList
     )
-    BillingNo = f"{InvoiceMasterDataList[0].SubmarineCable}{InvoiceMasterDataList[0].WorkTitle}-CBP-{InvoiceMasterDataList[0].PartyName}-{convert_time_to_str(datetime.now()).replace(' 00:00:00', '')}"
+    BillingNo = f"{InvoiceMasterDataList[0].SubmarineCable}-{InvoiceMasterDataList[0].WorkTitle}-CBP-{InvoiceMasterDataList[0].PartyName}-{convert_time_to_str(datetime.now()).replace('-', '').replace(' ', '').replace(':', '')[2:-2]}"
 
     # change InvoiceMaster status to "MERGED"
     for InvoiceMasterData in InvoiceMasterDataList:

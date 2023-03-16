@@ -87,3 +87,51 @@ async def checkBillingNo(
         return {"isExist": True}
     else:
         return {"isExist": False}
+
+
+@router.post("/checkBillingNo/convert")
+async def checkBillingNoConvert(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    BillingNo = (await request.json())["BillingNo"]
+    print(BillingNo)
+    BillingNo = BillingNo.replace("-CBP- ", "-")
+
+    SubmarineCablesMapping = {"NCP": "01", "SJC2": "02", "TPE": "03", "CSCN": "04"}
+    WorkTitleMapping = {"Upgrade": "01", "Construction": "02", "O&M": "03"}
+    PartyNameMapping = {
+        "CHT": "CI",
+        "NTT": "NT",
+        "KT": "KT",
+        "CT": "CT",
+        "CM": "CM",
+        "CU": "CU",
+        "DHT": "DH",
+        "EDGE": "EG",
+        "KDDI": "KD",
+        "Singtel": "ST",
+        "SKB": "SK",
+        "Telin": "TE",
+        "TICC": "TC",
+        "VNPT": "VN",
+        "Microsoft": "MS",
+        "Meta": "MT",
+    }
+    BillingNoStrList = BillingNo.split("-")
+    newBillingNoList = []
+
+    # {SubmarineCable}-{WorkTitle}-{PartyName}-{YYYYMMDDmm}
+    for i, substring in enumerate(BillingNoStrList):
+        if i == 0:
+            newBillingNoList.append(SubmarineCablesMapping[substring])
+        elif i == 1:
+            newBillingNoList.append(WorkTitleMapping[substring])
+        elif i == 2:
+            newBillingNoList.append(PartyNameMapping[substring])
+        else:
+            newBillingNoList.append(substring)
+
+    # {0}{1}-{2}{3}
+    newBillingNo = f"{newBillingNoList[0]}{newBillingNoList[1]}-{newBillingNoList[2]}{newBillingNoList[3]}"
+    return {"BillingNo": newBillingNo}
