@@ -1045,7 +1045,8 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
             BillMasterDataList: [
                 {
                     "BillMaster": {},
-                    "BillDetail": []
+                    "BillDetail": [],
+                    "TotalBillDetailAmount": 123.45,
                 },
                 {...}
             ]

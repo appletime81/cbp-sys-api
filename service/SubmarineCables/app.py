@@ -51,6 +51,7 @@ async def updateSubmarineCables(
     request: Request,
     db: Session = Depends(get_db),
 ):
+    pprint((await request.json()))
     SubmarineCablesDictData = await request.json()
     crud = CRUD(db, SubmarineCablesDBModel)
     SubmarineCablesData = crud.get_with_condition(
