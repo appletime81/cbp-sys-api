@@ -369,3 +369,7 @@ class UserSchema(BaseModel):
     Password: str
     CreateDate: datetime
     Note: Optional[str]
+
+
+class CBIDSchema(BaseModel):
+    CBID: int
