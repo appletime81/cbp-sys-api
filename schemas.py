@@ -236,6 +236,7 @@ class PartiesSchema(BaseModel):
 
 class SubmarineCablesSchema(BaseModel):
     CableID: Optional[int]
+    CableCode: Optional[str]
     CableName: str
     Note: Optional[str]
 

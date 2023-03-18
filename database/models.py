@@ -263,6 +263,7 @@ class ContractsDBModel(Base):
 class SubmarineCablesDBModel(Base):
     __tablename__ = "SubmarineCables"
     CableID = Column(Integer, primary_key=True, index=True)
+    CableCode = Column(String(4))
     CableName = Column(String(20))
     Note = Column(String(128))
 
