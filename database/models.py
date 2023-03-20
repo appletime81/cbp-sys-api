@@ -181,6 +181,7 @@ class LiabilityDBModel(Base):
     BillMilestone = Column(String(20))
     WorkTitle = Column(String(50))
     PartyName = Column(String(100))
+    Note = Column(String(128))
     LBRatio = Column(Float)
     CreateDate = Column(String(20))
     ModifyNote = Column(String(128))

@@ -148,6 +148,7 @@ class LiabilitySchema(BaseModel):
     PartyName: str
     WorkTitle: str
     LBRatio: float
+    Note: Optional[str]
     CreateDate: Optional[datetime]
     ModifyNote: Optional[str]
     EndDate: Optional[datetime]

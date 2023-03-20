@@ -54,8 +54,9 @@ async def updateParties(
     db: Session = Depends(get_db),
 ):
     PartiesDictData = await request.json()
+    print(PartiesDictData)
     crud = CRUD(db, PartiesDBModel)
-    PartiesData = crud.get_with_condition(PartiesDictData)[0]
+    PartiesData = crud.get_with_condition({"PartyID": PartiesDictData["PartyID"]})[0]
     newPartiesData = crud.update(PartiesData, PartiesDictData)
 
     return {"message": "Party successfully updated", "newPartiesData": newPartiesData}

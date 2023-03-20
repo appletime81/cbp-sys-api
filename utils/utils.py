@@ -138,10 +138,17 @@ def re_search_url_condition_value(urlCondition: str, conditionKey: str):
             value = re.findall(rf"{conditionKey}=(\S+)", urlCondition)[0]
             urlCondition = urlCondition.replace(f"{conditionKey}={value}", "")
 
+    print(value)
     if not urlCondition:
-        return "all", value
+        urlCondition = "all"
     if urlCondition[-1] == "&":
         urlCondition = urlCondition[:-1]
+    if value == "false":
+        print("Here")
+        value = False
+    if value == "true":
+        value = True
+
     return urlCondition, value
 
 

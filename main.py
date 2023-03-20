@@ -271,7 +271,7 @@ async def getInvoiceMasterInvoiceDetailStream(
         for InvoiceWKDetailDictData in InvoiceWKDetailDictDataList:
             LiabilityDataList = await LiabilityApp.getLiability(
                 request,
-                f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}",
+                f"SubmarineCable={SubmarineCable}&WorkTitle={WorkTitle}&BillMilestone={InvoiceWKDetailDictData.get('BillMilestone')}&End=false",
                 db,
             )
             newLiabilityDataList.append(LiabilityDataList)
@@ -582,6 +582,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     }
     """
     request_data = await request.json()
+    pprint(request_data)
     InvoiceMasterIdList = [
         InvoiceMasterDictData["InvMasterID"]
         for InvoiceMasterDictData in request_data["InvoiceMaster"]
@@ -1475,6 +1476,21 @@ async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
         return {"message": "BillingNo is not exist"}
     else:
         return {"message": "BillingNo is exist"}
+
+
+# 產製帳單draft(初始化)
+@app.post(ROOT_URL + "/getBillMasterDraftStream")
+async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_db)):
+    """
+    {
+      "BillMasterID": 1,
+    }
+    """
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+
+    return
+
 
 
 @app.get(ROOT_URL + "/test")
