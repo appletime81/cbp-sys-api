@@ -36,6 +36,7 @@ async def addSubmarineCables(
     SubmarineCablesPydanticData: SubmarineCablesSchema,
     db: Session = Depends(get_db),
 ):
+    pprint(await request.json())
     crud = CRUD(db, SubmarineCablesDBModel)
     SubmarineCablesData = crud.create(SubmarineCablesPydanticData)
 

@@ -89,6 +89,7 @@ class InvoiceDetailDBModel(Base):
     LBRatio = Column(Float)
     FeeAmountPost = Column(Float)
     Difference = Column(Float)
+    Difference = Column(Float)
 
 
 class BillMasterDBModel(Base):
@@ -245,14 +246,35 @@ class PartiesDBModel(Base):
 
 
 class SuppliersDBModel(Base):
+    """
+    SupplierID   int NOT NULL AUTO_INCREMENT,
+    CableName    varchar(64),
+    SupplierName varchar(100),
+    BankAcctName varchar(100),
+    BankAcctNo   varchar(32),
+    SavingAcctNo varchar(32),
+    SWIFTCode    varchar(32),
+    IBAN         varchar(32),
+    ACHNo        varchar(32),
+    WireRouting  varchar(32),
+    BankName     varchar(100),
+    Branch       varchar(100),
+    BankAddress  varchar(512),
+    """
+
     __tablename__ = "Suppliers"
     SupplierID = Column(Integer, primary_key=True, index=True)
+    CableName = Column(String(64))
     SupplierName = Column(String(100))
     BankAcctName = Column(String(100))
     BankAcctNo = Column(String(32))
+    SavingAcctNo = Column(String(32))
     SWIFTCode = Column(String(32))
     IBAN = Column(String(32))
+    ACHNo = Column(String(32))
+    WireRouting = Column(String(32))
     BankName = Column(String(100))
+    Branch = Column(String(100))
     BankAddress = Column(String(512))
 
 

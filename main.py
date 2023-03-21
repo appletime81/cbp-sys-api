@@ -699,10 +699,12 @@ async def generateInitBillMasterAndBillDetail(
     crudBillDetail = CRUD(db, BillDetailDBModel)
     BillMasterDictData = request_data["BillMaster"]
     BillDetailDataList = request_data["BillDetail"]
+    PONo = request_data["PONo"]
 
     # convert BillMasterDictData to BillMasterPydanticData and insert to db
     BillMasterDictData["DueDate"] = DueDate
     BillMasterDictData["IssueDate"] = convert_time_to_str(datetime.now())
+    BillMasterDictData["PONo"] = PONo
     BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
     BillMasterData = crudBillMaster.create(BillMasterPydanticData)
 
@@ -1486,10 +1488,12 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
       "UserName": "username",
     }
     """
-    getResult = {}
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCBStatement = CRUD(db, CreditBalanceStatementDBModel)
     crudCorporates = CRUD(db, CorporatesDBModel)
+    crudParties = CRUD(db, PartiesDBModel)
     crudUsers = CRUD(db, UsersDBModel)
 
     # --------------------------- 抓取帳單主檔及帳單明細 ---------------------------
@@ -1499,6 +1503,19 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     BillDetailDataList = crudBillDetail.get_with_condition(
         {"BillMasterID": BillMasterData.BillMasterID}
     )
+    BillDetailDictDataList = [
+        orm_to_dict(BillDetailData) for BillDetailData in BillDetailDataList
+    ]
+    for i, BillDetailDictData in enumerate(BillDetailDictDataList):
+        InvDetailID = BillDetailDictData["InvDetailID"]
+        InvoiceDetailData = crudInvoiceDetail.get_with_condition(
+            {"InvDetailID": InvDetailID}
+        )[0]
+        BillDetailDictDataList[i]["LBRatio"] = InvoiceDetailData.LBRatio
+        BillDetailDictDataList[i]["FeeAmountPre"] = InvoiceDetailData.FeeAmountPre
+
+    # --------------------------- 抓取會員資訊 ---------------------------
+    PartyData = crudParties.get_with_condition({"PartyID": BillMasterData.PartyName})[0]
 
     # --------------------------- 抓取聯盟資料表(含金融帳戶資訊) ---------------------------
     CorporateData = crudCorporates.get_with_condition(
@@ -1506,20 +1523,87 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     )[0]
 
     # --------------------------- 抓取使用者資料 ---------------------------
-    UserData = crudUsers.get_with_condition(
-        {"UserName": request.json()["UserName"]}
-    )[0]
+    UserData = crudUsers.get_with_condition({"UserName": request.json()["UserName"]})[0]
 
     ContactWindowAndSupervisorInformationDictData = {
         "Company": UserData.Company,
         "Address": UserData.Address,
-        "Tel":
+        "Tel": UserData.Tel,
+        "Fax": UserData.Fax,
+        "DirectorName": UserData.DirectorName,
+        "DTel": UserData.DTel,
+        "DFax": UserData.DFax,
+    }
+    PartyInformationDictData = {
+        "Company": PartyData.CompanyName,
+        "Address": PartyData.Address,
+        "Contact": PartyData.Contact,
+        "Email": PartyData.Email,
+        "Tel": PartyData.Tel,
     }
 
+    CorporateDictData = {
+        "Name": CorporateData.Name,  # Bank Name
+        "Branch": CorporateData.Branch,  # Branch Name
+        "Address": CorporateData.Address,  # Branch Address
+        "AcctName": CorporateData.AcctName,  # Account Name
+        "AcctNo": CorporateData.AcctNo,  # AC No.
+        "SavingAcctNo": CorporateData.SavingAcctNo,  # Saving Account No
+        "IBAN": CorporateData.IBAN,  # IBAN
+        "SWIFTCode": CorporateData.SWIFTCode,  # Swift
+        "ACHNo": CorporateData.ACHNo,  # ACH
+        "WireRouting": CorporateData.WireRouting,  # Wire/Routing
+    }
+    BLDetailIDList = [
+        BillDetailDictData["BillDetailID"]
+        for BillDetailDictData in BillDetailDictDataList
+    ]
+    CBStatementDataList = crudCBStatement.get_value_if_in_a_list(
+        CreditBalanceStatementDBModel.BLDetailID, BLDetailIDList
+    )
+    DetailInformationDictData = {
+        "Supplier": list(),
+        "InvNumber": list(),
+        "Description": list(),
+        "AmountBilled": list(),
+        "Liability": list(),
+        "YourShare": list(),
+    }
 
+    for BillDetailDictData in BillDetailDictDataList:
+        InvoiceDetailData = crudInvoiceDetail.get_with_condition(
+            {"InvDetailID": BillDetailDictData["InvDetailID"]}
+        )[0]
+        DetailInformationDictData["Supplier"].append(BillDetailDictData["SupplierName"])
+        DetailInformationDictData["InvNumber"].append(BillMasterData.BillingNo)
+        DetailInformationDictData["Description"].append(BillDetailDictData["FeeItem"])
+        DetailInformationDictData["AmountBilled"].append(InvoiceDetailData.FeeAmountPre)
+        DetailInformationDictData["Liability"].append(BillDetailDictData["Liability"])
+        DetailInformationDictData["YourShare"].append(
+            BillDetailDictData["OrgFeeAmount"]
+        )
 
+    for CBStatementData in CBStatementDataList:
+        BillDetailDictData = next(
+            filter(
+                lambda x: x["BillDetailID"] == CBStatementData.BLDetailID,
+                BillDetailDictDataList,
+            )
+        )
+        DetailInformationDictData["Supplier"].append(BillDetailDictData["SupplierName"])
+        DetailInformationDictData["InvNumber"].append(BillMasterData.BillingNo)
+        DetailInformationDictData["Description"].append(BillDetailDictData["FeeItem"])
+        DetailInformationDictData["AmountBilled"].append(CBStatementData.TransAmount)
+        DetailInformationDictData["Liability"].append(100)
+        DetailInformationDictData["YourShare"].append(CBStatementData.TransAmount)
 
-
+    getResult = {
+        "ContactWindowAndSupervisorInformation": ContactWindowAndSupervisorInformationDictData,
+        "PartyInformation": PartyInformationDictData,
+        "CorporateInformation": CorporateDictData,
+        "DetailInformation": DetailInformationDictData,
+        "InvoiceNo": BillMasterData.BillingNo,
+    }
 
     return getResult
 

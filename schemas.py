@@ -173,12 +173,17 @@ class SuppliersSchema(BaseModel):
     """
 
     SupplierID: Optional[int]
+    CableName: Optional[str]
     SupplierName: Optional[str]
     BankAcctName: Optional[str]
     BankAcctNo: Optional[str]
+    SavingAcctNo: Optional[str]
     SWIFTCode: Optional[str]
     IBAN: Optional[str]
+    ACHNo: Optional[str]
+    WireRouting: Optional[str]
     BankName: Optional[str]
+    Branch: Optional[str]
     BankAddress: Optional[str]
 
 
