@@ -1513,6 +1513,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     ContactWindowAndSupervisorInformationDictData = {
         "Company": UserData.Company,
         "Address": UserData.Address,
+        "Tel":
     }
 
 
