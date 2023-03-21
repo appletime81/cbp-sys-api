@@ -101,9 +101,16 @@ async def checkBillingNoConvert(
     SubmarineCablesDataList = crudSubmarineCables.get_all()
     PartiesDataList = crudParties.get_all()
 
-    SubmarineCablesMapping = dict([(SubmarineCablesData.CableName, SubmarineCablesData.CableCode) for SubmarineCablesData in SubmarineCablesDataList])
+    SubmarineCablesMapping = dict(
+        [
+            (SubmarineCablesData.CableName, SubmarineCablesData.CableCode)
+            for SubmarineCablesData in SubmarineCablesDataList
+        ]
+    )
     WorkTitleMapping = {"Upgrade": "01", "Construction": "02", "O&M": "03"}
-    PartyNameMapping = dict([(PartyData.PartyName, PartyData.PartyCode) for PartyData in PartiesDataList])
+    PartyNameMapping = dict(
+        [(PartyData.PartyName, PartyData.PartyCode) for PartyData in PartiesDataList]
+    )
     BillingNoStrList = BillingNo.split("-")
     newBillingNoList = []
 

@@ -95,29 +95,41 @@ class BillMasterDBModel(Base):
     """
     BillMasterID      int NOT NULL AUTO_INCREMENT,
     BillingNo         varchar(64),
+    PONo              varchar(32),
+    SupplierName      varchar(100),
+    SubmarineCable    varchar(10),
+    WorkTitle         varchar(50),
     PartyName         varchar(100),
-    CreateDate        datetime,
     IssueDate         datetime,
     DueDate           datetime,
     FeeAmountSum      decimal(12, 2),
     ReceivedAmountSum decimal(12, 2),
-    IsPro             TINYINT(1),
+    IsPro             tinyint(1),
+    Tel               varchar(20),
+    Fax               varchar(20),
+    TitleInfo         varchar(32),
     Status            varchar(20),
-    PRIMARY KEY (BillMasterID)
+    URI               varchar(128),
     """
 
     __tablename__ = "BillMaster"
     BillMasterID = Column(Integer, primary_key=True, index=True)
-    BillingNo = Column(String(64))
-    PartyName = Column(String(100))
+    BillingNo = Column(String(20))
+    PONo = Column(String(20))
+    SupplierName = Column(String(100))
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
+    PartyName = Column(String(100))
     IssueDate = Column(String(20))
     DueDate = Column(String(20))
     FeeAmountSum = Column(Float)
     ReceivedAmountSum = Column(Float)
     IsPro = Column(Boolean)
+    Tel = Column(String(20))
+    Fax = Column(String(20))
+    TitleInfo = Column(String(32))
     Status = Column(String(20))
+    URI = Column(String(128))
 
 
 class BillDetailDBModel(Base):
@@ -247,9 +259,18 @@ class SuppliersDBModel(Base):
 class CorporatesDBModel(Base):
     __tablename__ = "Corporates"
     CorpID = Column(Integer, primary_key=True, index=True)
-    CorpName = Column(String(20))
-    SubmarineCable = Column(String(20))
+    CableName = Column(String(64))
     CreateDate = Column(String(20))
+    AcctName = Column(String(100))
+    AcctNo = Column(String(32))
+    SavingAcctNo = Column(String(32))
+    SWIFTCode = Column(String(32))
+    IBAN = Column(String(32))
+    ACHNo = Column(String(32))
+    WireRouting = Column(String(32))
+    Name = Column(String(100))
+    Branch = Column(String(100))
+    BankAddress = Column(String(512))
 
 
 class ContractsDBModel(Base):

@@ -104,6 +104,8 @@ class BillMasterSchema(BaseModel):
 
     BillMasterID: Optional[int]
     BillingNo: str
+    PONo: Optional[str]
+    SupplierName: str
     PartyName: str
     SubmarineCable: str
     WorkTitle: str
@@ -112,6 +114,10 @@ class BillMasterSchema(BaseModel):
     FeeAmountSum: float
     ReceivedAmountSum: float
     IsPro: bool
+    Tel: Optional[str]
+    Fax: Optional[str]
+    TitleInfo: Optional[str]
+    URI: Optional[str]
     Status: str
 
 
@@ -178,9 +184,18 @@ class SuppliersSchema(BaseModel):
 
 class CorporatesSchema(BaseModel):
     CorpID: Optional[int]
-    CorpName: str
-    SubmarineCable: Optional[str]
+    CableName: str
     CreateDate: datetime
+    AcctName: Optional[str]
+    AcctNo: Optional[str]
+    SavingAcctNo: Optional[str]
+    SWIFTCode: Optional[str]
+    IBAN: Optional[str]
+    ACHNo: Optional[str]
+    WireRouting: Optional[str]
+    Name: Optional[str]
+    Branch: Optional[str]
+    Address: Optional[str]
 
 
 class ContractsSchema(BaseModel):
@@ -317,29 +332,6 @@ class PartiesByContractSchema(BaseModel):
 
     ContractID: Optional[int]
     PartyName: str
-
-
-class CBPBankAccountSchema(BaseModel):
-    """
-    CorpID    int NOT NULL AUTO_INCREMENT,
-    CorpName  varchar(64),
-    AcctName  varchar(100),
-    AcctNo    varchar(32),
-    SWIFTCode varchar(32),
-    IBAN      varchar(32),
-    Name      varchar(100),
-    Address   varchar(512),
-    PRIMARY KEY (CorpID)
-    """
-
-    CorpID: Optional[int]
-    CorpName: Optional[str]
-    AcctName: Optional[str]
-    AcctNo: Optional[str]
-    SWIFTCode: Optional[str]
-    IBAN: Optional[str]
-    Name: Optional[str]
-    Address: Optional[str]
 
 
 class SuppliersByContractSchema(BaseModel):

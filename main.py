@@ -615,6 +615,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     # init BillMaster
     BillMasterDictData = {
         "BillingNo": BillingNo,
+        "SupplierName": InvoiceMasterDataList[0].SupplierName,
         "SubmarineCable": InvoiceMasterDataList[0].SubmarineCable,
         "WorkTitle": InvoiceMasterDataList[0].WorkTitle,
         "PartyName": InvoiceMasterDataList[0].PartyName,
@@ -1488,9 +1489,9 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     """
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCorporates = CRUD(db, CorporatesDBModel)
 
     return
-
 
 
 @app.get(ROOT_URL + "/test")
