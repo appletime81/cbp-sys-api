@@ -29,7 +29,6 @@ from service.Corporates.app import router as CorporatesRouter
 from service.Contracts.app import router as ContractsRouter
 from service.SubmarineCables.app import router as SubmarineCablesRouter
 from service.PartiesByContract.app import router as PartiesByContractRouter
-from service.CBPBankAccount.app import router as CBPBankAccountRouter
 from service.SuppliersByContract.app import router as SuppliersByContractRouter
 from service.UploadFile.app import router as UploadFileRouter
 from service.Users.app import router as UsersRouter
@@ -59,7 +58,6 @@ app.include_router(CorporatesRouter, prefix=ROOT_URL, tags=["Corporates"])
 app.include_router(ContractsRouter, prefix=ROOT_URL, tags=["Contracts"])
 app.include_router(SubmarineCablesRouter, prefix=ROOT_URL, tags=["SubmarineCables"])
 app.include_router(PartiesByContractRouter, prefix=ROOT_URL, tags=["PartiesByContract"])
-app.include_router(CBPBankAccountRouter, prefix=ROOT_URL, tags=["CBPBankAccount"])
 app.include_router(
     SuppliersByContractRouter, prefix=ROOT_URL, tags=["SuppliersByContract"]
 )
@@ -1485,13 +1483,44 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     """
     {
       "BillMasterID": 1,
+      "UserName": "username",
     }
     """
+    getResult = {}
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
     crudCorporates = CRUD(db, CorporatesDBModel)
+    crudUsers = CRUD(db, UsersDBModel)
 
-    return
+    # --------------------------- 抓取帳單主檔及帳單明細 ---------------------------
+    BillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": request.json()["BillMasterID"]}
+    )[0]
+    BillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": BillMasterData.BillMasterID}
+    )
+
+    # --------------------------- 抓取聯盟資料表(含金融帳戶資訊) ---------------------------
+    CorporateData = crudCorporates.get_with_condition(
+        {"SubmarineCable": BillMasterData.SubmarineCable}
+    )[0]
+
+    # --------------------------- 抓取使用者資料 ---------------------------
+    UserData = crudUsers.get_with_condition(
+        {"UserName": request.json()["UserName"]}
+    )[0]
+
+    ContactWindowAndSupervisorInformationDictData = {
+        "Company": UserData.Company,
+        "Address": UserData.Address,
+    }
+
+
+
+
+
+
+    return getResult
 
 
 @app.get(ROOT_URL + "/test")

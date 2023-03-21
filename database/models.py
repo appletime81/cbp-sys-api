@@ -411,23 +411,34 @@ class SuppliersByContractDBModel(Base):
     SupplierName = Column(String(100))
 
 
-class UserDBModel(Base):
+class UsersDBModel(Base):
     """
-    SQL:
-    CREATE TABLE User
-    (
-        UserID   int NOT NULL AUTO_INCREMENT,
-        UserName varchar(20),
-        Password varchar(20),
-        CreateDate datetime,
-        Note varchar(128),
-        PRIMARY KEY (UserID)
-    );
+    UserID       varchar(16) NOT NULL,
+    UserName     varchar(16),
+    PCode        varchar(16),
+    Email        varchar(128),
+    Tel          varchar(20),
+    Fax          varchar(20),
+    Mobile       varchar(16),
+    DirectorName varchar(32),
+    DEmail       varchar(128),
+    DTel         varchar(20),
+    DFax         varchar(20),
+    Company      varchar(256),
+    Address      varchar(256),
     """
 
-    __tablename__ = "User"
-    UserID = Column(Integer, primary_key=True, index=True)
-    UserName = Column(String(20))
-    Password = Column(String(20))
-    CreateDate = Column(String(20))
-    Note = Column(String(128))
+    __tablename__ = "Users"
+    UserID = Column(String(16), primary_key=True, index=True)
+    UserName = Column(String(16))
+    PCode = Column(String(16))
+    Email = Column(String(128))
+    Tel = Column(String(20))
+    Fax = Column(String(20))
+    Mobile = Column(String(16))
+    DirectorName = Column(String(32))
+    DEmail = Column(String(128))
+    DTel = Column(String(20))
+    DFax = Column(String(20))
+    Company = Column(String(256))
+    Address = Column(String(256))

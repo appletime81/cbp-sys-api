@@ -345,24 +345,36 @@ class SuppliersByContractSchema(BaseModel):
     SupplierName: str
 
 
-class UserSchema(BaseModel):
+class UsersSchema(BaseModel):
     """
-    CREATE TABLE User
-    (
-        UserID   int NOT NULL AUTO_INCREMENT,
-        UserName varchar(20),
-        Password varchar(20),
-        CreateDate datetime,
-        Note varchar(128),
-        PRIMARY KEY (UserID)
-    );
+    UserID = Column(String(16), primary_key=True, index=True)
+    UserName = Column(String(16))
+    PCode = Column(String(16))
+    Email = Column(String(128))
+    Tel = Column(String(20))
+    Fax = Column(String(20))
+    Mobile = Column(String(16))
+    DirectorName = Column(String(32))
+    DEmail = Column(String(128))
+    DTel = Column(String(20))
+    DFax = Column(String(20))
+    Company = Column(String(256))
+    Address = Column(String(256))
     """
 
-    UserID: Optional[int]
-    UserName: str
-    Password: str
-    CreateDate: datetime
-    Note: Optional[str]
+    UserID: Optional[str]
+    UserName: Optional[str]
+    PCode: Optional[str]
+    Email: Optional[str]
+    Tel: Optional[str]
+    Fax: Optional[str]
+    Mobile: Optional[str]
+    DirectorName: Optional[str]
+    DEmail: Optional[str]
+    DTel: Optional[str]
+    DFax: Optional[str]
+    Company: Optional[str]
+    Address: Optional[str]
 
 
 class CBIDSchema(BaseModel):
