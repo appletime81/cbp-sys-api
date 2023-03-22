@@ -1608,6 +1608,31 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     return getResult
 
 
+@app.get(ROOT_URL + "/updateBillMasterByDraftStream")
+async def updateBillMasterByDraftStream(
+    request: Request, db: Session = Depends(get_db)
+):
+    """
+    {
+        "BillMasterID": 1,
+        "IssueDate": "2020-01-01 00:00:00",
+        "DueDate": "2020-01-01 00:00:00",
+    }
+    """
+    request_data = await request.json()
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    BillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": request_data["BillMasterID"]}
+    )[0]
+    BillMasterDictData = orm_to_dict(BillMasterData)
+    BillMasterDictData["IssueDate"] = request_data["IssueDate"]
+    BillMasterDictData["DueDate"] = request_data["DueDate"]
+
+    newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
+
+    return {"newBillMaster": newBillMasterData}
+
+
 @app.get(ROOT_URL + "/test")
 async def test(request: Request, db: Session = Depends(get_db)):
     crud = CRUD(db, UsersDBModel)

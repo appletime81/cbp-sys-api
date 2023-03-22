@@ -35,8 +35,6 @@ async def uploadSignedBillMaster(
     with open(file.filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-
-
     # os.system(f"aws s3 cp {file.filename} s3://cht-deploy-bucket-1/{file.filename}")
     # # get URI
     # URI = os.system(f"aws s3 presign s3://cht-deploy-bucket-1/{file.filename}")
