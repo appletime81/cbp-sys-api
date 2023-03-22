@@ -1610,12 +1610,10 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
 
 @app.get(ROOT_URL + "/test")
 async def test(request: Request, db: Session = Depends(get_db)):
-    crud = CRUD(db, InvoiceWKMasterDBModel)
-    InvoiceWKMasterData = crud.get_all()[0]
-    InvoiceWKMasterDictData = orm_to_dict(InvoiceWKMasterData)
-    crud.update(InvoiceWKMasterData, InvoiceWKMasterDictData)
-    InvoiceWKMasterData = dict_to_orm(InvoiceWKMasterDictData, InvoiceWKMasterDBModel)
-    return {"message": "test", "InvoiceWKMasterData": InvoiceWKMasterData}
+    crud = CRUD(db, UsersDBModel)
+    user = crud.get_with_condition({"UserID": 1})[0]
+
+    return user
 
 
 # -------------------------------------------------------------------------------------

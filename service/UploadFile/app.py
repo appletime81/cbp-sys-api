@@ -1,3 +1,4 @@
+import os
 import shutil
 
 from fastapi import APIRouter, Request, status, Depends, File, UploadFile
@@ -31,12 +32,15 @@ async def uploadSignedBillMaster(
     urlCondition: BillMasterID = int
     """
     # TODO: Update BillMaster URI
-    print(type(file.filename))
     with open(file.filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    with open(file.filename, "rb") as f:
-        data = f.read()
-    print(data)
+
+
+
+    # os.system(f"aws s3 cp {file.filename} s3://cht-deploy-bucket-1/{file.filename}")
+    # # get URI
+    # URI = os.system(f"aws s3 presign s3://cht-deploy-bucket-1/{file.filename}")
+    # print(URI)
     return {"file_name": file.filename}
 
 
