@@ -292,7 +292,7 @@ class CorporatesDBModel(Base):
     WireRouting = Column(String(32))
     Name = Column(String(100))
     Branch = Column(String(100))
-    BankAddress = Column(String(512))
+    Address = Column(String(512))
 
 
 class ContractsDBModel(Base):
