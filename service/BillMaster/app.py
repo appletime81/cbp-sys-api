@@ -78,6 +78,7 @@ async def checkBillingNo(
     }
     """
     request_data = await request.json()
+    print("BillingNo: ", request_data["BillingNo"])
     BillingNo = request_data["BillingNo"]
 
     crud = CRUD(db, BillMasterDBModel)
@@ -95,7 +96,7 @@ async def checkBillingNoConvert(
     db: Session = Depends(get_db),
 ):
     BillingNo = (await request.json())["BillingNo"]
-    BillingNo = BillingNo.replace("-CBP- ", "-")
+    BillingNo = BillingNo.replace("-CBP-", "-")
     crudSubmarineCables = CRUD(db, SubmarineCablesDBModel)
     crudParties = CRUD(db, PartiesDBModel)
     SubmarineCablesDataList = crudSubmarineCables.get_all()
@@ -107,7 +108,7 @@ async def checkBillingNoConvert(
             for SubmarineCablesData in SubmarineCablesDataList
         ]
     )
-    WorkTitleMapping = {"Upgrade": "01", "Construction": "02", "O&M": "03"}
+    WorkTitleMapping = {"Upgrade": "UP", "Construction": "CO", "O&M": "OM"}
     PartyNameMapping = dict(
         [(PartyData.PartyName, PartyData.PartyCode) for PartyData in PartiesDataList]
     )

@@ -598,6 +598,13 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvMasterID, InvoiceMasterIdList
     )
+    InvoiceDetailDataList = list(
+        filter(
+            lambda x: x.PartyName == InvoiceMasterDataList[0].PartyName,
+            InvoiceDetailDataList,
+        )
+    )
+
     BillingNo = f"{InvoiceMasterDataList[0].SubmarineCable}-{InvoiceMasterDataList[0].WorkTitle}-CBP-{InvoiceMasterDataList[0].PartyName}-{convert_time_to_str(datetime.now()).replace('-', '').replace(' ', '').replace(':', '')[2:-2]}"
 
     # change InvoiceMaster status to "MERGED"
@@ -658,6 +665,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
             # "BillMasterID": BillMasterData.BillMasterID,
             "WKMasterID": InvoiceDetailData.WKMasterID,
             "InvDetailID": InvoiceDetailData.InvDetailID,
+            "InvoiceNo": InvoiceDetailData.InvoiceNo,
             "PartyName": InvoiceDetailData.PartyName,
             "SupplierName": InvoiceDetailData.SupplierName,
             "SubmarineCable": InvoiceDetailData.SubmarineCable,
@@ -697,6 +705,7 @@ async def generateInitBillMasterAndBillDetail(
     DueDate = request_data["DueDate"]
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
     BillMasterDictData = request_data["BillMaster"]
     BillDetailDataList = request_data["BillDetail"]
     PONo = request_data["PONo"]
@@ -714,6 +723,33 @@ async def generateInitBillMasterAndBillDetail(
         BillDetailPydanticData = BillDetailSchema(**BillDetailData)
         BillDetailData = crudBillDetail.create(BillDetailPydanticData)
         newBillDetailDataList.append(BillDetailData)
+
+    InvDetailIDList = list(
+        set(
+            [
+                newBillDetailData.InvDetailID
+                for newBillDetailData in newBillDetailDataList
+            ]
+        )
+    )
+    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
+        InvoiceDetailDBModel.InvDetailID, InvDetailIDList
+    )
+    InvoiceMasterDataList = list(
+        filter(lambda x: x.PartyName == BillMasterData.PartyName, InvoiceMasterDataList)
+    )
+
+    newInvoiceMasterDataList = []
+    for InvoiceMasterData in InvoiceMasterDataList:
+        InvoiceMasterData.Status = "MERGED"
+        newInvoiceMasterDataList.append(InvoiceMasterData)
+
+    for oldInvoiceMasterData, newInvoiceMasterData in zip(
+        InvoiceMasterDataList, newInvoiceMasterDataList
+    ):
+        crudInvoiceMaster.update(
+            oldInvoiceMasterData, orm_to_dict(newInvoiceMasterData)
+        )
 
     return {
         "message": "success",
@@ -1467,18 +1503,6 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
     return {"message": "success"}
 
 
-# check input BillingNo is existed or not
-@app.get(ROOT_URL + "/checkBillingNo/{BillingNo}")
-async def checkBillingNo(request: Request, db: Session = Depends(get_db)):
-    BillingNo = request.path_params["BillingNo"]
-    crud = CRUD(db, BillMasterDBModel)
-    BillMasterDataList = crud.get_with_condition({"BillingNo": BillingNo})
-    if not BillMasterDataList:
-        return {"message": "BillingNo is not exist"}
-    else:
-        return {"message": "BillingNo is exist"}
-
-
 # 產製帳單draft(初始化)
 @app.post(ROOT_URL + "/getBillMasterDraftStream")
 async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_db)):
@@ -1582,20 +1606,26 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         DetailInformationDictData["YourShare"].append(
             BillDetailDictData["OrgFeeAmount"]
         )
-
-    for CBStatementData in CBStatementDataList:
-        BillDetailDictData = next(
-            filter(
-                lambda x: x["BillDetailID"] == CBStatementData.BLDetailID,
-                BillDetailDictDataList,
+    if CBStatementDataList:
+        for CBStatementData in CBStatementDataList:
+            BillDetailDictData = next(
+                filter(
+                    lambda x: x["BillDetailID"] == CBStatementData.BLDetailID,
+                    BillDetailDictDataList,
+                )
             )
-        )
-        DetailInformationDictData["Supplier"].append(BillDetailDictData["SupplierName"])
-        DetailInformationDictData["InvNumber"].append(BillMasterData.BillingNo)
-        DetailInformationDictData["Description"].append(BillDetailDictData["FeeItem"])
-        DetailInformationDictData["AmountBilled"].append(CBStatementData.TransAmount)
-        DetailInformationDictData["Liability"].append(100)
-        DetailInformationDictData["YourShare"].append(CBStatementData.TransAmount)
+            DetailInformationDictData["Supplier"].append(
+                BillDetailDictData["SupplierName"]
+            )
+            DetailInformationDictData["InvNumber"].append(BillMasterData.BillingNo)
+            DetailInformationDictData["Description"].append(
+                BillDetailDictData["FeeItem"]
+            )
+            DetailInformationDictData["AmountBilled"].append(
+                CBStatementData.TransAmount
+            )
+            DetailInformationDictData["Liability"].append(100)
+            DetailInformationDictData["YourShare"].append(CBStatementData.TransAmount)
 
     getResult = {
         "ContactWindowAndSupervisorInformation": ContactWindowAndSupervisorInformationDictData,
@@ -1631,6 +1661,35 @@ async def updateBillMasterByDraftStream(
     newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
 
     return {"newBillMaster": newBillMasterData}
+
+
+# 銷帳
+@app.get(ROOT_URL + "/writeOffBillMaster")
+async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
+    """
+    {
+        "BillMaster": {...},
+        "BillDetail": [
+            {...},
+            {...}
+        ]
+
+    }
+    """
+    newBillMasterDictData = request.json()["BillMaster"]
+    newBillDetailDictDataList = request.json()["BillDetail"]
+
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+
+    oldBillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
+    )[0]
+    oldBillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
+    )
+
+    return None
 
 
 @app.get(ROOT_URL + "/test")

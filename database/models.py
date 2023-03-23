@@ -126,9 +126,6 @@ class BillMasterDBModel(Base):
     FeeAmountSum = Column(Float)
     ReceivedAmountSum = Column(Float)
     IsPro = Column(Boolean)
-    Tel = Column(String(20))
-    Fax = Column(String(20))
-    TitleInfo = Column(String(32))
     Status = Column(String(20))
     URI = Column(String(128))
 
@@ -209,6 +206,7 @@ class PartiesDBModel(Base):
     WorkTitle      varchar(50),
     PartyCode      varchar(4)   NOT NULL,
     PartyName      varchar(100) NOT NULL,
+    CompanyName    varchar(256),
     Address        varchar(512),
     Contact        varchar(20),
     Email          varchar(50),
@@ -229,6 +227,7 @@ class PartiesDBModel(Base):
     WorkTitle = Column(String(50))
     PartyCode = Column(String(4))
     PartyName = Column(String(100))
+    CompanyName = Column(String(256))
     Address = Column(String(512))
     Contact = Column(String(20))
     Email = Column(String(50))
@@ -322,9 +321,9 @@ class CreditBalanceDBModel(Base):
         BLDetailID     int,
         SubmarineCable varchar(10),
         WorkTitle      varchar(50),
-        InvoiceNo      varchar(64),
         CurrAmount     decimal(12, 2),
         PartyName      varchar(100),
+        CONo           varchar(64),
         CreateDate     datetime,
         LastUpdDate    datetime,
         Note           varchar(128),
@@ -340,9 +339,9 @@ class CreditBalanceDBModel(Base):
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
     BillMilestone = Column(String(20))
-    InvoiceNo = Column(String(64))
     CurrAmount = Column(Float)
     PartyName = Column(String(100))
+    CNNo = Column(String(64))
     CreateDate = Column(String(20))
     LastUpdDate = Column(String(20))
     Note = Column(String(128))

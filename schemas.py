@@ -114,9 +114,6 @@ class BillMasterSchema(BaseModel):
     FeeAmountSum: float
     ReceivedAmountSum: float
     IsPro: bool
-    Tel: Optional[str]
-    Fax: Optional[str]
-    TitleInfo: Optional[str]
     URI: Optional[str]
     Status: str
 
@@ -239,6 +236,7 @@ class PartiesSchema(BaseModel):
     WorkTitle: Optional[str]
     PartyCode: Optional[str]
     PartyName: Optional[str]
+    CompanyName: Optional[str]
     Address: Optional[str]
     Contact: Optional[str]
     Email: Optional[str]
@@ -280,9 +278,9 @@ class CreditBalanceSchema(BaseModel):
     BLDetailID     int,
     SubmarineCable varchar(10),
     WorkTitle      varchar(50),
-    InvoiceNo      varchar(64),
     CurrAmount     decimal(12, 2),
     PartyName      varchar(100),
+    CNNo           varchar(64),
     CreateDate     datetime,
     LastUpdDate    datetime,
     Note           varchar(128),
@@ -296,9 +294,9 @@ class CreditBalanceSchema(BaseModel):
     SubmarineCable: str
     WorkTitle: str
     BillMilestone: str
-    InvoiceNo: Optional[str]
     CurrAmount: float
     PartyName: str
+    CNNo: Optional[str]
     CreateDate: datetime
     LastUpdDate: Optional[datetime]
     Note: Optional[str]
