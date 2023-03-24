@@ -326,6 +326,54 @@ class CreditBalanceStatementSchema(BaseModel):
     CreateDate: datetime
 
 
+class CreditNoteSchema(BaseModel):
+    """
+    CNID           int NOT NULL AUTO_INCREMENT,
+    CNNo           varchar(128)   DEFAULT NULL,
+    CNType         varchar(20)    DEFAULT NULL,
+    SubmarineCable varchar(10)    DEFAULT NULL,
+    WorkTitle      varchar(50)    DEFAULT NULL,
+    PartyName      varchar(100)   DEFAULT NULL,
+    CurrAmount     decimal(12, 2) DEFAULT NULL,
+    IssueDate      datetime       DEFAULT NULL,
+    Note           varchar(128)   DEFAULT NULL,
+    URI            varchar(128),
+    """
+
+    CNID: Optional[int]
+    CNNo: str
+    CNType: str
+    SubmarineCable: str
+    WorkTitle: str
+    PartyName: str
+    CurrAmount: float
+    IssueDate: datetime
+    Note: Optional[str]
+    URI: Optional[str]
+
+
+class CreditNoteDetailSchema(BaseModel):
+    """
+    CNDetailID int NOT NULL AUTO_INCREMENT,
+    CNID       int            DEFAULT NULL,
+    CBID       int            DEFAULT NULL,
+    CBType     varchar(20)    DEFAULT NULL,
+    BillingNo  varchar(64)    DEFAULT NULL,
+    CNNo       varchar(64)    DEFAULT NULL,
+    CurrAmount decimal(12, 2) DEFAULT NULL,
+    CBNote     varchar(128)   DEFAULT NULL,
+    """
+
+    CNDetailID: Optional[int]
+    CNID: int
+    CBStateID: int
+    CBType: Optional[str]
+    BillingNo: Optional[str]
+    CNNo: Optional[str]
+    CurrAmount: float
+    CBNote: Optional[str]
+
+
 class PartiesByContractSchema(BaseModel):
     """
     ContractID int NOT NULL,

@@ -375,6 +375,56 @@ class CreditBalanceStatementDBModel(Base):
     CreateDate = Column(String(20))
 
 
+class CreditNoteDBModel(Base):
+    """
+    CNID           int NOT NULL AUTO_INCREMENT,
+    CNNo           varchar(128)   DEFAULT NULL,
+    CNType         varchar(20)    DEFAULT NULL,
+    SubmarineCable varchar(10)    DEFAULT NULL,
+    WorkTitle      varchar(50)    DEFAULT NULL,
+    PartyName      varchar(100)   DEFAULT NULL,
+    CurrAmount     decimal(12, 2) DEFAULT NULL,
+    IssueDate      datetime       DEFAULT NULL,
+    Note           varchar(128)   DEFAULT NULL,
+    URI            varchar(128),
+    """
+
+    __tablename__ = "CN"
+    CNID = Column(Integer, primary_key=True, index=True)
+    CNNo = Column(String(128))
+    CNType = Column(String(20))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
+    PartyName = Column(String(100))
+    CurrAmount = Column(Float)
+    IssueDate = Column(String(20))
+    Note = Column(String(128))
+    URI = Column(String(128))
+
+
+class CreditNoteDetailDBModel(Base):
+    """
+    CNDetailID int NOT NULL AUTO_INCREMENT,
+    CNID       int            DEFAULT NULL,
+    CBID       int            DEFAULT NULL,
+    CBType     varchar(20)    DEFAULT NULL,
+    BillingNo  varchar(64)    DEFAULT NULL,
+    CNNo       varchar(64)    DEFAULT NULL,
+    CurrAmount decimal(12, 2) DEFAULT NULL,
+    CBNote     varchar(128)   DEFAULT NULL,
+    """
+
+    __tablename__ = "CNDetail"
+    CNDetailID = Column(Integer, primary_key=True, index=True)
+    CNID = Column(Integer)
+    CBStateID = Column(Integer)
+    CBType = Column(String(20))
+    BillingNo = Column(String(64))
+    CNNo = Column(String(64))
+    CurrAmount = Column(Float)
+    CBNote = Column(String(128))
+
+
 class PartiesByContractDBModel(Base):
     """
     CREATE TABLE PartiesByContract

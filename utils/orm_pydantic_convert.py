@@ -14,5 +14,9 @@ def pydantic_to_orm(pydantic_model, db_model):
     return db_model(**pydantic_model.dict())
 
 
+def dict_to_pydantic(pydantic_model, dict_model):
+    return pydantic_model(**dict_model)
+
+
 def dict_to_orm(dict_model, db_model):
     return db_model(**dict_model)
