@@ -822,8 +822,9 @@ async def generateBillMasterAndBillDetail(
         "newBillMasterData": None,
         "oldCBDataList": [],
         "newCBDataList": [],
-        "newCBStatementDataList" "oldBillDetailDataList": [],
-        "newBillDetailDataList": [],
+        "newCBStatementDataList": [],
+        "oldBillDetailDataList": [],
+        "newBillDetailDataList": []
     }
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
