@@ -263,7 +263,8 @@ class SuppliersDBModel(Base):
 
     __tablename__ = "Suppliers"
     SupplierID = Column(Integer, primary_key=True, index=True)
-    CableName = Column(String(64))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
     SupplierName = Column(String(100))
     BankAcctName = Column(String(100))
     BankAcctNo = Column(String(32))
@@ -280,7 +281,7 @@ class SuppliersDBModel(Base):
 class CorporatesDBModel(Base):
     __tablename__ = "Corporates"
     CorpID = Column(Integer, primary_key=True, index=True)
-    CableName = Column(String(64))
+    SubmarineCable = Column(String(64))
     CreateDate = Column(String(20))
     AcctName = Column(String(100))
     AcctNo = Column(String(32))

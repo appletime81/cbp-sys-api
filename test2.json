@@ -1,8 +1,97 @@
-﻿[
-    {
-        "BillMaster": {
+﻿{
+    "ContactWindowAndSupervisorInformation": {
+        "Company": "CHT",
+        "Address": "test-address",
+        "Tel": "123456789",
+        "Fax": "123456789",
+        "DirectorName": "郭贊章",
+        "DTel": "123456789",
+        "DFax": "123456789"
+    },
+    "PartyInformation": {
+        "Company": "Edge Company",
+        "Address": "test address",
+        "Contact": "test contact name",
+        "Email": "test@testmail.com",
+        "Tel": "123456789"
+    },
+    "CorporateInformation": {
+        "Name": "test-name",
+        "Branch": "test-branch",
+        "Address": "test-address",
+        "AcctName": "test-acctname",
+        "AcctNo": "test-acctno",
+        "SavingAcctNo": "test-savingaccntno",
+        "IBAN": "test-iban",
+        "SWIFTCode": "test-swiftcode",
+        "ACHNo": "test-achno",
+        "WireRouting": "test-wirerouting"
+    },
+    "DetailInformation": [
+        {
+            "Supplier": "NEC",
+            "InvNumber": "02CO-EG2303251517",
+            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
+            "AmountBilled": 1288822.32,
+            "Liability": 28.5714285714,
+            "YourShare": 368234.95
         },
-        "BillDetail": [
-        ]
-    }
-]
+        {
+            "Supplier": "NEC",
+            "InvNumber": "02CO-EG2303251517",
+            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
+            "AmountBilled": 1178227.94,
+            "Liability": 28.5714285714,
+            "YourShare": 336636.55
+        },
+        {
+            "Supplier": "NEC",
+            "InvNumber": "02CO-EG2303251517",
+            "Description": "BM12 Branching Units (100%)-Equipment",
+            "AmountBilled": 1627300.92,
+            "Liability": 28.5714285714,
+            "YourShare": 464943.12
+        },
+        {
+            "Supplier": "NEC",
+            "InvNumber": "02CO-EG2303251517",
+            "Description": "BM12 Branching Units (100%)-Service",
+            "AmountBilled": 1487661.54,
+            "Liability": 28.5714285714,
+            "YourShare": 425046.15
+        },
+        {
+            "Supplier": "NEC",
+            "InvNumber": "test-billing-no-1",
+            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
+            "AmountBilled": -10,
+            "Liability": 100,
+            "YourShare": -10
+        },
+        {
+            "Supplier": "NEC",
+            "InvNumber": "test-billing-no-2",
+            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
+            "AmountBilled": -10,
+            "Liability": 100,
+            "YourShare": -10
+        },
+        {
+            "Supplier": "NEC",
+            "InvNumber": "test-billing-no-1",
+            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
+            "AmountBilled": -10,
+            "Liability": 100,
+            "YourShare": -10
+        },
+        {
+            "Supplier": "NEC",
+            "InvNumber": "test-billing-no-2",
+            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
+            "AmountBilled": -10,
+            "Liability": 100,
+            "YourShare": -10
+        }
+    ],
+    "InvoiceNo": "02CO-EG2303251517"
+}

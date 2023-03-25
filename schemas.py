@@ -170,7 +170,8 @@ class SuppliersSchema(BaseModel):
     """
 
     SupplierID: Optional[int]
-    CableName: Optional[str]
+    SubmarineCable: Optional[str]
+    WorkTitle: Optional[str]
     SupplierName: Optional[str]
     BankAcctName: Optional[str]
     BankAcctNo: Optional[str]
@@ -186,7 +187,7 @@ class SuppliersSchema(BaseModel):
 
 class CorporatesSchema(BaseModel):
     CorpID: Optional[int]
-    CableName: str
+    SubmarineCable: str
     CreateDate: datetime
     AcctName: Optional[str]
     AcctNo: Optional[str]

@@ -823,11 +823,14 @@ async def generateBillMasterAndBillDetail(
     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
 
     BillMasterDictData = (await request.json())["BillMaster"]
-    BillMasterData = crudBillMaster.get_with_condition(
+    oldBillMasterData = crudBillMaster.get_with_condition(
         {"BillMasterID": BillMasterDictData["BillMasterID"]}
     )[0]
+    newBillMasterData = deepcopy(oldBillMasterData)
+
     deductDataList = (await request.json())["Deduct"]
-    totalDedAmount = 0
+
+    newBillDetailDataList = []
     for deductData in deductDataList:
         oldBillDetailData = crudBillDetail.get_with_condition(
             {"BillDetailID": deductData["BillDetailID"]}
@@ -848,7 +851,7 @@ async def generateBillMasterAndBillDetail(
             newCBStatementDictData = {
                 "CBID": newCBDictData["CBID"],
                 "BillingNo": BillMasterDictData["BillingNo"],
-                "BLDetailID": newBillDetailData.BLDetailID,
+                "BLDetailID": newBillDetailData.BillDetailID,
                 "TransItem": "DEDUCT",
                 "OrgAmount": oldCBData.CurrAmount,
                 "TransAmount": reqCBData["TransAmount"] * (-1),
@@ -867,10 +870,27 @@ async def generateBillMasterAndBillDetail(
             )
 
         # update BillDetail
-        newBillDetailData.DedAmount += tempTotalDedAmount
+        newBillDetailData.DedAmount = tempTotalDedAmount
         newBillDetailData.FeeAmount = (
             newBillDetailData.OrgFeeAmount - newBillDetailData.DedAmount
         )
+        newBillDetailData = crudBillDetail.update(
+            oldBillDetailData, orm_to_dict(newBillDetailData)
+        )
+        newBillDetailDataList.append(newBillDetailData)
+
+    # update BillMaster
+    newBillMasterData.FeeAmountSum -= sum(
+        [newBillDetailData.DedAmount for newBillDetailData in newBillDetailDataList]
+    )
+    newBillMasterData.Status = "RATED"
+    crudBillMaster.update(oldBillMasterData, orm_to_dict(newBillMasterData))
+
+    return {
+        "message": "success",
+        "BillMaster": newBillMasterData,
+        "BillDetail": newBillDetailDataList,
+    }
 
 
 @app.get(ROOT_URL + "/getBillMaster&BillDetailWithCBData/{urlCondition}")
@@ -1519,7 +1539,10 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         BillDetailDictDataList[i]["FeeAmountPre"] = InvoiceDetailData.FeeAmountPre
 
     # --------------------------- 抓取會員資訊 ---------------------------
-    PartyData = crudParties.get_with_condition({"PartyID": BillMasterData.PartyName})[0]
+    PartyData = crudParties.get_with_condition({"PartyName": BillMasterData.PartyName})[
+        0
+    ]
+    pprint(orm_to_dict(PartyData))
 
     # --------------------------- 抓取聯盟資料表(含金融帳戶資訊) ---------------------------
     CorporateData = crudCorporates.get_with_condition(
@@ -1584,7 +1607,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         DetailInformationDictData["InvNumber"].append(BillMasterData.BillingNo)
         DetailInformationDictData["Description"].append(BillDetailDictData["FeeItem"])
         DetailInformationDictData["AmountBilled"].append(InvoiceDetailData.FeeAmountPre)
-        DetailInformationDictData["Liability"].append(BillDetailDictData["Liability"])
+        DetailInformationDictData["Liability"].append(InvoiceDetailData.LBRatio)
         DetailInformationDictData["YourShare"].append(
             BillDetailDictData["OrgFeeAmount"]
         )
@@ -1688,8 +1711,8 @@ async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
 
     }
     """
-    newBillMasterDictData = request.json()["BillMaster"]
-    newBillDetailDictDataList = request.json()["BillDetail"]
+    newBillMasterDictData = (await request.json())["BillMaster"]
+    newBillDetailDictDataList = (await request.json())["BillDetail"]
 
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
@@ -1700,6 +1723,16 @@ async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
     oldBillDetailDataList = crudBillDetail.get_with_condition(
         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
     )
+
+    newBilDetailDataList = list()
+    for newBillDetailDictData in newBillDetailDictDataList:
+        oldBillDetailData = next(
+            filter(
+                lambda x: x.BillDetailID == newBillDetailDictData["BillDetailID"],
+                oldBillDetailDataList,
+            )
+        )
+        newBillDetailDictData["ReceivedAmount"] += oldBillDetailData.ReceivedAmount
 
     return None
 

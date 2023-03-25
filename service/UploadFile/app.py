@@ -24,7 +24,7 @@ async def uploadfile(
     return {"file_name": file.filename}
 
 
-@router.post("/UploadSignedBillMaster/{urlCondition}")
+@router.post("/uploadSignedBillMaster")
 async def uploadSignedBillMaster(
     request: Request, db: Session = Depends(get_db), file: UploadFile = File(...)
 ):
@@ -37,7 +37,7 @@ async def uploadSignedBillMaster(
 
     # os.system(f"aws s3 cp {file.filename} s3://cht-deploy-bucket-1/{file.filename}")
     # # get URI
-    # URI = os.system(f"aws s3 presign s3://cht-deploy-bucket-1/{file.filename}")
+    # URI, _ = os.system(f"aws s3 presign s3://cht-deploy-bucket-1/{file.filename}")
     # print(URI)
     return {"file_name": file.filename}
 
