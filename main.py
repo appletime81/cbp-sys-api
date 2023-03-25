@@ -1090,7 +1090,7 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
                 BillDetailDataList,
             )
         )
-        tempBillMadterIDList = list(
+        tempBillMasterIDList = list(
             set(
                 [
                     tempBillDetailData.BillMasterID
@@ -1098,7 +1098,7 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
                 ]
             )
         )
-        for tempBillMasterID in tempBillMadterIDList:
+        for tempBillMasterID in tempBillMasterIDList:
             tempBillMasterData = list(
                 filter(lambda x: x.BillMasterID == tempBillMasterID, BillMasterDataList)
             )[0]
@@ -1150,6 +1150,12 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
                         tempOldCBStatementDataList = (
                             crudCreditBalanceStatement.get_with_condition(
                                 {"CBID": tempOldCBData.CBID}
+                            )
+                        )
+                        tempOldCBStatementDataList = list(
+                            filter(
+                                lambda x: x.TransItem == "DEDUCT",
+                                tempOldCBStatementDataList,
                             )
                         )
                         tempOldCBStatementData = max(
