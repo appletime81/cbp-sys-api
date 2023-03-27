@@ -1050,6 +1050,7 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
     request: Request, db: Session = Depends(get_db)
 ):
     """
+    input:
     {
         InvoiceWKMaster: [
             {...},
@@ -1058,17 +1059,8 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
         "Confirm": True / False
         "Note": "string"
     }
-    """
-    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
-    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
-    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
-    crudBillDetail = CRUD(db, BillDetailDBModel)
-    crudBillMaster = CRUD(db, BillMasterDBModel)
-    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
-    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
-    confirm = (await request.json())["Confirm"]
-    note = (await request.json())["Note"]
-    """
+
+    output:
     streamResponse = [
         {
             InvoiceWKMasterData: {},
@@ -1083,6 +1075,16 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
         }
     ]
     """
+    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+    confirm = (await request.json())["Confirm"]
+    note = (await request.json())["Note"]
+
     InvoiceWKMasterDictDataList = (await request.json())["InvoiceWKMaster"]
     InvoiceWKMasterIDList = [
         InvoiceWKMasterData["WKMasterID"]
@@ -1096,6 +1098,9 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
     )
     BillMasterDataList = crudBillMaster.get_value_if_in_a_list(
         BillMasterDBModel.BillMasterID, BillDetailIDList
+    )
+    CBStatementDataList = crudCreditBalanceStatement.get_value_if_in_a_list(
+        CreditBalanceStatementDBModel.BLDetailID, BillDetailIDList
     )
 
     streamResponse = []
@@ -1142,139 +1147,91 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
             "oldBillDetailDataList": [],
             "newBillDetailDataList": [],
             # --------------------------
-            "oldInvoiceWKMasterDataList": [],
-            "newInvoiceWKMasterDataList": [],
-            # --------------------------
-            "oldCBDataList": [],
-            "newCBDataList": [],
-            # --------------------------
             "newCBStatementDataList": [],
         }
         for tempOldBillMasterData in BillMasterDataList:
             dataToBeProcessed["oldBillMasterDataList"].append(tempOldBillMasterData)
-            tmepOldBillDetailDataList = list(
+            tempNewBillMasterDictData = orm_to_dict(tempOldBillMasterData)
+            tempOldBillDetailDataList = list(
                 filter(
                     lambda x: x.BillMasterID == tempOldBillMasterData.BillMasterID,
                     BillDetailDataList,
                 )
             )
-            FeeAmountSum = 0
-            for tmepOldBillDetailData in tmepOldBillDetailDataList:
-                dataToBeProcessed["oldBillDetailDataList"].append(tmepOldBillDetailData)
-                tempOldCBDataList = crudCreditBalance.get_with_condition(
-                    {"BLDetailID": tmepOldBillDetailData.BillDetailID}
+            for tempOldBillDetailData in tempOldBillDetailDataList:
+                dataToBeProcessed["oldBillDetailDataList"].append(tempOldBillDetailData)
+                tempNewBillDetailDictData = orm_to_dict(tempOldBillDetailData)
+                tempOldCBStatementDataList = list(
+                    filter(
+                        lambda x: x.BLDetailID == tempOldBillDetailData.BillDetailID
+                        and x.TransItem == "DEDUCT",
+                        CBStatementDataList,
+                    )
                 )
-                if tempOldCBDataList:
-                    # ---------------------------- CB返還 ----------------------------
-                    for tempOldCBData in tempOldCBDataList:
-                        tempOldCBStatementDataList = (
-                            crudCreditBalanceStatement.get_with_condition(
-                                {"CBID": tempOldCBData.CBID}
-                            )
+                if tempOldCBStatementDataList:
+                    tempTotalTransAmount = 0
+                    for tempOldCBStatementData in tempOldCBStatementDataList:
+                        tempOldCBData = crudCreditBalance.get_with_condition(
+                            {"CBID": tempOldCBStatementData.CBID}
+                        )[0]
+
+                        tempTotalTransAmount += tempOldCBStatementData.TransAmount
+
+                        # --------------- 更新CB ---------------
+                        tempNewCBDictData = orm_to_dict(tempOldCBData)
+                        tempNewCBDictData[
+                            "CurrAmount"
+                        ] -= tempOldCBStatementData.TransAmount
+                        tempNewCBDictData["LastUpDate"] = convert_time_to_str(
+                            datetime.now()
                         )
-                        tempOldCBStatementDataList = list(
-                            filter(
-                                lambda x: x.TransItem == "DEDUCT",
-                                tempOldCBStatementDataList,
-                            )
-                        )
-                        tempOldCBStatementData = max(
-                            tempOldCBStatementDataList, key=lambda x: x.CreateDate
-                        )
-                        newCBStatementTransAmount = (
-                            tempOldCBStatementData.TransAmount * (-1)
-                        )
-                        newCBStatementData = CreditBalanceStatementDBModel(
-                            CBID=tempOldCBData.CBID,
-                            BillingNo=tempOldBillMasterData.BillingNo,
-                            BLDetailID=tmepOldBillDetailData.BillDetailID,
-                            TransItem="RETURN",
-                            OrgAmount=tempOldCBData.CurrAmount
-                            + newCBStatementTransAmount,
-                            TransAmount=newCBStatementTransAmount,
-                            Note=note,
-                            CreateDate=convert_time_to_str(datetime.now()),
-                        )
-                        tempNewCBData = deepcopy(tempOldCBData)
-                        tempNewCBData.CurrAmount = (
-                            newCBStatementData.OrgAmount
-                            + newCBStatementData.TransAmount
+                        tempNewCBData = crudCreditBalance.update(
+                            tempOldCBData, tempNewCBDictData
                         )
 
-                        # ---------------------------- BillDetail更新 ----------------------------
-                        tmepOldBillDetailData.DedAmount -= newCBStatementTransAmount
-                        tmepOldBillDetailData.FeeAmount = (
-                            tmepOldBillDetailData.OrgFeeAmount
-                            - tmepOldBillDetailData.DedAmount
+                        # --------------- 建立CBStatement ---------------
+                        newCBStatementDictData = {
+                            "CBID": tempOldCBStatementData.CBID,
+                            "BillingNo": tempOldBillMasterData.BillingNo,
+                            "BLDetailID": tempOldBillDetailData.BillDetailID,
+                            "TransItem": "RETURN",
+                            "OrgAmount": tempOldCBStatementData.OrgAmount
+                            - tempOldCBStatementData.TransAmount,
+                            "TransAmount": tempOldCBStatementData.TransAmount,
+                            "Note": "tempOldBillMasterData.BillingNo 帳單退回至發票工作主檔VALIDATED階段",
+                            "CreateDate": convert_time_to_str(datetime.now()),
+                        }
+                        newCBStatementPydanticData = dict_to_pydantic(
+                            CreditBalanceStatementSchema, newCBStatementDictData
                         )
-                        tmepOldBillDetailData.Status = "INCOMPLETE"
-
-                        # ---------------------------- record data to be processed ----------------------------
-                        dataToBeProcessed["oldCBDataList"].append(tempOldCBData)
-                        dataToBeProcessed["newCBDataList"].append(tempNewCBData)
+                        newCBStatementData = crudCreditBalanceStatement.create(
+                            newCBStatementPydanticData
+                        )
                         dataToBeProcessed["newCBStatementDataList"].append(
                             newCBStatementData
                         )
-                    dataToBeProcessed["newBillDetailDataList"].append(
-                        tmepOldBillDetailData
+
+                        # --------------- 更新BillMaster的FeeAmountSum ---------------
+                        tempNewBillMasterDictData[
+                            "FeeAmountSum"
+                        ] -= tempOldCBStatementData.TransAmount
+
+                    # --------------- 更新BillDetail ---------------
+                    tempNewBillDetailDictData["DedAmount"] += tempTotalTransAmount
+                    tempNewBillDetailDictData["FeeAmount"] = (
+                        tempNewBillDetailDictData["OrgFeeAmount"]
+                        - tempNewBillDetailDictData["DedAmount"]
                     )
-                    FeeAmountSum += tmepOldBillDetailData.FeeAmount
+                    dataToBeProcessed["newBillDetailDataList"].append(
+                        tempNewBillDetailDictData
+                    )
+            # --------------- 更新BillMaster ---------------
+            tempNewBillMasterDictData["Status"] = "INITIAL"
+            dataToBeProcessed["newBillMasterDataList"].append(tempNewBillMasterDictData)
 
-            # ---------------------------- BillMaster更新 ----------------------------
-            tempNewBillMasterData = deepcopy(tempOldBillMasterData)
-            tempNewBillMasterData.Status = "INITIAL"
-            if FeeAmountSum:
-                tempNewBillMasterData.FeeAmountSum = FeeAmountSum
-            dataToBeProcessed["newBillMasterDataList"].append(tempNewBillMasterData)
+        # TODO: 刪除InvoiceDetail、BillMaster、BillDetail，並更新InvoiceWKMaster的Status
 
-        # TODO: 更改發票工作主檔狀態 & 刪除發票主檔 & 發票明細檔
-        InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
-            InvoiceWKMasterDBModel.WKMasterID, InvoiceWKMasterIDList
-        )
-        InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
-            InvoiceMasterDBModel.WKMasterID, InvoiceWKMasterIDList
-        )
-        InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
-            InvoiceDetailDBModel.WKMasterID, InvoiceWKMasterIDList
-        )
-
-        # ---------------------------- 更改發票工作主檔狀態 ----------------------------
-        for InvoiceWKMasterData in InvoiceWKMasterDataList:
-            tempNewInvoiceWKMasterData = deepcopy(InvoiceWKMasterData)
-            tempNewInvoiceWKMasterData.Status = "VALIDATED"
-            dataToBeProcessed["oldInvoiceWKMasterDataList"].append(InvoiceWKMasterData)
-            dataToBeProcessed["newInvoiceWKMasterDataList"].append(
-                tempNewInvoiceWKMasterData
-            )
-            crudInvoiceWKMaster.update(
-                InvoiceWKMasterData, orm_to_dict(tempNewInvoiceWKMasterData)
-            )
-        # ---------------------------- 刪除發票主檔 & 發票明細檔 -------------------------------
-        for InvoiceMasterData in InvoiceMasterDataList:
-            crudInvoiceMaster.remove(InvoiceMasterData.InvMasterID)
-        for InvoiceDetailData in InvoiceDetailDataList:
-            crudInvoiceMaster.remove(InvoiceDetailData.InvDetailID)
-
-        # ---------------------------- 刪除帳單主檔 & 帳單明細檔 -------------------------------
-        for BillMasterData in BillMasterDataList:
-            crudBillMaster.remove(BillMasterData.BillMasterID)
-        for BillDetailData in BillDetailDataList:
-            crudBillDetail.remove(BillDetailData.BillDetailID)
-
-        # ---------------------------- 更新CB ----------------------------
-        for oldCBdata, newCBData in zip(
-            dataToBeProcessed["oldCBDataList"], dataToBeProcessed["newCBDataList"]
-        ):
-            crudCreditBalance.update(oldCBdata, orm_to_dict(newCBData))
-
-        # ---------------------------- 新增CBStatement ----------------------------
-        for newCBStatementData in dataToBeProcessed["newCBStatementDataList"]:
-            newCBStatementPydanticData = orm_to_pydantic(
-                newCBStatementData, CreditBalanceStatementSchema
-            )
-            crudCreditBalanceStatement.create(newCBStatementPydanticData)
-
-        return {"message": "success", "data": dataToBeProcessed}
+        return {"message": "success"}
 
 
 @app.post(ROOT_URL + "/returnToMergeBillMaster&BillDetail/afterDeduct")
@@ -1733,8 +1690,21 @@ async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
             )
         )
         newBillDetailDictData["ReceivedAmount"] += oldBillDetailData.ReceivedAmount
+        newBillDetailData = crudBillDetail.update(
+            oldBillDetailData, newBillDetailDictData
+        )
+        newBilDetailDataList.append(newBillDetailData)
 
-    return None
+    if oldBillMasterData.Status != newBillMasterDictData["Status"]:
+        newBillMasterData = crudBillMaster.update(
+            oldBillMasterData, newBillMasterDictData
+        )
+        return {
+            "message": "success",
+            "newBillMaster": newBillMasterData,
+            "newBillDetail": newBilDetailDataList,
+        }
+    return {"message": "success", "newBillDetail": newBilDetailDataList}
 
 
 @app.get(ROOT_URL + "/test")

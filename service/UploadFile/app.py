@@ -29,17 +29,32 @@ async def uploadSignedBillMaster(
     request: Request, db: Session = Depends(get_db), file: UploadFile = File(...)
 ):
     """
-    urlCondition: BillMasterID = int
+    {
+        "BillMasterID": int
+    }
     """
-    # TODO: Update BillMaster URI
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    BillMasterID = (await request.json())["BillMasterID"]
+    BillMasterData = crudBillMaster.get_with_condition({"BillMasterID": BillMasterID})[
+        0
+    ]
+
     with open(file.filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # os.system(f"aws s3 cp {file.filename} s3://cht-deploy-bucket-1/{file.filename}")
-    # # get URI
-    # URI, _ = os.system(f"aws s3 presign s3://cht-deploy-bucket-1/{file.filename}")
-    # print(URI)
-    return {"file_name": file.filename}
+    os.system(f"aws s3 cp {file.filename} s3://cht-deploy-bucket-1/{file.filename}")
+
+    # get URI
+    URI, _ = os.system(f"aws s3 presign s3://cht-deploy-bucket-1/{file.filename}")
+
+    # update BillMaster
+    newBillMasterData = deepcopy(BillMasterData)
+    newBillMasterData.URI = URI
+
+    newBillMasterData = crudBillMaster.update(
+        BillMasterData, orm_to_dict(newBillMasterData)
+    )
+    return {"message": "success", "file_name": file.filename, "URI": URI}
 
 
 # -------------------------------------------------------------------------

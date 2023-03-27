@@ -113,6 +113,7 @@ class BillMasterSchema(BaseModel):
     DueDate: datetime
     FeeAmountSum: float
     ReceivedAmountSum: float
+    BankFees: Optional[float]
     IsPro: bool
     URI: Optional[str]
     Status: str
@@ -135,7 +136,6 @@ class BillDetailSchema(BaseModel):
     ReceivedAmount: float
     OverAmount: float
     ShortAmount: float
-    BankFees: float
     ShortOverReason: Optional[str]
     WriteOffDate: Optional[datetime]
     ReceiveDate: Optional[datetime]
