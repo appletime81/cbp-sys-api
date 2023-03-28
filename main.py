@@ -1271,7 +1271,40 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
 async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     request: Request, db: Session = Depends(get_db)
 ):
+    """
+    input:
+    {
+        "BillMasterID": 1,
+    }
+    """
 
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+
+    oldBillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": (await request.json())["BillMasterID"]}
+    )[0]
+
+    oldBillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": oldBillMasterData.BillMasterID}
+    )
+
+    for oldBillDetailData in oldBillDetailDataList:
+        oldCBStatementDataList = crudCreditBalanceStatement.get_with_condition(
+            {"BLDetailID": oldBillDetailData.BillDetailID}
+        )
+        oldCBStatementDataList = list(
+            filter(lambda x: x.TransItem == "DEDUCT", oldCBStatementDataList)
+        )
+        for oldCBStatementData in oldCBStatementDataList:
+            oldCBData = crudCreditBalance.get_with_condition(
+                {"CBID": oldCBStatementData.CBID}
+            )[0]
+            newCBData = deepcopy(oldCBData)
+
+            #TODO: Go on here
 
     return {"message": "success"}
 
