@@ -1141,6 +1141,10 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
         return streamResponse
     if confirm:
         dataToBeProcessed = {
+            # --------------------------
+            "oldInvoiceWKMasterDataList": [],
+            "newInvoiceWKMasterDataList": [],
+            # --------------------------
             "oldBillMasterDataList": [],
             "newBillMasterDataList": [],
             # --------------------------
@@ -1230,8 +1234,37 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
             dataToBeProcessed["newBillMasterDataList"].append(tempNewBillMasterDictData)
 
         # TODO: 刪除InvoiceDetail、BillMaster、BillDetail，並更新InvoiceWKMaster的Status
+        # --------------- 刪除InvoiceWKMaster ---------------
+        InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
+            InvoiceWKMasterDBModel.WKMasterID, InvoiceWKMasterIDList
+        )
+        for InvoiceWKMasterData in InvoiceWKMasterDataList:
+            dataToBeProcessed["oldInvoiceWKMasterDataList"].append(InvoiceWKMasterData)
+            newInvoiceWKMasterData = deepcopy(InvoiceWKMasterData)
+            newInvoiceWKMasterData.Status = "VALIDATED"
+            newInvoiceWKMasterData = crudInvoiceWKMaster.update(
+                InvoiceWKMasterData, orm_to_dict(newInvoiceWKMasterData)
+            )
+            dataToBeProcessed["newInvoiceWKMasterDataList"].append(
+                newInvoiceWKMasterData
+            )
 
-        return {"message": "success"}
+        # --------------- 刪除InvoiceDetail ---------------
+        InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
+            InvoiceDetailDBModel.WKMasterID, InvoiceWKMasterIDList
+        )
+        for InvoiceDetailData in InvoiceDetailDataList:
+            crudInvoiceDetail.remove(InvoiceDetailData.InvDetailID)
+
+        # --------------- 刪除BillMaster ---------------
+        for BillMasterData in BillMasterDataList:
+            crudBillMaster.remove(BillMasterData.BillMasterID)
+
+        # --------------- 刪除BillDetail ---------------
+        for BillDetailData in BillDetailDataList:
+            crudBillDetail.remove(BillDetailData.BillDetailID)
+
+        return {"message": "success", "changed_data": dataToBeProcessed}
 
 
 @app.post(ROOT_URL + "/returnToMergeBillMaster&BillDetail/afterDeduct")
