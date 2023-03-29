@@ -314,6 +314,7 @@ class CorporatesDBModel(Base):
     Branch = Column(String(100))
     BranchAddress = Column(String(512))
 
+
 class ContractsDBModel(Base):
     __tablename__ = "Contracts"
     ContractID = Column(Integer, primary_key=True, index=True)

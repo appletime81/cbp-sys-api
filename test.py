@@ -8,7 +8,6 @@ a = [
 ]
 
 
-
-res = list(map(lambda x: x["B"]%2 == 0, a))
+res = list(map(lambda x: x["B"] % 2 == 0, a))
 
 print(res)

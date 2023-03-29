@@ -829,6 +829,7 @@ async def generateBillMasterAndBillDetail(
     newBillMasterData = deepcopy(oldBillMasterData)
 
     deductDataList = (await request.json())["Deduct"]
+    deductDataList = sorted(deductDataList, key=lambda x: x["BillDetailID"])
 
     newBillDetailDataList = []
     for deductData in deductDataList:
@@ -1306,6 +1307,7 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     oldBillDetailDataList = crudBillDetail.get_with_condition(
         {"BillMasterID": oldBillMasterData.BillMasterID}
     )
+    oldBillDetailDataList.reverse()
 
     for oldBillDetailData in oldBillDetailDataList:
         newBillDetailDictData = orm_to_dict(deepcopy(oldBillDetailData))
@@ -1317,9 +1319,6 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
         )
         if oldCBStatementDataList:
             totalDedAmount = 0
-            oldCBStatementDataList = sorted(
-                oldCBStatementDataList, key=lambda x: x.CBStateID, reverse=True
-            )
             for oldCBStatementData in oldCBStatementDataList:
                 oldCBData = crudCreditBalance.get_with_condition(
                     {"CBID": oldCBStatementData.CBID}
@@ -1402,6 +1401,13 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
             InvoiceMasterData, newInvoiceMasterDictData
         )
         response["newInvoiceMaster"].append(newInvoiceMasterData)
+
+    # --------------- 刪除BillMaster ---------------
+    crudBillMaster.remove(oldBillMasterData.BillMasterID)
+
+    # --------------- 刪除BillDetail ---------------
+    for oldBillDetailData in oldBillDetailDataList:
+        crudBillDetail.remove(oldBillDetailData.BillDetailID)
 
     return response
 
