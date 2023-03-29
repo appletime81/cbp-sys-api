@@ -303,8 +303,10 @@ CREATE TABLE UndoActions
 
 CREATE TABLE Users
 (
+    UserIDNo     int         NOT NULL AUTO_INCREMENT,
     UserID       varchar(16) NOT NULL,
-    UserName     varchar(16)  DEFAULT NULL,
+    UserName     varchar(32)  DEFAULT NULL,
+    UserCName    varchar(16)  DEFAULT NULL,
     PCode        varchar(16)  DEFAULT NULL,
     Email        varchar(128) DEFAULT NULL,
     Tel          varchar(20)  DEFAULT NULL,
@@ -316,7 +318,7 @@ CREATE TABLE Users
     DFax         varchar(20)  DEFAULT NULL,
     Company      varchar(256) DEFAULT NULL,
     Address      varchar(256) DEFAULT NULL,
-    PRIMARY KEY (UserID)
+    PRIMARY KEY (UserIDNo)
 );
 
 CREATE TABLE PermissionsMap
