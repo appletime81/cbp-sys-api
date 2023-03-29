@@ -196,9 +196,9 @@ class CorporatesSchema(BaseModel):
     IBAN: Optional[str]
     ACHNo: Optional[str]
     WireRouting: Optional[str]
-    Name: Optional[str]
+    BankName: Optional[str]
     Branch: Optional[str]
-    Address: Optional[str]
+    BranchAddress: Optional[str]
 
 
 class ContractsSchema(BaseModel):
@@ -413,9 +413,10 @@ class UsersSchema(BaseModel):
     Company = Column(String(256))
     Address = Column(String(256))
     """
-
+    UserIDNo: Optional[int]
     UserID: Optional[str]
     UserName: Optional[str]
+    UserCName: Optional[str]
     PCode: Optional[str]
     Email: Optional[str]
     Tel: Optional[str]
