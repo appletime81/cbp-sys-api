@@ -1276,8 +1276,24 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     {
         "BillMasterID": 1,
     }
-    """
 
+    output:
+    {
+        "newCBStatement": [
+            {...},
+            {...}
+        ]
+    }
+    """
+    response = {
+        "message": "success",
+        "newCBStatement": [],
+        "newBillDetail": [],
+        "newInvoiceMaster": [],
+    }
+
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
@@ -1292,21 +1308,102 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     )
 
     for oldBillDetailData in oldBillDetailDataList:
+        newBillDetailDictData = orm_to_dict(deepcopy(oldBillDetailData))
         oldCBStatementDataList = crudCreditBalanceStatement.get_with_condition(
             {"BLDetailID": oldBillDetailData.BillDetailID}
         )
         oldCBStatementDataList = list(
             filter(lambda x: x.TransItem == "DEDUCT", oldCBStatementDataList)
         )
-        for oldCBStatementData in oldCBStatementDataList:
-            oldCBData = crudCreditBalance.get_with_condition(
-                {"CBID": oldCBStatementData.CBID}
-            )[0]
-            newCBData = deepcopy(oldCBData)
+        if oldCBStatementDataList:
+            totalDedAmount = 0
+            oldCBStatementDataList = sorted(
+                oldCBStatementDataList, key=lambda x: x.CBStateID, reverse=True
+            )
+            for oldCBStatementData in oldCBStatementDataList:
+                oldCBData = crudCreditBalance.get_with_condition(
+                    {"CBID": oldCBStatementData.CBID}
+                )[0]
 
-            #TODO: Go on here
+                totalDedAmount += oldCBStatementData.TransAmount
 
-    return {"message": "success"}
+                newCBDictData = orm_to_dict(deepcopy(oldCBData))
+
+                # --------------- 新增CBStatement ---------------
+                newCBStatementDictData = {
+                    "CBID": oldCBStatementData.CBID,
+                    "BillingNo": oldBillMasterData.BillingNo,
+                    "BLDetailID": oldBillDetailData.BillDetailID,
+                    "TransItem": "RETURN",
+                    "OrgAmount": oldCBStatementData.OrgAmount
+                    + oldCBStatementData.TransAmount,
+                    "TransAmount": oldCBStatementData.TransAmount * (-1),
+                    "Note": "",
+                    "CreateDate": convert_time_to_str(datetime.now()),
+                }
+                newCBStatementData = crudCreditBalanceStatement.create(
+                    dict_to_pydantic(
+                        CreditBalanceStatementSchema, newCBStatementDictData
+                    )
+                )
+                response["newCBStatement"].append(newCBStatementData)
+
+                # --------------- 更新CB ---------------
+                newCBDictData["CurrAmount"] -= oldCBStatementData.TransAmount
+                newCBDictData["LastUpdDate"] = convert_time_to_str(datetime.now())
+                crudCreditBalance.update(oldCBData, newCBDictData)
+
+            # --------------- 更新BillDetail ---------------
+            newBillDetailDictData["DedAmount"] += totalDedAmount
+            newBillDetailDictData["FeeAmount"] = (
+                newBillDetailDictData["OrgFeeAmount"]
+                - newBillDetailDictData["DedAmount"]
+            )
+            newBillDetailData = crudBillDetail.update(
+                oldBillDetailData, newBillDetailDictData
+            )
+            response["newBillDetail"].append(newBillDetailData)
+
+    InvDetailIDList = list(
+        set(
+            [
+                oldBillDetailData.InvDetailID
+                for oldBillDetailData in oldBillDetailDataList
+            ]
+        )
+    )
+
+    InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
+        InvoiceDetailDBModel.InvDetailID, InvDetailIDList
+    )
+
+    InvMasterIDList = list(
+        set(
+            [
+                InvoiceDetailData.InvMasterID
+                for InvoiceDetailData in InvoiceDetailDataList
+            ]
+        )
+    )
+
+    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
+        InvoiceMasterDBModel.InvMasterID, InvMasterIDList
+    )
+    InvoiceMasterDataList = list(
+        filter(
+            lambda x: x.PartyName == oldBillMasterData.PartyName, InvoiceMasterDataList
+        )
+    )
+
+    for InvoiceMasterData in InvoiceMasterDataList:
+        newInvoiceMasterDictData = orm_to_dict(deepcopy(InvoiceMasterData))
+        newInvoiceMasterDictData["Status"] = "TO_MERGE"
+        newInvoiceMasterData = crudInvoiceMaster.update(
+            InvoiceMasterData, newInvoiceMasterDictData
+        )
+        response["newInvoiceMaster"].append(newInvoiceMasterData)
+
+    return response
 
 
 @app.post(ROOT_URL + "/returnToInitialBillMaster&BillDetail/afterDeduct")
@@ -1495,11 +1592,11 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     }
 
     CorporateDictData = {
-        "Name": CorporateData.Name,  # Bank Name
+        "BankName": CorporateData.BankName,  # Bank Name
         "Branch": CorporateData.Branch,  # Branch Name
-        "Address": CorporateData.Address,  # Branch Address
-        "AcctName": CorporateData.AcctName,  # Account Name
-        "AcctNo": CorporateData.AcctNo,  # AC No.
+        "BranchAddress": CorporateData.BranchAddress,  # Branch Address
+        "BankAcctName": CorporateData.BankAcctName,  # Account Name
+        "BankAcctNo": CorporateData.BankAcctNo,  # AC No.
         "SavingAcctNo": CorporateData.SavingAcctNo,  # Saving Account No
         "IBAN": CorporateData.IBAN,  # IBAN
         "SWIFTCode": CorporateData.SWIFTCode,  # Swift

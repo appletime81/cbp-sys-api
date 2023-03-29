@@ -187,10 +187,12 @@ class SuppliersSchema(BaseModel):
 
 class CorporatesSchema(BaseModel):
     CorpID: Optional[int]
-    SubmarineCable: str
+    SubmarineCable: Optional[str]
+    WorkTitle: Optional[str]
+    Address: Optional[str]
     CreateDate: datetime
-    AcctName: Optional[str]
-    AcctNo: Optional[str]
+    BankAcctName: Optional[str]
+    BankAcctNo: Optional[str]
     SavingAcctNo: Optional[str]
     SWIFTCode: Optional[str]
     IBAN: Optional[str]

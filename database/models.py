@@ -279,21 +279,40 @@ class SuppliersDBModel(Base):
 
 
 class CorporatesDBModel(Base):
+    """
+    CorpID         int NOT NULL AUTO_INCREMENT,
+    SubmarineCable varchar(10)  DEFAULT NULL,
+    WorkTitle      varchar(50)  DEFAULT NULL,
+    Address        varchar(512) DEFAULT NULL,
+    CreateDate     datetime     DEFAULT NULL,
+    BankAcctName   varchar(100) DEFAULT NULL,
+    BankAcctNo     varchar(32)  DEFAULT NULL,
+    SavingAcctNo   varchar(32)  DEFAULT NULL,
+    SWIFTCode      varchar(32)  DEFAULT NULL,
+    IBAN           varchar(32)  DEFAULT NULL,
+    ACHNo          varchar(32)  DEFAULT NULL,
+    WireRouting    varchar(32)  DEFAULT NULL,
+    BankName       varchar(100) DEFAULT NULL,
+    Branch         varchar(100) DEFAULT NULL,
+    BranchAddress  varchar(512) DEFAULT NULL,
+    """
+
     __tablename__ = "Corporates"
     CorpID = Column(Integer, primary_key=True, index=True)
-    SubmarineCable = Column(String(64))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
+    Address = Column(String(512))
     CreateDate = Column(String(20))
-    AcctName = Column(String(100))
-    AcctNo = Column(String(32))
+    BankAcctName = Column(String(100))
+    BankAcctNo = Column(String(32))
     SavingAcctNo = Column(String(32))
     SWIFTCode = Column(String(32))
     IBAN = Column(String(32))
     ACHNo = Column(String(32))
     WireRouting = Column(String(32))
-    Name = Column(String(100))
+    BankName = Column(String(100))
     Branch = Column(String(100))
-    Address = Column(String(512))
-
+    BranchAddress = Column(String(512))
 
 class ContractsDBModel(Base):
     __tablename__ = "Contracts"
