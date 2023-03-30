@@ -1201,7 +1201,7 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
                             "BLDetailID": tempOldBillDetailData.BillDetailID,
                             "TransItem": "RETURN",
                             "OrgAmount": tempOldCBStatementData.OrgAmount
-                            - tempOldCBStatementData.TransAmount,
+                            + tempOldCBStatementData.TransAmount,
                             "TransAmount": tempOldCBStatementData.TransAmount,
                             "Note": "tempOldBillMasterData.BillingNo 帳單退回至發票工作主檔VALIDATED階段",
                             "CreateDate": convert_time_to_str(datetime.now()),
