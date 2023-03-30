@@ -1,97 +1,82 @@
 ﻿{
     "ContactWindowAndSupervisorInformation": {
-        "Company": "CHT",
-        "Address": "test-address",
-        "Tel": "123456789",
-        "Fax": "123456789",
+        "Company": "中華電信",
+        "Address": "testaddr",
+        "Tel": "02-23443897",
+        "Fax": "02-23443897",
         "DirectorName": "郭贊章",
-        "DTel": "123456789",
-        "DFax": "123456789"
+        "DTel": "testtel",
+        "DFax": "testfax"
     },
     "PartyInformation": {
-        "Company": "Edge Company",
-        "Address": "test address",
-        "Contact": "test contact name",
-        "Email": "test@testmail.com",
-        "Tel": "123456789"
+        "Company": "Chunghwa Telecom Co., Ltd. Network Technology Group",
+        "Address": "31, Aikuo East Road, Taipei, Taiwan 106",
+        "Contact": "黃宏杰",
+        "Email": "hj-hwang@cht.com.tw",
+        "Tel": "03-9772252"
     },
     "CorporateInformation": {
-        "Name": "test-name",
-        "Branch": "test-branch",
-        "Address": "test-address",
-        "AcctName": "test-acctname",
-        "AcctNo": "test-acctno",
-        "SavingAcctNo": "test-savingaccntno",
-        "IBAN": "test-iban",
-        "SWIFTCode": "test-swiftcode",
-        "ACHNo": "test-achno",
-        "WireRouting": "test-wirerouting"
+        "BankName": "Bank of Taiwan, Hsinyi Branch",
+        "Branch": "",
+        "BranchAddress": "31 Aikuo E. Rd., Taipei, Taiwan, 106",
+        "BankAcctName": "SJC2 Central Billing Party of Chunghwa Telecom (International Business Group)",
+        "BankAcctNo": "054007501968",
+        "SavingAcctNo": "",
+        "IBAN": "",
+        "SWIFTCode": "BKTWTWTP054",
+        "ACHNo": "",
+        "WireRouting": "",
+        "Address": "88, Sec. 2, Sinyi Road, Taipei"
     },
     "DetailInformation": [
         {
-            "Supplier": "NEC",
-            "InvNumber": "02CO-EG2303251517",
+            "Supplier": "NEC Corporation, Submarine Network Division",
+            "InvNumber": "02CO-CI2303301838",
             "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
             "AmountBilled": 1288822.32,
-            "Liability": 28.5714285714,
-            "YourShare": 368234.95
+            "Liability": 7.1428571429,
+            "YourShare": 92058.74
         },
         {
-            "Supplier": "NEC",
-            "InvNumber": "02CO-EG2303251517",
+            "Supplier": "NEC Corporation, Submarine Network Division",
+            "InvNumber": "02CO-CI2303301838",
             "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
             "AmountBilled": 1178227.94,
-            "Liability": 28.5714285714,
-            "YourShare": 336636.55
+            "Liability": 7.1428571429,
+            "YourShare": 84159.14
         },
         {
-            "Supplier": "NEC",
-            "InvNumber": "02CO-EG2303251517",
+            "Supplier": "NEC Corporation, Submarine Network Division",
+            "InvNumber": "02CO-CI2303301838",
             "Description": "BM12 Branching Units (100%)-Equipment",
             "AmountBilled": 1627300.92,
-            "Liability": 28.5714285714,
-            "YourShare": 464943.12
+            "Liability": 7.1428571429,
+            "YourShare": 116235.78
         },
         {
-            "Supplier": "NEC",
-            "InvNumber": "02CO-EG2303251517",
+            "Supplier": "NEC Corporation, Submarine Network Division",
+            "InvNumber": "02CO-CI2303301838",
             "Description": "BM12 Branching Units (100%)-Service",
             "AmountBilled": 1487661.54,
-            "Liability": 28.5714285714,
-            "YourShare": 425046.15
+            "Liability": 7.1428571429,
+            "YourShare": 106261.54
         },
         {
-            "Supplier": "NEC",
-            "InvNumber": "test-billing-no-1",
+            "Supplier": "NEC Corporation, Submarine Network Division",
+            "InvNumber": "test",
             "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
             "AmountBilled": -10,
             "Liability": 100,
             "YourShare": -10
         },
         {
-            "Supplier": "NEC",
-            "InvNumber": "test-billing-no-2",
-            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
-            "AmountBilled": -10,
-            "Liability": 100,
-            "YourShare": -10
-        },
-        {
-            "Supplier": "NEC",
-            "InvNumber": "test-billing-no-1",
-            "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
-            "AmountBilled": -10,
-            "Liability": 100,
-            "YourShare": -10
-        },
-        {
-            "Supplier": "NEC",
-            "InvNumber": "test-billing-no-2",
+            "Supplier": "NEC Corporation, Submarine Network Division",
+            "InvNumber": "test",
             "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
             "AmountBilled": -10,
             "Liability": 100,
             "YourShare": -10
         }
     ],
-    "InvoiceNo": "02CO-EG2303251517"
+    "InvoiceNo": "02CO-CI2303301838"
 }

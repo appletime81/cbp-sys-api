@@ -462,6 +462,12 @@ async def compareLiability(request: Request, db: Session = Depends(get_db)):
             "PartyName": LiabilityDictData["PartyName"],
         }
         LiabilityDataList = crud.get_with_condition(dictCondition)
+        LiabilityDataList = [
+            # if EndDate have value no showing
+            LiabilityData
+            for LiabilityData in LiabilityDataList
+            if not LiabilityData.EndDate
+        ]
         if len(LiabilityDataList) != 0:
             for LiabilityData in LiabilityDataList:
                 compareResultList.append(LiabilityData)
@@ -1533,7 +1539,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     """
     {
       "BillMasterID": 1,
-      "UserName": "username",
+      "UserID": "username",
     }
     """
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
@@ -1577,7 +1583,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
 
     # --------------------------- 抓取使用者資料 ---------------------------
     UserData = crudUsers.get_with_condition(
-        {"UserName": (await request.json())["UserName"]}
+        {"UserID": (await request.json())["UserID"]}
     )[0]
 
     ContactWindowAndSupervisorInformationDictData = {
@@ -1588,6 +1594,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "DirectorName": UserData.DirectorName,
         "DTel": UserData.DTel,
         "DFax": UserData.DFax,
+        "DEmail": UserData.DEmail,
     }
     PartyInformationDictData = {
         "Company": PartyData.CompanyName,
@@ -1608,6 +1615,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "SWIFTCode": CorporateData.SWIFTCode,  # Swift
         "ACHNo": CorporateData.ACHNo,  # ACH
         "WireRouting": CorporateData.WireRouting,  # Wire/Routing
+        "Address": CorporateData.Address,  # Address
     }
     BLDetailIDList = [
         BillDetailDictData["BillDetailID"]

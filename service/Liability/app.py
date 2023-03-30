@@ -3,7 +3,7 @@ from crud import *
 from get_db import get_db
 from sqlalchemy.orm import Session
 from utils.utils import *
-from utils.orm_pydantic_convert import orm_to_pydantic
+from utils.orm_pydantic_convert import *
 from copy import deepcopy
 
 router = APIRouter()
@@ -98,10 +98,25 @@ async def updateLiability(
 ):
     LiabilityDictData = await request.json()
     LBRawID = LiabilityDictData.get("LBRawID")
+    ModifyNote = LiabilityDictData.get("ModifyNote")
     crud = CRUD(db, LiabilityDBModel)
-    LiabilityDataList = crud.get_with_condition({"LBRawID": LBRawID})
+    LiabilityData = crud.get_with_condition({"LBRawID": LBRawID})[0]
+
+    LiabilityDataList = crud.get_with_condition(
+        {
+            "BillMilestone": LiabilityData.BillMilestone,
+            "WorkTitle": LiabilityData.WorkTitle,
+            "SubmarineCable": LiabilityData.SubmarineCable,
+        }
+    )
+
+    # update LiabilityData
     for LiabilityData in LiabilityDataList:
+        LiabilityDictData = orm_to_dict(deepcopy(LiabilityData))
+        LiabilityDictData["EndDate"] = convert_time_to_str(datetime.now())
+        LiabilityDictData["ModifyNote"] = ModifyNote
         crud.update(LiabilityData, LiabilityDictData)
+
     return {"message": "Liability successfully updated"}
 
 
