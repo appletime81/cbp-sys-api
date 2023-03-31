@@ -1735,55 +1735,55 @@ async def updateBillMasterByDraftStream(
 
 
 # 銷帳
-@app.get(ROOT_URL + "/writeOffBillMaster")
-async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
-    """
-    {
-        "BillMaster": {...},
-        "BillDetail": [
-            {...},
-            {...}
-        ]
-
-    }
-    """
-    newBillMasterDictData = (await request.json())["BillMaster"]
-    newBillDetailDictDataList = (await request.json())["BillDetail"]
-
-    crudBillMaster = CRUD(db, BillMasterDBModel)
-    crudBillDetail = CRUD(db, BillDetailDBModel)
-
-    oldBillMasterData = crudBillMaster.get_with_condition(
-        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
-    )[0]
-    oldBillDetailDataList = crudBillDetail.get_with_condition(
-        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
-    )
-
-    newBilDetailDataList = list()
-    for newBillDetailDictData in newBillDetailDictDataList:
-        oldBillDetailData = next(
-            filter(
-                lambda x: x.BillDetailID == newBillDetailDictData["BillDetailID"],
-                oldBillDetailDataList,
-            )
-        )
-        newBillDetailDictData["ReceivedAmount"] += oldBillDetailData.ReceivedAmount
-        newBillDetailData = crudBillDetail.update(
-            oldBillDetailData, newBillDetailDictData
-        )
-        newBilDetailDataList.append(newBillDetailData)
-
-    if oldBillMasterData.Status != newBillMasterDictData["Status"]:
-        newBillMasterData = crudBillMaster.update(
-            oldBillMasterData, newBillMasterDictData
-        )
-        return {
-            "message": "success",
-            "newBillMaster": newBillMasterData,
-            "newBillDetail": newBilDetailDataList,
-        }
-    return {"message": "success", "newBillDetail": newBilDetailDataList}
+# @app.get(ROOT_URL + "/writeOffBillMaster")
+# async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
+#     """
+#     {
+#         "BillMaster": {...},
+#         "BillDetail": [
+#             {...},
+#             {...}
+#         ]
+#
+#     }
+#     """
+#     newBillMasterDictData = (await request.json())["BillMaster"]
+#     newBillDetailDictDataList = (await request.json())["BillDetail"]
+#
+#     crudBillMaster = CRUD(db, BillMasterDBModel)
+#     crudBillDetail = CRUD(db, BillDetailDBModel)
+#
+#     oldBillMasterData = crudBillMaster.get_with_condition(
+#         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
+#     )[0]
+#     oldBillDetailDataList = crudBillDetail.get_with_condition(
+#         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
+#     )
+#
+#     newBilDetailDataList = list()
+#     for newBillDetailDictData in newBillDetailDictDataList:
+#         oldBillDetailData = next(
+#             filter(
+#                 lambda x: x.BillDetailID == newBillDetailDictData["BillDetailID"],
+#                 oldBillDetailDataList,
+#             )
+#         )
+#         newBillDetailDictData["ReceivedAmount"] += oldBillDetailData.ReceivedAmount
+#         newBillDetailData = crudBillDetail.update(
+#             oldBillDetailData, newBillDetailDictData
+#         )
+#         newBilDetailDataList.append(newBillDetailData)
+#
+#     if oldBillMasterData.Status != newBillMasterDictData["Status"]:
+#         newBillMasterData = crudBillMaster.update(
+#             oldBillMasterData, newBillMasterDictData
+#         )
+#         return {
+#             "message": "success",
+#             "newBillMaster": newBillMasterData,
+#             "newBillDetail": newBilDetailDataList,
+#         }
+#     return {"message": "success", "newBillDetail": newBilDetailDataList}
 
 
 @app.get(ROOT_URL + "/test")

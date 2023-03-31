@@ -161,11 +161,3 @@ def bill_detail_status(FeeAmount, ReceivedAmount, BankFees):
         return "PARTIAL"
     elif ReceivedAmount == 0 and BankFees == 0:
         return "INCOMPLETE"
-
-
-def unique_list(list_):
-    unique_list = []
-    for item in list_:
-        if item not in unique_list:
-            unique_list.append(item)
-    return unique_list
