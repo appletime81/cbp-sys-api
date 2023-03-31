@@ -1,13 +1,11 @@
-from datetime import datetime
+def new_line(text: str):
+    textList = text.split("\n")
+    result = ""
+    for text in textList:
+        result += f"{text}\n"
+    print(result)
 
 
-a = [
-    {"A": 1, "B": 2},
-    {"A": 3, "B": 4},
-    {"A": 5, "B": 6},
-]
-
-
-res = list(map(lambda x: x["B"] % 2 == 0, a))
-
-print(res)
+a = "123\n456"
+# new_line("123\n456")
+print(a)

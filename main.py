@@ -1587,6 +1587,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     )[0]
 
     ContactWindowAndSupervisorInformationDictData = {
+        # give html reponse for company
         "Company": UserData.Company,
         "Address": UserData.Address,
         "Tel": UserData.Tel,
@@ -1596,6 +1597,7 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "DFax": UserData.DFax,
         "DEmail": UserData.DEmail,
     }
+
     PartyInformationDictData = {
         "Company": PartyData.CompanyName,
         "Address": PartyData.Address,
