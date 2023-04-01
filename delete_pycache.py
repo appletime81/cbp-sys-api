@@ -12,4 +12,3 @@ def delete_pycache():
 
 if __name__ == "__main__":
     delete_pycache()
-

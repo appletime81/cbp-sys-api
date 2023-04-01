@@ -1,6 +1,9 @@
 ﻿from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from docxtpl import DocxTemplate
+from starlette.responses import FileResponse
+
 import service.InvoiceWKMaster.app as InvoiceWKMasterApp
 import service.InvoiceWKDetail.app as InvoiceWKDetailApp
 import service.InvoiceMaster.app as InvoiceMasterApp
@@ -684,12 +687,11 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
             "ReceivedAmount": 0,
             "OverAmount": 0,
             "ShortAmount": 0,
-            "BankFees": 0,
             "ShortOverReason": None,
             "WriteOffDate": None,
             "ReceiveDate": None,
             "Note": None,
-            "ToCB": None,
+            "ToCBAmount": None,
             "Status": "INCOMPLETE",
         }
         # BillDetailData = crudBillDetail.create(BillDetailSchema(**BillDetailDictData))
@@ -1540,6 +1542,11 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     {
       "BillMasterID": 1,
       "UserID": "username",
+      "IssueDate": "2023/04/01",
+      "DueDate": "2023/04/30",
+      "WorkTitle": "Construction #11",
+      "InvoiceName": "",
+      "SubmarineCable": "SJC2"
     }
     """
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
@@ -1630,9 +1637,9 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "Supplier": list(),
         "InvNumber": list(),
         "Description": list(),
-        "AmountBilled": list(),
+        "BilledAmount": list(),
         "Liability": list(),
-        "YourShare": list(),
+        "ShareAmount": list(),
     }
 
     for BillDetailDictData in BillDetailDictDataList:
@@ -1640,15 +1647,16 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
             {"InvDetailID": BillDetailDictData["InvDetailID"]}
         )[0]
         DetailInformationDictData["Supplier"].append(BillDetailDictData["SupplierName"])
-        DetailInformationDictData["InvNumber"].append(BillMasterData.BillingNo)
+        DetailInformationDictData["InvNumber"].append(BillDetailDictData["InvoiceNo"])
         DetailInformationDictData["Description"].append(BillDetailDictData["FeeItem"])
-        DetailInformationDictData["AmountBilled"].append(InvoiceDetailData.FeeAmountPre)
+        DetailInformationDictData["BilledAmount"].append(InvoiceDetailData.FeeAmountPre)
         DetailInformationDictData["Liability"].append(InvoiceDetailData.LBRatio)
-        DetailInformationDictData["YourShare"].append(
+        DetailInformationDictData["ShareAmount"].append(
             BillDetailDictData["OrgFeeAmount"]
         )
     if CBStatementDataList:
         for CBStatementData in CBStatementDataList:
+            CBData = crudCB.get_with_condition({"CBID": CBStatementData.CBID})[0]
             BillDetailDictData = next(
                 filter(
                     lambda x: x["BillDetailID"] == CBStatementData.BLDetailID,
@@ -1661,21 +1669,14 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
             DetailInformationDictData["Description"].append(
                 BillDetailDictData["FeeItem"]
             )
-            DetailInformationDictData["AmountBilled"].append(
+            DetailInformationDictData["BilledAmount"].append(
                 CBStatementData.TransAmount
             )
             DetailInformationDictData["Liability"].append(100)
-            DetailInformationDictData["YourShare"].append(CBStatementData.TransAmount)
-            if (
-                CBStatementData.TransItem == "USER_ADD"
-                or CBStatementData.TransItem == "REFUND"
-            ):
-                CNDetailData = crudCNDetial.get_with_condition(
-                    {"CBStateID": CBStatementData.CBStateID}
-                )[0]
-                DetailInformationDictData["InvNumber"].append(CNDetailData.CNNo)
+            DetailInformationDictData["ShareAmount"].append(CBStatementData.TransAmount)
+            if CBData.CNNo:
+                DetailInformationDictData["InvNumber"].append(CBData.CNNo)
             else:
-                CBData = crudCB.get_with_condition({"CBID": CBStatementData.CBID})[0]
                 DetailInformationDictData["InvNumber"].append(CBData.BillingNo)
 
     DetailInformationDictDataList = list()
@@ -1683,18 +1684,18 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         DetailInformationDictData["Supplier"],
         DetailInformationDictData["InvNumber"],
         DetailInformationDictData["Description"],
-        DetailInformationDictData["AmountBilled"],
+        DetailInformationDictData["BilledAmount"],
         DetailInformationDictData["Liability"],
-        DetailInformationDictData["YourShare"],
+        DetailInformationDictData["ShareAmount"],
     ):
         DetailInformationDictDataList.append(
             {
                 "Supplier": supplier,
                 "InvNumber": invNumber,
                 "Description": description,
-                "AmountBilled": amountBilled,
+                "BilledAmount": amountBilled,
                 "Liability": liability,
-                "YourShare": yourShare,
+                "ShareAmount": yourShare,
             }
         )
 
@@ -1706,7 +1707,64 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "InvoiceNo": BillMasterData.BillingNo,
     }
 
-    return getResult
+    # --------- generate word file ---------
+    doc = DocxTemplate("bill_draft_tpl.docx")
+    BillingInfo = getResult["DetailInformation"]
+    for item in BillingInfo:
+        item["BilledAmount"] = "{:.2f}".format(item["BilledAmount"])
+        item["Liability"] = "{:.10f}".format(item["Liability"])
+        item["ShareAmount"] = "{:.2f}".format(item["ShareAmount"])
+    context = {
+        "submarinecable": (await request.json())["SubmarineCable"],
+        "worktitle": (await request.json())["WorkTitle"],
+        "invoicename": (await request.json())["InvoiceName"],
+        "PartyCompany": getResult["PartyInformation"]["Company"],
+        "PartyAddress": getResult["PartyInformation"]["Address"],
+        "PartyContact": getResult["PartyInformation"]["Contact"],
+        "PartyEmail": getResult["PartyInformation"]["Email"],
+        "PartyTel": getResult["PartyInformation"]["Tel"],
+        "BillingInfo": BillingInfo,
+        "TotalAmount": "{:.2f}".format(
+            sum([float(i["ShareAmount"]) for i in BillingInfo])
+        ),
+        "ContactWindowCompany": getResult["ContactWindowAndSupervisorInformation"][
+            "Company"
+        ],
+        "ContactWindowAddress": getResult["ContactWindowAndSupervisorInformation"][
+            "Address"
+        ],
+        "ContactWindowTel": getResult["ContactWindowAndSupervisorInformation"]["Tel"],
+        "ContactWindowFax": getResult["ContactWindowAndSupervisorInformation"]["Fax"],
+        "ContactWindowDirectorName": getResult["ContactWindowAndSupervisorInformation"][
+            "DirectorName"
+        ],
+        "ContactWindowDTel": getResult["ContactWindowAndSupervisorInformation"]["DTel"],
+        "ContactWindowDFax": getResult["ContactWindowAndSupervisorInformation"]["DFax"],
+        "ContactWindowDEmail": getResult["ContactWindowAndSupervisorInformation"][
+            "DEmail"
+        ],
+        "CorporateBankName": getResult["CorporateInformation"]["BankName"],
+        "CorporateBranch": getResult["CorporateInformation"]["Branch"],
+        "CorporateBranchAddress": getResult["CorporateInformation"]["BranchAddress"],
+        "CorporateBankAcctName": getResult["CorporateInformation"]["BankAcctName"],
+        "CorporateBankAcctNo": getResult["CorporateInformation"]["BankAcctNo"],
+        "CorporateSavingAcctNo": getResult["CorporateInformation"]["SavingAcctNo"],
+        "CorporateSWIFTCode": getResult["CorporateInformation"]["SWIFTCode"],
+        "IssueDate": (await request.json())["IssueDate"],
+        "DueDate": (await request.json())["DueDate"],
+        "InvoiceNo": getResult["InvoiceNo"],
+    }
+    doc.render(context)
+    fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
+    if context["invoicename"]:
+        fileName = f"{fileName} {context['invoicename']}"
+    else:
+        fileName = f"{fileName} Invoice"
+    doc.save(f"{fileName}.docx")
+    return FileResponse(
+        f"{fileName}.docx",
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
 
 
 @app.get(ROOT_URL + "/updateBillMasterByDraftStream")

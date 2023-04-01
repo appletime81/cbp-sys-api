@@ -136,6 +136,7 @@ class BillDetailDBModel(Base):
     BillDetailID    int NOT NULL AUTO_INCREMENT,
     BillMasterID    int NOT NULL,
     WKMasterID      int,
+    InvoiceNo       varchar(64),
     InvDetailID     int,
     PartyName       varchar(100),
     SupplierName    varchar(100),
@@ -163,6 +164,7 @@ class BillDetailDBModel(Base):
     BillDetailID = Column(Integer, primary_key=True, index=True)
     BillMasterID = Column(Integer)
     WKMasterID = Column(Integer)
+    InvoiceNo = Column(String(64))
     InvDetailID = Column(Integer)
     PartyName = Column(String(100))
     SupplierName = Column(String(100))

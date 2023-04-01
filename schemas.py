@@ -123,6 +123,7 @@ class BillDetailSchema(BaseModel):
     BillDetailID: Optional[int]
     BillMasterID: int
     WKMasterID: int
+    InvoiceNo: str
     InvDetailID: int
     PartyName: str
     SupplierName: str
