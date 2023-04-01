@@ -1,11 +1,6 @@
-def new_line(text: str):
-    textList = text.split("\n")
-    result = ""
-    for text in textList:
-        result += f"{text}\n"
-    print(result)
+from docxtpl import DocxTemplate
 
-
-a = "123\n456"
-# new_line("123\n456")
-print(a)
+doc = DocxTemplate("bill_draft_tpl.docx")
+context = {'address': "Level 30, Tower 1, Kowloon Commerce Centre, No.51 Kwai Cheong Road, Kwai Chung, New Territories, Hong Kong"}
+doc.render(context)
+doc.save("generated_doc.docx")
