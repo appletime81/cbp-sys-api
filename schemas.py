@@ -436,3 +436,24 @@ class UsersSchema(BaseModel):
 
 class CBIDSchema(BaseModel):
     CBID: int
+
+
+class DownloadBillDraftSchema(BaseModel):
+    """
+    {
+        "BillMasterID": 1,
+        "UserID": "chang_ty",
+        "IssueDate": "2023/04/01",
+        "DueDate": "2023/04/30",
+        "WorkTitle": "Construction #11",
+        "InvoiceName": "",
+        "SubmarineCable": "SJC2"
+    }
+    """
+
+    BillMasterID: int
+    UserID: str
+    IssueDate: str
+    DueDate: str
+    WorkTitle: str
+    InvoiceName: str
