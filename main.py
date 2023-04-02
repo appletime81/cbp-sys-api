@@ -589,7 +589,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     }
     """
     request_data = await request.json()
-    pprint(request_data)
     InvoiceMasterIdList = [
         InvoiceMasterDictData["InvMasterID"]
         for InvoiceMasterDictData in request_data["InvoiceMaster"]
@@ -1581,7 +1580,6 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     PartyData = crudParties.get_with_condition({"PartyName": BillMasterData.PartyName})[
         0
     ]
-    pprint(orm_to_dict(PartyData))
 
     # --------------------------- 抓取聯盟資料表(含金融帳戶資訊) ---------------------------
     CorporateData = crudCorporates.get_with_condition(
@@ -1710,10 +1708,17 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     # --------- generate word file ---------
     doc = DocxTemplate("bill_draft_tpl.docx")
     BillingInfo = getResult["DetailInformation"]
+    origBillingInfo = deepcopy(BillingInfo)
     for item in BillingInfo:
-        item["BilledAmount"] = "{:.2f}".format(item["BilledAmount"])
-        item["Liability"] = "{:.10f}".format(item["Liability"])
-        item["ShareAmount"] = "{:.2f}".format(item["ShareAmount"])
+        item["BilledAmount"] = convert_number_to_string(
+            "{:.2f}".format(item["BilledAmount"]).split(".")
+        )
+        item["Liability"] = convert_number_to_string(
+            "{:.10f}".format(item["Liability"]).split(".")
+        )
+        item["ShareAmount"] = convert_number_to_string(
+            "{:.2f}".format(item["ShareAmount"]).split(".")
+        )
     context = {
         "submarinecable": (await request.json())["SubmarineCable"],
         "worktitle": (await request.json())["WorkTitle"],
@@ -1724,8 +1729,10 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "PartyEmail": getResult["PartyInformation"]["Email"],
         "PartyTel": getResult["PartyInformation"]["Tel"],
         "BillingInfo": BillingInfo,
-        "TotalAmount": "{:.2f}".format(
-            sum([float(i["ShareAmount"]) for i in BillingInfo])
+        "TotalAmount": convert_number_to_string(
+            "{:.2f}".format(
+                sum([float(i["ShareAmount"]) for i in origBillingInfo])
+            ).split(".")
         ),
         "ContactWindowCompany": getResult["ContactWindowAndSupervisorInformation"][
             "Company"

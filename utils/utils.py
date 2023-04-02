@@ -161,3 +161,11 @@ def bill_detail_status(FeeAmount, ReceivedAmount, BankFees):
         return "PARTIAL"
     elif ReceivedAmount == 0 and BankFees == 0:
         return "INCOMPLETE"
+
+
+def convert_number_to_string(numbers: List[str]):
+    decimal_part = numbers[1]
+    integer_part = numbers[0]
+    result = "{:,}".format(int(integer_part))
+    result += f".{decimal_part}"
+    return result
