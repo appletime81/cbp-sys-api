@@ -1,7 +1,8 @@
 ﻿from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
 
 # from starlette.responses import FileResponse
 from fastapi.responses import FileResponse
@@ -1552,6 +1553,7 @@ async def getBillMasterDraftStream(
       "WorkTitle": "Construction #11",
       "InvoiceName": "",
       "SubmarineCable": "SJC2"
+      "logo": 1
     }
     """
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
@@ -1713,6 +1715,8 @@ async def getBillMasterDraftStream(
 
     # --------- generate word file ---------
     doc = DocxTemplate("bill_draft_tpl.docx")
+    logo_path = "images/logo_001.png" if (await request.json())["logo"] == 1 else "images/logo_002.png"
+
     BillingInfo = getResult["DetailInformation"]
     origBillingInfo = deepcopy(BillingInfo)
     for item in BillingInfo:
@@ -1766,6 +1770,7 @@ async def getBillMasterDraftStream(
         "IssueDate": (await request.json())["IssueDate"],
         "DueDate": (await request.json())["DueDate"],
         "InvoiceNo": getResult["InvoiceNo"],
+        "logo": InlineImage(doc, logo_path, width=Mm(50), height=Mm(20))
     }
     doc.render(context)
     fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
