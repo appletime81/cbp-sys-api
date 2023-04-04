@@ -13,7 +13,7 @@ db_name = cbp_db
 
 ## EC2 Info
 * Name: cbp_dev
-* Public IPV4: 54.248.143.79
+* Public IPV4: 13.114.73.92
 * pem content:
 ```shell
 -----BEGIN RSA PRIVATE KEY-----
@@ -48,6 +48,8 @@ vor9AoGBAK7/F53lZHodLjF+rh2gSLptZ3qNxjdhN9Zq6rNJwiOMHgWZRczZFvDe
 ## 架設教學
 1. FastAPI: https://lcalcagni.medium.com/deploy-your-fastapi-to-aws-ec2-using-nginx-aa8aa0d85ec7
 2. React: https://plainenglish.io/blog/hosting-a-react-app-to-ec2-using-nginx-with-ssl-certificate-6575b58ea8a8
+3. React: https://www.digitalocean.com/community/tutorials/how-to-deploy-a-react-application-with-nginx-on-ubuntu-20-04
+4. React: https://www.bilibili.com/video/BV1EV411d7Bw/
 
 
 ## Install Nodejs 18

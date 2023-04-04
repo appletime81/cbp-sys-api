@@ -459,44 +459,136 @@ CREATE TABLE Corporates
 );
 
 
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'CM', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'EDGE', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'TICC', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM9a', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+/* Parties */
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (1, 'SJC2', 'Construction', 'CI', 'CHT', 'Chunghwa Telecom Co., Ltd. Network Technology Group',
+        '31, Aikuo East Road, Taipei, Taiwan 106', '黃宏杰', 'hj-hwang@cht.com.tw', '03-9772252', '', null, null, '',
+        '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (3, 'SJC2', 'Contruction', 'KT', 'KT', 'KT Corporation', 'KT Corporation', 'Seungdeok Han (한승덕)',
+        'seungdeok.han@kt.com', '+82-10-7300-5034', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (4, 'SJC2', 'Construction', 'CM', 'CM', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (5, 'SJC2', 'Construction', 'DH', 'DHT', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (6, 'SJC2', 'Construction', 'EG', 'EDGE', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (7, 'SJC2', 'Construction', 'KD', 'KDDI', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (8, 'SJC2', 'Construction', 'ST', 'Singtel', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (9, 'SJC2', 'Construction', 'SK', 'SKB', 'SK Broadband Co., Ltd. (SKB)',
+        '8F, SK Namsan Green Bldg., 24, Toegye-ro, Jung-gu, Seoul 04637, Korea', 'SUN JIN KUK (Chris)',
+        'chris.sun@sk.com', '+82-10-3702-0461', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (10, 'SJC2', 'Construction', 'TE', 'Telin', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (11, 'SJC2', 'Construction', 'TC', 'TICC', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
+INSERT INTO cbp_db.Parties (PartyID, SubmarineCable, WorkTitle, PartyCode, PartyName, CompanyName, Address, Contact,
+                            Email, Tel, BankAcctName, BankAcctNo, SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting,
+                            BankName, Branch, BankAddress)
+VALUES (12, 'SJC2', 'Construction', 'VN', 'VNPT', '', '', '', '', '', '', null, null, '', '', '', '', '', '', '');
 
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'EDGE', 28.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'TICC', 7.1428571429, '2022-12-27 14:30:00', null, null);
-insert into Liability (SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, ModifyNote, EndDate)
-values ('SJC2', 'Construction', 'BM12', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null);
+/* Corporates */
+INSERT INTO cbp_db.Corporates (CorpID, SubmarineCable, WorkTitle, Address, CreateDate, BankAcctName, BankAcctNo,
+                               SavingAcctNo, SWIFTCode, IBAN, ACHNo, WireRouting, BankName, Branch, BranchAddress)
+VALUES (2, 'SJC2', 'Construction', '31 Aikuo E. Rd., Taipei, Taiwan, 106', '2023-04-02 03:55:24',
+        'SJC2 Central Billing Party of Chunghwa Telecom (International Business Group)', '054007501968', '',
+        'BKTWTWTP054', '', '', '', 'Bank of Taiwan, Hsinyi Branch', '', '88, Sec. 2, Sinyi Road, Taipei');
+
+
+/* Liability */
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (1, 'SJC2', 'Construction', 'BM9a', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (2, 'SJC2', 'Construction', 'BM9a', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (3, 'SJC2', 'Construction', 'BM9a', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (4, 'SJC2', 'Construction', 'BM9a', 'EDGE', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (5, 'SJC2', 'Construction', 'BM9a', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (6, 'SJC2', 'Construction', 'BM9a', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (7, 'SJC2', 'Construction', 'BM9a', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (8, 'SJC2', 'Construction', 'BM9a', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (9, 'SJC2', 'Construction', 'BM9a', 'TICC', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (10, 'SJC2', 'Construction', 'BM9a', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (11, 'SJC2', 'Construction', 'BM12', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (12, 'SJC2', 'Construction', 'BM12', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (13, 'SJC2', 'Construction', 'BM12', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (14, 'SJC2', 'Construction', 'BM12', 'EDGE', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (15, 'SJC2', 'Construction', 'BM12', 'KDDI', 0.0793650794, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (16, 'SJC2', 'Construction', 'BM12', 'Singtel', 7.0634920635, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (17, 'SJC2', 'Construction', 'BM12', 'SKB', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (18, 'SJC2', 'Construction', 'BM12', 'Telin', 3.5714285714, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (19, 'SJC2', 'Construction', 'BM12', 'TICC', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
+                              ModifyNote, EndDate)
+VALUES (20, 'SJC2', 'Construction', 'BM12', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+
+/* CB */
+INSERT INTO cbp_db.CB (CBID, CBType, BillingNo, BLDetailID, SubmarineCable, WorkTitle, BillMilestone, PartyName, CNNo,
+                       CurrAmount, CreateDate, LastUpdDate, Note)
+VALUES (1, 'USER_ADD', null, 99, 'SJC2', 'Construction', 'test-BillMilestone', 'SKB', 'CN02CO-KT202304020431',
+        200000.00, '2023-04-02 04:31:23', '2023-04-02 04:32:47', null);
+
+/* Users */
+INSERT INTO cbp_db.Users (UserIDNo, UserID, UserName, UserCName, PCode, Email, Tel, Fax, Mobile, DirectorName, DEmail,
+                          DTel, DFax, Company, Address)
+VALUES (1, 'chang_ty', 'Eva Change', '張增懿', null, 'chang_ty@cht.com.tw', '+866-2-2344-3897', '+886-2-2344-5940',
+        '0988576813', 'Hsuan-Lung Liu', 'lsl008@cht.com.tw', '+886-2-2344-3912', '+886-2-2344-5940',
+        'International Business Group, Chunghwa Telecom Co., Ltd.', 'No. 31, Ai-kuo East Road, Taipei, 106, Taiwan');
