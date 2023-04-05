@@ -1649,7 +1649,6 @@ async def returnToInvalidBillMasterAndBillDetail(
 @app.post(ROOT_URL + "/getBillMasterDraftStream")
 async def getBillMasterDraftStream(
     request: Request,
-    DownloadBillDraft: DownloadBillDraftSchema,
     db: Session = Depends(get_db),
 ):
     """
@@ -1891,7 +1890,8 @@ async def getBillMasterDraftStream(
     else:
         fileName = f"{fileName} Invoice"
     doc.save(f"{fileName}.docx")
-    return FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx")
+    resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx", headers={"filename": "dsfdffdss"})
+    return resp
 
 
 @app.get(ROOT_URL + "/updateBillMasterByDraftStream")
