@@ -1852,7 +1852,10 @@ async def getBillMasterDraftStream(
     docxFiles = os.listdir(os.getcwd())
     for docxFile in docxFiles:
         if docxFile.endswith(".docx") and "Network" in docxFile:
-            os.system(f"rm -rf {docxFile}")
+            try:
+                os.system(f"rm -rf {docxFile}")
+            except Exception as e:
+                print(e)
     logo_path = (
         "images/logo_001.png"
         if (await request.json())["logo"] == 1
