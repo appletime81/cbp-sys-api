@@ -1,4 +1,5 @@
-﻿from fastapi import FastAPI, Depends, Request
+﻿import os
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from docxtpl import DocxTemplate, InlineImage
@@ -1848,6 +1849,10 @@ async def getBillMasterDraftStream(
 
     # --------- generate word file ---------
     doc = DocxTemplate("bill_draft_tpl.docx")
+    docxFiles = os.listdir(os.getcwd())
+    for docxFile in docxFiles:
+        if docxFile.endswith(".docx") and "Network" in docxFile:
+            os.system(f"rm -rf {docxFile}")
     logo_path = (
         "images/logo_001.png"
         if (await request.json())["logo"] == 1

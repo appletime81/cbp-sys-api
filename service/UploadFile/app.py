@@ -24,15 +24,19 @@ async def uploadfile(
     return {"file_name": file.filename}
 
 
-@router.post("/uploadSignedBillMaster")
+@router.post("/uploadSignedBillMaster/{BillMasterID}")
 async def uploadSignedBillMaster(
-    request: Request, db: Session = Depends(get_db), file: UploadFile = File(...)
+    request: Request,
+    BillMasterID: str,
+    db: Session = Depends(get_db),
+    file: UploadFile = File(...),
 ):
     """
     {
         "BillMasterID": int
     }
     """
+    BillMasterID = int(BillMasterID)
     crudBillMaster = CRUD(db, BillMasterDBModel)
     BillMasterID = (await request.json())["BillMasterID"]
     BillMasterData = crudBillMaster.get_with_condition({"BillMasterID": BillMasterID})[
