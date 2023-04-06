@@ -1,6 +1,12 @@
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
+
+# from starlette.responses import FileResponse
+from fastapi.responses import FileResponse
+
 import service.InvoiceWKMaster.app as InvoiceWKMasterApp
 import service.InvoiceWKDetail.app as InvoiceWKDetailApp
 import service.InvoiceMaster.app as InvoiceMasterApp
@@ -462,6 +468,12 @@ async def compareLiability(request: Request, db: Session = Depends(get_db)):
             "PartyName": LiabilityDictData["PartyName"],
         }
         LiabilityDataList = crud.get_with_condition(dictCondition)
+        LiabilityDataList = [
+            # if EndDate have value no showing
+            LiabilityData
+            for LiabilityData in LiabilityDataList
+            if not LiabilityData.EndDate
+        ]
         if len(LiabilityDataList) != 0:
             for LiabilityData in LiabilityDataList:
                 compareResultList.append(LiabilityData)
@@ -580,7 +592,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     }
     """
     request_data = await request.json()
-    pprint(request_data)
     InvoiceMasterIdList = [
         InvoiceMasterDictData["InvMasterID"]
         for InvoiceMasterDictData in request_data["InvoiceMaster"]
@@ -678,12 +689,11 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
             "ReceivedAmount": 0,
             "OverAmount": 0,
             "ShortAmount": 0,
-            "BankFees": 0,
             "ShortOverReason": None,
             "WriteOffDate": None,
             "ReceiveDate": None,
             "Note": None,
-            "ToCB": None,
+            "ToCBAmount": None,
             "Status": "INCOMPLETE",
         }
         # BillDetailData = crudBillDetail.create(BillDetailSchema(**BillDetailDictData))
@@ -829,6 +839,7 @@ async def generateBillMasterAndBillDetail(
     newBillMasterData = deepcopy(oldBillMasterData)
 
     deductDataList = (await request.json())["Deduct"]
+    deductDataList = sorted(deductDataList, key=lambda x: x["BillDetailID"])
 
     newBillDetailDataList = []
     for deductData in deductDataList:
@@ -1050,6 +1061,7 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
     request: Request, db: Session = Depends(get_db)
 ):
     """
+    input:
     {
         InvoiceWKMaster: [
             {...},
@@ -1058,17 +1070,8 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
         "Confirm": True / False
         "Note": "string"
     }
-    """
-    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
-    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
-    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
-    crudBillDetail = CRUD(db, BillDetailDBModel)
-    crudBillMaster = CRUD(db, BillMasterDBModel)
-    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
-    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
-    confirm = (await request.json())["Confirm"]
-    note = (await request.json())["Note"]
-    """
+
+    output:
     streamResponse = [
         {
             InvoiceWKMasterData: {},
@@ -1083,6 +1086,16 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
         }
     ]
     """
+    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
+    crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
+    crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+    confirm = (await request.json())["Confirm"]
+    note = (await request.json())["Note"]
+
     InvoiceWKMasterDictDataList = (await request.json())["InvoiceWKMaster"]
     InvoiceWKMasterIDList = [
         InvoiceWKMasterData["WKMasterID"]
@@ -1096,6 +1109,9 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
     )
     BillMasterDataList = crudBillMaster.get_value_if_in_a_list(
         BillMasterDBModel.BillMasterID, BillDetailIDList
+    )
+    CBStatementDataList = crudCreditBalanceStatement.get_value_if_in_a_list(
+        CreditBalanceStatementDBModel.BLDetailID, BillDetailIDList
     )
 
     streamResponse = []
@@ -1136,158 +1152,155 @@ async def returnToValidatedBillMasterAndBillDetailChoiceInvoiceWKMaster(
         return streamResponse
     if confirm:
         dataToBeProcessed = {
+            # --------------------------
+            "oldInvoiceWKMasterDataList": [],
+            "newInvoiceWKMasterDataList": [],
+            # --------------------------
             "oldBillMasterDataList": [],
             "newBillMasterDataList": [],
             # --------------------------
             "oldBillDetailDataList": [],
             "newBillDetailDataList": [],
             # --------------------------
-            "oldInvoiceWKMasterDataList": [],
-            "newInvoiceWKMasterDataList": [],
-            # --------------------------
-            "oldCBDataList": [],
-            "newCBDataList": [],
-            # --------------------------
             "newCBStatementDataList": [],
         }
         for tempOldBillMasterData in BillMasterDataList:
             dataToBeProcessed["oldBillMasterDataList"].append(tempOldBillMasterData)
-            tmepOldBillDetailDataList = list(
+            tempNewBillMasterDictData = orm_to_dict(tempOldBillMasterData)
+            tempOldBillDetailDataList = list(
                 filter(
                     lambda x: x.BillMasterID == tempOldBillMasterData.BillMasterID,
                     BillDetailDataList,
                 )
             )
-            FeeAmountSum = 0
-            for tmepOldBillDetailData in tmepOldBillDetailDataList:
-                dataToBeProcessed["oldBillDetailDataList"].append(tmepOldBillDetailData)
-                tempOldCBDataList = crudCreditBalance.get_with_condition(
-                    {"BLDetailID": tmepOldBillDetailData.BillDetailID}
+            for tempOldBillDetailData in tempOldBillDetailDataList:
+                dataToBeProcessed["oldBillDetailDataList"].append(tempOldBillDetailData)
+                tempNewBillDetailDictData = orm_to_dict(tempOldBillDetailData)
+                tempOldCBStatementDataList = list(
+                    filter(
+                        lambda x: x.BLDetailID == tempOldBillDetailData.BillDetailID
+                        and x.TransItem == "DEDUCT",
+                        CBStatementDataList,
+                    )
                 )
-                if tempOldCBDataList:
-                    # ---------------------------- CB返還 ----------------------------
-                    for tempOldCBData in tempOldCBDataList:
-                        tempOldCBStatementDataList = (
-                            crudCreditBalanceStatement.get_with_condition(
-                                {"CBID": tempOldCBData.CBID}
-                            )
+                if tempOldCBStatementDataList:
+                    tempTotalTransAmount = 0
+                    for tempOldCBStatementData in tempOldCBStatementDataList:
+                        tempOldCBData = crudCreditBalance.get_with_condition(
+                            {"CBID": tempOldCBStatementData.CBID}
+                        )[0]
+
+                        tempTotalTransAmount += tempOldCBStatementData.TransAmount
+
+                        # --------------- 更新CB ---------------
+                        tempNewCBDictData = orm_to_dict(tempOldCBData)
+                        tempNewCBDictData[
+                            "CurrAmount"
+                        ] -= tempOldCBStatementData.TransAmount
+                        tempNewCBDictData["LastUpDate"] = convert_time_to_str(
+                            datetime.now()
                         )
-                        tempOldCBStatementDataList = list(
-                            filter(
-                                lambda x: x.TransItem == "DEDUCT",
-                                tempOldCBStatementDataList,
-                            )
-                        )
-                        tempOldCBStatementData = max(
-                            tempOldCBStatementDataList, key=lambda x: x.CreateDate
-                        )
-                        newCBStatementTransAmount = (
-                            tempOldCBStatementData.TransAmount * (-1)
-                        )
-                        newCBStatementData = CreditBalanceStatementDBModel(
-                            CBID=tempOldCBData.CBID,
-                            BillingNo=tempOldBillMasterData.BillingNo,
-                            BLDetailID=tmepOldBillDetailData.BillDetailID,
-                            TransItem="RETURN",
-                            OrgAmount=tempOldCBData.CurrAmount
-                            + newCBStatementTransAmount,
-                            TransAmount=newCBStatementTransAmount,
-                            Note=note,
-                            CreateDate=convert_time_to_str(datetime.now()),
-                        )
-                        tempNewCBData = deepcopy(tempOldCBData)
-                        tempNewCBData.CurrAmount = (
-                            newCBStatementData.OrgAmount
-                            + newCBStatementData.TransAmount
+                        tempNewCBData = crudCreditBalance.update(
+                            tempOldCBData, tempNewCBDictData
                         )
 
-                        # ---------------------------- BillDetail更新 ----------------------------
-                        tmepOldBillDetailData.DedAmount -= newCBStatementTransAmount
-                        tmepOldBillDetailData.FeeAmount = (
-                            tmepOldBillDetailData.OrgFeeAmount
-                            - tmepOldBillDetailData.DedAmount
+                        # --------------- 建立CBStatement ---------------
+                        newCBStatementDictData = {
+                            "CBID": tempOldCBStatementData.CBID,
+                            "BillingNo": tempOldBillMasterData.BillingNo,
+                            "BLDetailID": tempOldBillDetailData.BillDetailID,
+                            "TransItem": "RETURN",
+                            "OrgAmount": tempOldCBStatementData.OrgAmount
+                            + tempOldCBStatementData.TransAmount,
+                            "TransAmount": tempOldCBStatementData.TransAmount,
+                            "Note": "tempOldBillMasterData.BillingNo 帳單退回至發票工作主檔VALIDATED階段",
+                            "CreateDate": convert_time_to_str(datetime.now()),
+                        }
+                        newCBStatementPydanticData = dict_to_pydantic(
+                            CreditBalanceStatementSchema, newCBStatementDictData
                         )
-                        tmepOldBillDetailData.Status = "INCOMPLETE"
-
-                        # ---------------------------- record data to be processed ----------------------------
-                        dataToBeProcessed["oldCBDataList"].append(tempOldCBData)
-                        dataToBeProcessed["newCBDataList"].append(tempNewCBData)
+                        newCBStatementData = crudCreditBalanceStatement.create(
+                            newCBStatementPydanticData
+                        )
                         dataToBeProcessed["newCBStatementDataList"].append(
                             newCBStatementData
                         )
-                    dataToBeProcessed["newBillDetailDataList"].append(
-                        tmepOldBillDetailData
+
+                        # --------------- 更新BillMaster的FeeAmountSum ---------------
+                        tempNewBillMasterDictData[
+                            "FeeAmountSum"
+                        ] -= tempOldCBStatementData.TransAmount
+
+                    # --------------- 更新BillDetail ---------------
+                    tempNewBillDetailDictData["DedAmount"] += tempTotalTransAmount
+                    tempNewBillDetailDictData["FeeAmount"] = (
+                        tempNewBillDetailDictData["OrgFeeAmount"]
+                        - tempNewBillDetailDictData["DedAmount"]
                     )
-                    FeeAmountSum += tmepOldBillDetailData.FeeAmount
+                    dataToBeProcessed["newBillDetailDataList"].append(
+                        tempNewBillDetailDictData
+                    )
+            # --------------- 更新BillMaster ---------------
+            tempNewBillMasterDictData["Status"] = "INITIAL"
+            dataToBeProcessed["newBillMasterDataList"].append(tempNewBillMasterDictData)
 
-            # ---------------------------- BillMaster更新 ----------------------------
-            tempNewBillMasterData = deepcopy(tempOldBillMasterData)
-            tempNewBillMasterData.Status = "INITIAL"
-            if FeeAmountSum:
-                tempNewBillMasterData.FeeAmountSum = FeeAmountSum
-            dataToBeProcessed["newBillMasterDataList"].append(tempNewBillMasterData)
-
-        # TODO: 更改發票工作主檔狀態 & 刪除發票主檔 & 發票明細檔
+        # TODO: 刪除InvoiceDetail、BillMaster、BillDetail，並更新InvoiceWKMaster的Status
+        # --------------- 刪除InvoiceWKMaster ---------------
         InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
             InvoiceWKMasterDBModel.WKMasterID, InvoiceWKMasterIDList
         )
-        InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
-            InvoiceMasterDBModel.WKMasterID, InvoiceWKMasterIDList
-        )
+        for InvoiceWKMasterData in InvoiceWKMasterDataList:
+            dataToBeProcessed["oldInvoiceWKMasterDataList"].append(InvoiceWKMasterData)
+            newInvoiceWKMasterData = deepcopy(InvoiceWKMasterData)
+            newInvoiceWKMasterData.Status = "VALIDATED"
+            newInvoiceWKMasterData = crudInvoiceWKMaster.update(
+                InvoiceWKMasterData, orm_to_dict(newInvoiceWKMasterData)
+            )
+            dataToBeProcessed["newInvoiceWKMasterDataList"].append(
+                newInvoiceWKMasterData
+            )
+
+        # --------------- 刪除InvoiceDetail ---------------
         InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
             InvoiceDetailDBModel.WKMasterID, InvoiceWKMasterIDList
         )
-        print("-" * 50 + " InvoiceWKMasterDataList " + "-" * 50)
-        pprint(InvoiceWKMasterDataList)
-
-        # ---------------------------- 更改發票工作主檔狀態 ----------------------------
-        for InvoiceWKMasterData in InvoiceWKMasterDataList:
-            tempNewInvoiceWKMasterData = deepcopy(InvoiceWKMasterData)
-            tempNewInvoiceWKMasterData.Status = "VALIDATED"
-            dataToBeProcessed["oldInvoiceWKMasterDataList"].append(InvoiceWKMasterData)
-            dataToBeProcessed["newInvoiceWKMasterDataList"].append(
-                tempNewInvoiceWKMasterData
-            )
-            crudInvoiceWKMaster.update(
-                InvoiceWKMasterData, orm_to_dict(tempNewInvoiceWKMasterData)
-            )
-        # ---------------------------- 刪除發票主檔 & 發票明細檔 -------------------------------
-        for InvoiceMasterData in InvoiceMasterDataList:
-            crudInvoiceMaster.remove(InvoiceMasterData.InvMasterID)
         for InvoiceDetailData in InvoiceDetailDataList:
-            pprint(orm_to_dict(InvoiceDetailData))
             crudInvoiceDetail.remove(InvoiceDetailData.InvDetailID)
 
-        # ---------------------------- 刪除帳單主檔 & 帳單明細檔 -------------------------------
+        # --------------- 刪除BillMaster ---------------
         for BillMasterData in BillMasterDataList:
             crudBillMaster.remove(BillMasterData.BillMasterID)
+
+        # --------------- 刪除BillDetail ---------------
         for BillDetailData in BillDetailDataList:
             crudBillDetail.remove(BillDetailData.BillDetailID)
 
-        # ---------------------------- 更新CB ----------------------------
-        for oldCBdata, newCBData in zip(
-            dataToBeProcessed["oldCBDataList"], dataToBeProcessed["newCBDataList"]
-        ):
-            crudCreditBalance.update(oldCBdata, orm_to_dict(newCBData))
-
-        # ---------------------------- 新增CBStatement ----------------------------
-        for newCBStatementData in dataToBeProcessed["newCBStatementDataList"]:
-            newCBStatementPydanticData = orm_to_pydantic(
-                newCBStatementData, CreditBalanceStatementSchema
-            )
-            crudCreditBalanceStatement.create(newCBStatementPydanticData)
-
-        return {"message": "success", "data": dataToBeProcessed}
+        return {"message": "success", "changed_data": dataToBeProcessed}
 
 
 @app.post(ROOT_URL + "/returnToMergeBillMaster&BillDetail/afterDeduct")
 async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     request: Request, db: Session = Depends(get_db)
 ):
-    dataToBeProcessed = {
-        "oldCBDataList": list(),
-        "newCBDataList": list(),
-        "newCBStatementDataList": list(),
+    """
+    input:
+    {
+        "BillMasterID": 1,
+    }
+
+    output:
+    {
+        "newCBStatement": [
+            {...},
+            {...}
+        ]
+    }
+    """
+    response = {
+        "message": "success",
+        "newCBStatement": [],
+        "newBillDetail": [],
+        "newInvoiceMaster": [],
     }
 
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
@@ -1297,96 +1310,116 @@ async def returnToMergeBillMasterAndBillDetailAfterDeduct(
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
 
-    BillMasterDictData = await request.json()
-
-    # ---------------------- get BillMaster data ----------------------
-    BillMasterData = crudBillMaster.get_with_condition(
-        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+    oldBillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": (await request.json())["BillMasterID"]}
     )[0]
 
-    # ---------------------- get BillDetail data ----------------------
-    BillDetailDataList = crudBillDetail.get_with_condition(
-        {"BillMasterID": BillMasterData.BillMasterID}
+    oldBillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": oldBillMasterData.BillMasterID}
     )
+    oldBillDetailDataList.reverse()
 
-    # ---------------------- get CB data ----------------------
-    CBDataList = crudCreditBalance.get_value_if_in_a_list(
-        CreditBalanceDBModel.BLDetailID, [x.BillDetailID for x in BillDetailDataList]
-    )
-
-    # ---------------------- get CBStatement data ----------------------
-    CBStatementDataList = crudCreditBalanceStatement.get_value_if_in_a_list(
-        CreditBalanceStatementDBModel.CBID, [x.CBID for x in CBDataList]
-    )
-
-    for BillDetailData in BillDetailDataList:
-        tempOldCBDataList = list(
-            filter(lambda x: x.BLDetailID == BillDetailData.BillDetailID, CBDataList)
+    for oldBillDetailData in oldBillDetailDataList:
+        newBillDetailDictData = orm_to_dict(deepcopy(oldBillDetailData))
+        oldCBStatementDataList = crudCreditBalanceStatement.get_with_condition(
+            {"BLDetailID": oldBillDetailData.BillDetailID}
         )
-        for tempOldCBData in tempOldCBDataList:
-            tempOldCBStatementDataList = list(
-                filter(lambda x: x.CBID == tempOldCBData.CBID, CBStatementDataList)
-            )
-            tempOldCBStatementData = max(
-                tempOldCBStatementDataList, key=lambda x: x.CreateDate
-            )
-            newCBStatementTransAmount = tempOldCBStatementData.TransAmount * (-1)
-            newCBStatementData = CreditBalanceStatementDBModel(
-                CBID=tempOldCBData.CBID,
-                BillingNo=BillMasterData.BillingNo,
-                BLDetailID=BillDetailData.BillDetailID,
-                TransItem="RETURN",
-                OrgAmount=tempOldCBData.CurrAmount + newCBStatementTransAmount,
-                TransAmount=newCBStatementTransAmount,
-                Note="",
-                CreateDate=convert_time_to_str(datetime.now()),
-            )
-            tempNewCBData = deepcopy(tempOldCBData)
-            tempNewCBData.CurrAmount = (
-                newCBStatementData.OrgAmount + newCBStatementData.TransAmount
-            )
+        oldCBStatementDataList = list(
+            filter(lambda x: x.TransItem == "DEDUCT", oldCBStatementDataList)
+        )
+        if oldCBStatementDataList:
+            totalDedAmount = 0
+            for oldCBStatementData in oldCBStatementDataList:
+                oldCBData = crudCreditBalance.get_with_condition(
+                    {"CBID": oldCBStatementData.CBID}
+                )[0]
 
-            dataToBeProcessed["oldCBDataList"].append(tempOldCBData)
-            dataToBeProcessed["newCBDataList"].append(tempNewCBData)
-            dataToBeProcessed["newCBStatementDataList"].append(newCBStatementData)
+                totalDedAmount += oldCBStatementData.TransAmount
 
-    # ---------------------------- 刪除帳單主檔 & 帳單明細檔 -------------------------------
-    crudBillMaster.remove(BillMasterData.BillMasterID)
-    for BillDetailData in BillDetailDataList:
-        crudBillDetail.remove(BillDetailData.BillDetailID)
+                newCBDictData = orm_to_dict(deepcopy(oldCBData))
 
-    # ---------------------------- 更新InvoiceMaster狀態 -------------------------------
-    InvDetailIDList = [
-        BillDetailData.InvDetailID for BillDetailData in BillDetailDataList
-    ]
+                # --------------- 新增CBStatement ---------------
+                newCBStatementDictData = {
+                    "CBID": oldCBStatementData.CBID,
+                    "BillingNo": oldBillMasterData.BillingNo,
+                    "BLDetailID": oldBillDetailData.BillDetailID,
+                    "TransItem": "RETURN",
+                    "OrgAmount": oldCBStatementData.OrgAmount
+                    + oldCBStatementData.TransAmount,
+                    "TransAmount": oldCBStatementData.TransAmount * (-1),
+                    "Note": "",
+                    "CreateDate": convert_time_to_str(datetime.now()),
+                }
+                newCBStatementData = crudCreditBalanceStatement.create(
+                    dict_to_pydantic(
+                        CreditBalanceStatementSchema, newCBStatementDictData
+                    )
+                )
+                response["newCBStatement"].append(newCBStatementData)
+
+                # --------------- 更新CB ---------------
+                newCBDictData["CurrAmount"] -= oldCBStatementData.TransAmount
+                newCBDictData["LastUpdDate"] = convert_time_to_str(datetime.now())
+                crudCreditBalance.update(oldCBData, newCBDictData)
+
+            # --------------- 更新BillDetail ---------------
+            newBillDetailDictData["DedAmount"] += totalDedAmount
+            newBillDetailDictData["FeeAmount"] = (
+                newBillDetailDictData["OrgFeeAmount"]
+                - newBillDetailDictData["DedAmount"]
+            )
+            newBillDetailData = crudBillDetail.update(
+                oldBillDetailData, newBillDetailDictData
+            )
+            response["newBillDetail"].append(newBillDetailData)
+
+    InvDetailIDList = list(
+        set(
+            [
+                oldBillDetailData.InvDetailID
+                for oldBillDetailData in oldBillDetailDataList
+            ]
+        )
+    )
+
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvDetailID, InvDetailIDList
     )
-    InvMasterIDList = [
-        InvoiceDetailData.InvMasterID for InvoiceDetailData in InvoiceDetailDataList
-    ]
-    InvMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
+
+    InvMasterIDList = list(
+        set(
+            [
+                InvoiceDetailData.InvMasterID
+                for InvoiceDetailData in InvoiceDetailDataList
+            ]
+        )
+    )
+
+    InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
         InvoiceMasterDBModel.InvMasterID, InvMasterIDList
     )
-    for InvMasterData in InvMasterDataList:
-        newInvMasterDictData = orm_to_dict(InvMasterData)
-        newInvMasterDictData["Status"] = "TO_MERGE"
-        crudInvoiceMaster.update(InvMasterData, newInvMasterDictData)
-
-    # ---------------------------- 更新CB -------------------------------
-    for oldCBData, newCBData in zip(
-        dataToBeProcessed["oldCBDataList"], dataToBeProcessed["newCBDataList"]
-    ):
-        crudCreditBalance.update(oldCBData, orm_to_dict(newCBData))
-
-    # ---------------------------- 新增CBStatement -------------------------------
-    for newCBStatementData in dataToBeProcessed["newCBStatementDataList"]:
-        newCBStatementPydanticData = orm_to_pydantic(
-            newCBStatementData, CreditBalanceStatementSchema
+    InvoiceMasterDataList = list(
+        filter(
+            lambda x: x.PartyName == oldBillMasterData.PartyName, InvoiceMasterDataList
         )
-        crudCreditBalanceStatement.create(newCBStatementPydanticData)
+    )
 
-    return {"message": "success"}
+    for InvoiceMasterData in InvoiceMasterDataList:
+        newInvoiceMasterDictData = orm_to_dict(deepcopy(InvoiceMasterData))
+        newInvoiceMasterDictData["Status"] = "TO_MERGE"
+        newInvoiceMasterData = crudInvoiceMaster.update(
+            InvoiceMasterData, newInvoiceMasterDictData
+        )
+        response["newInvoiceMaster"].append(newInvoiceMasterData)
+
+    # --------------- 刪除BillMaster ---------------
+    crudBillMaster.remove(oldBillMasterData.BillMasterID)
+
+    # --------------- 刪除BillDetail ---------------
+    for oldBillDetailData in oldBillDetailDataList:
+        crudBillDetail.remove(oldBillDetailData.BillDetailID)
+
+    return response
 
 
 @app.post(ROOT_URL + "/returnToInitialBillMaster&BillDetail/afterDeduct")
@@ -1504,13 +1537,130 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
     return {"message": "success"}
 
 
+@app.post(ROOT_URL + "/returnToInvalidBillMaster&BillDetail")
+async def returnToInvalidBillMasterAndBillDetail(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    input:
+    # Type1
+    {
+      "BillMasterID": 1
+      "Confirm": false
+    }
+    # Type2
+    {
+      "BillMasterID": 1
+      "WKMasterID": [1, 2, 3...]
+      "Confirm": true
+    }
+    """
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
+    crudInvoiceMaster = CRUD(db, InvoiceWKDetailDBModel)
+
+    Confirm = (await request.json())["Confirm"]
+    BillMasterID = (await request.json())["BillMasterID"]
+    BillMasterData = crudBillMaster.get_with_condition({"BillMasterID": BillMasterID})[
+        0
+    ]
+    BillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": BillMasterID}
+    )
+
+    if not Confirm:
+        # give affected data InvoiceWKMaster and BillMaster
+        InvoiceWKMasterDataList = crudInvoiceWKMaster.get_with_condition(
+            {"WKMasterID": BillMasterData.WKMasterID}
+        )
+        return {
+            "BillMaster": BillMasterData,
+            "InvoiceWKMaster": InvoiceWKMasterDataList,
+        }
+    else:
+        WKMasterIDList = (await request.json())["WKMasterID"]
+        InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
+            InvoiceWKMasterDBModel.WKMasterID, WKMasterIDList
+        )
+
+        BillDetailDataList = crudBillDetail.get_value_if_in_a_list(
+            BillDetailDBModel.WKMasterID, WKMasterIDList
+        )
+        BillMasterIDList = list(
+            set([BillDetailData.WKMasterID for BillDetailData in BillDetailDataList])
+        )
+        BillMasterDataList = crudBillMaster.get_value_if_in_a_list(
+            BillMasterDBModel.BillMasterID, BillMasterIDList
+        )
+
+        for oldBillMasterData in BillMasterDataList:
+            newBillMasterData = deepcopy(oldBillMasterData)
+            newBillMasterData.Status = "INVALID"
+            BillDetailDataList = crudBillDetail.get_with_condition(
+                {"BillMasterID": oldBillMasterData.BillMasterID}
+            )
+
+            for oldBillDetailData in BillDetailDataList:
+                CBStatementDataList = crudCreditBalanceStatement.get_with_condition(
+                    {"BLDetailID": oldBillDetailData.BillDetailID}
+                )
+                CBStatementDataList = sorted(
+                    CBStatementDataList, key=lambda x: x.CBStateID, reverse=True
+                )
+                totalDedAmount = 0
+                if CBStatementDataList:
+                    for oldCBStatementData in CBStatementDataList:
+
+                        # ---------------------------- 加總DedAmount ----------------------------
+                        totalDedAmount += oldCBStatementData.TransAmount
+
+                        # ---------------------------- 取得舊的CB資料 ----------------------------
+                        olDCBData = crudCreditBalance.get_with_condition(
+                            {"CBID": oldCBStatementData.CBID}
+                        )[0]
+                        newCBData = deepcopy(olDCBData)
+
+                        # ---------------------------- 產生新的CBStatement ----------------------------
+                        newCBStatementDictData = {
+                            "CBID": olDCBData.CBID,
+                            "BillingNo": oldBillMasterData.BillingNo,
+                            "BLDetailID": oldBillDetailData.BillDetailID,
+                            "TransItem": "RETURN",
+                            "OrgAmount": olDCBData.OrgAmount,
+                            "TransAmount": abs(oldCBStatementData.TransAmount),
+                            "Note": "",
+                            "CreateDate": convert_time_to_str(datetime.now()),
+                        }
+                        newCBStatementPydanticData = dict_to_pydantic(
+                            CreditBalanceStatementSchema, newCBStatementDictData
+                        )
+                        newCBStatementData = crudCreditBalanceStatement.create(
+                            newCBStatementPydanticData
+                        )
+
+        return {"message": "success"}
+
+
 # 產製帳單draft(初始化)
 @app.post(ROOT_URL + "/getBillMasterDraftStream")
-async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_db)):
+async def getBillMasterDraftStream(
+    request: Request,
+    db: Session = Depends(get_db),
+):
     """
     {
       "BillMasterID": 1,
-      "UserName": "username",
+      "UserID": "username",
+      "GetTemplate": true
+      "IssueDate": "2023/04/01",
+      "DueDate": "2023/04/30",
+      "WorkTitle": "Construction #11",
+      "InvoiceName": "",
+      "logo": 1
     }
     """
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
@@ -1545,7 +1695,6 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     PartyData = crudParties.get_with_condition({"PartyName": BillMasterData.PartyName})[
         0
     ]
-    pprint(orm_to_dict(PartyData))
 
     # --------------------------- 抓取聯盟資料表(含金融帳戶資訊) ---------------------------
     CorporateData = crudCorporates.get_with_condition(
@@ -1554,10 +1703,11 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
 
     # --------------------------- 抓取使用者資料 ---------------------------
     UserData = crudUsers.get_with_condition(
-        {"UserName": (await request.json())["UserName"]}
+        {"UserID": (await request.json())["UserID"]}
     )[0]
 
     ContactWindowAndSupervisorInformationDictData = {
+        # give html reponse for company
         "Company": UserData.Company,
         "Address": UserData.Address,
         "Tel": UserData.Tel,
@@ -1565,7 +1715,9 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "DirectorName": UserData.DirectorName,
         "DTel": UserData.DTel,
         "DFax": UserData.DFax,
+        "DEmail": UserData.DEmail,
     }
+
     PartyInformationDictData = {
         "Company": PartyData.CompanyName,
         "Address": PartyData.Address,
@@ -1575,16 +1727,17 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
     }
 
     CorporateDictData = {
-        "Name": CorporateData.Name,  # Bank Name
+        "BankName": CorporateData.BankName,  # Bank Name
         "Branch": CorporateData.Branch,  # Branch Name
-        "Address": CorporateData.Address,  # Branch Address
-        "AcctName": CorporateData.AcctName,  # Account Name
-        "AcctNo": CorporateData.AcctNo,  # AC No.
+        "BranchAddress": CorporateData.BranchAddress,  # Branch Address
+        "BankAcctName": CorporateData.BankAcctName,  # Account Name
+        "BankAcctNo": CorporateData.BankAcctNo,  # AC No.
         "SavingAcctNo": CorporateData.SavingAcctNo,  # Saving Account No
         "IBAN": CorporateData.IBAN,  # IBAN
         "SWIFTCode": CorporateData.SWIFTCode,  # Swift
         "ACHNo": CorporateData.ACHNo,  # ACH
         "WireRouting": CorporateData.WireRouting,  # Wire/Routing
+        "Address": CorporateData.Address,  # Address
     }
     BLDetailIDList = [
         BillDetailDictData["BillDetailID"]
@@ -1597,9 +1750,9 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "Supplier": list(),
         "InvNumber": list(),
         "Description": list(),
-        "AmountBilled": list(),
+        "BilledAmount": list(),
         "Liability": list(),
-        "YourShare": list(),
+        "ShareAmount": list(),
     }
 
     for BillDetailDictData in BillDetailDictDataList:
@@ -1607,15 +1760,16 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
             {"InvDetailID": BillDetailDictData["InvDetailID"]}
         )[0]
         DetailInformationDictData["Supplier"].append(BillDetailDictData["SupplierName"])
-        DetailInformationDictData["InvNumber"].append(BillMasterData.BillingNo)
+        DetailInformationDictData["InvNumber"].append(BillDetailDictData["InvoiceNo"])
         DetailInformationDictData["Description"].append(BillDetailDictData["FeeItem"])
-        DetailInformationDictData["AmountBilled"].append(InvoiceDetailData.FeeAmountPre)
+        DetailInformationDictData["BilledAmount"].append(InvoiceDetailData.FeeAmountPre)
         DetailInformationDictData["Liability"].append(InvoiceDetailData.LBRatio)
-        DetailInformationDictData["YourShare"].append(
+        DetailInformationDictData["ShareAmount"].append(
             BillDetailDictData["OrgFeeAmount"]
         )
     if CBStatementDataList:
         for CBStatementData in CBStatementDataList:
+            CBData = crudCB.get_with_condition({"CBID": CBStatementData.CBID})[0]
             BillDetailDictData = next(
                 filter(
                     lambda x: x["BillDetailID"] == CBStatementData.BLDetailID,
@@ -1628,21 +1782,14 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
             DetailInformationDictData["Description"].append(
                 BillDetailDictData["FeeItem"]
             )
-            DetailInformationDictData["AmountBilled"].append(
+            DetailInformationDictData["BilledAmount"].append(
                 CBStatementData.TransAmount
             )
             DetailInformationDictData["Liability"].append(100)
-            DetailInformationDictData["YourShare"].append(CBStatementData.TransAmount)
-            if (
-                CBStatementData.TransItem == "USER_ADD"
-                or CBStatementData.TransItem == "REFUND"
-            ):
-                CNDetailData = crudCNDetial.get_with_condition(
-                    {"CBStateID": CBStatementData.CBStateID}
-                )[0]
-                DetailInformationDictData["InvNumber"].append(CNDetailData.CNNo)
+            DetailInformationDictData["ShareAmount"].append(CBStatementData.TransAmount)
+            if CBData.CNNo:
+                DetailInformationDictData["InvNumber"].append(CBData.CNNo)
             else:
-                CBData = crudCB.get_with_condition({"CBID": CBStatementData.CBID})[0]
                 DetailInformationDictData["InvNumber"].append(CBData.BillingNo)
 
     DetailInformationDictDataList = list()
@@ -1650,18 +1797,18 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         DetailInformationDictData["Supplier"],
         DetailInformationDictData["InvNumber"],
         DetailInformationDictData["Description"],
-        DetailInformationDictData["AmountBilled"],
+        DetailInformationDictData["BilledAmount"],
         DetailInformationDictData["Liability"],
-        DetailInformationDictData["YourShare"],
+        DetailInformationDictData["ShareAmount"],
     ):
         DetailInformationDictDataList.append(
             {
                 "Supplier": supplier,
                 "InvNumber": invNumber,
                 "Description": description,
-                "AmountBilled": amountBilled,
+                "BilledAmount": amountBilled,
                 "Liability": liability,
-                "YourShare": yourShare,
+                "ShareAmount": yourShare,
             }
         )
 
@@ -1672,8 +1819,83 @@ async def getBillMasterDraftStream(request: Request, db: Session = Depends(get_d
         "DetailInformation": DetailInformationDictDataList,
         "InvoiceNo": BillMasterData.BillingNo,
     }
+    # if (await request.json())["GetTemplate"]:
+    #     return getResult
+    if not (await request.json()).get("logo"):
+        return getResult
 
-    return getResult
+    # --------- generate word file ---------
+    doc = DocxTemplate("bill_draft_tpl.docx")
+    logo_path = (
+        "images/logo_001.png"
+        if (await request.json())["logo"] == 1
+        else "images/logo_002.png"
+    )
+
+    BillingInfo = getResult["DetailInformation"]
+    origBillingInfo = deepcopy(BillingInfo)
+    for item in BillingInfo:
+        item["BilledAmount"] = convert_number_to_string(
+            "{:.2f}".format(item["BilledAmount"]).split(".")
+        )
+        item["Liability"] = convert_number_to_string(
+            "{:.10f}".format(item["Liability"]).split(".")
+        )
+        item["ShareAmount"] = convert_number_to_string(
+            "{:.2f}".format(item["ShareAmount"]).split(".")
+        )
+    context = {
+        "submarinecable": BillMasterData.SubmarineCable,
+        "worktitle": (await request.json())["WorkTitle"],
+        "invoicename": (await request.json())["InvoiceName"],
+        "PartyCompany": getResult["PartyInformation"]["Company"],
+        "PartyAddress": getResult["PartyInformation"]["Address"],
+        "PartyContact": getResult["PartyInformation"]["Contact"],
+        "PartyEmail": getResult["PartyInformation"]["Email"],
+        "PartyTel": getResult["PartyInformation"]["Tel"],
+        "BillingInfo": BillingInfo,
+        "TotalAmount": convert_number_to_string(
+            "{:.2f}".format(
+                sum([float(i["ShareAmount"]) for i in origBillingInfo])
+            ).split(".")
+        ),
+        "ContactWindowCompany": getResult["ContactWindowAndSupervisorInformation"][
+            "Company"
+        ],
+        "ContactWindowAddress": getResult["ContactWindowAndSupervisorInformation"][
+            "Address"
+        ],
+        "ContactWindowTel": getResult["ContactWindowAndSupervisorInformation"]["Tel"],
+        "ContactWindowFax": getResult["ContactWindowAndSupervisorInformation"]["Fax"],
+        "ContactWindowDirectorName": getResult["ContactWindowAndSupervisorInformation"][
+            "DirectorName"
+        ],
+        "ContactWindowDTel": getResult["ContactWindowAndSupervisorInformation"]["DTel"],
+        "ContactWindowDFax": getResult["ContactWindowAndSupervisorInformation"]["DFax"],
+        "ContactWindowDEmail": getResult["ContactWindowAndSupervisorInformation"][
+            "DEmail"
+        ],
+        "CorporateBankName": getResult["CorporateInformation"]["BankName"],
+        "CorporateBranch": getResult["CorporateInformation"]["Branch"],
+        "CorporateBranchAddress": getResult["CorporateInformation"]["BranchAddress"],
+        "CorporateBankAcctName": getResult["CorporateInformation"]["BankAcctName"],
+        "CorporateBankAcctNo": getResult["CorporateInformation"]["BankAcctNo"],
+        "CorporateSavingAcctNo": getResult["CorporateInformation"]["SavingAcctNo"],
+        "CorporateSWIFTCode": getResult["CorporateInformation"]["SWIFTCode"],
+        "IssueDate": (await request.json())["IssueDate"],
+        "DueDate": (await request.json())["DueDate"],
+        "InvoiceNo": getResult["InvoiceNo"],
+        "logo": InlineImage(doc, logo_path, width=Mm(50), height=Mm(20)),
+    }
+    doc.render(context)
+    fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
+    if context["invoicename"]:
+        fileName = f"{fileName} {context['invoicename']}"
+    else:
+        fileName = f"{fileName} Invoice"
+    doc.save(f"{fileName}.docx")
+    resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx", headers={"filename": "dsfdffdss"})
+    return resp
 
 
 @app.get(ROOT_URL + "/updateBillMasterByDraftStream")
@@ -1702,55 +1924,55 @@ async def updateBillMasterByDraftStream(
 
 
 # 銷帳
-@app.get(ROOT_URL + "/writeOffBillMaster")
-async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
-    """
-    {
-        "BillMaster": {...},
-        "BillDetail": [
-            {...},
-            {...}
-        ]
-
-    }
-    """
-    newBillMasterDictData = (await request.json())["BillMaster"]
-    newBillDetailDictDataList = (await request.json())["BillDetail"]
-
-    crudBillMaster = CRUD(db, BillMasterDBModel)
-    crudBillDetail = CRUD(db, BillDetailDBModel)
-
-    oldBillMasterData = crudBillMaster.get_with_condition(
-        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
-    )[0]
-    oldBillDetailDataList = crudBillDetail.get_with_condition(
-        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
-    )
-
-    newBilDetailDataList = list()
-    for newBillDetailDictData in newBillDetailDictDataList:
-        oldBillDetailData = next(
-            filter(
-                lambda x: x.BillDetailID == newBillDetailDictData["BillDetailID"],
-                oldBillDetailDataList,
-            )
-        )
-        newBillDetailDictData["ReceivedAmount"] += oldBillDetailData.ReceivedAmount
-        newBillDetailData = crudBillDetail.update(
-            oldBillDetailData, newBillDetailDictData
-        )
-        newBilDetailDataList.append(newBillDetailData)
-
-    if oldBillMasterData.Status != newBillMasterDictData["Status"]:
-        newBillMasterData = crudBillMaster.update(
-            oldBillMasterData, newBillMasterDictData
-        )
-        return {
-            "message": "success",
-            "newBillMaster": newBillMasterData,
-            "newBillDetail": newBilDetailDataList,
-        }
-    return {"message": "success", "newBillDetail": newBilDetailDataList}
+# @app.get(ROOT_URL + "/writeOffBillMaster")
+# async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
+#     """
+#     {
+#         "BillMaster": {...},
+#         "BillDetail": [
+#             {...},
+#             {...}
+#         ]
+#
+#     }
+#     """
+#     newBillMasterDictData = (await request.json())["BillMaster"]
+#     newBillDetailDictDataList = (await request.json())["BillDetail"]
+#
+#     crudBillMaster = CRUD(db, BillMasterDBModel)
+#     crudBillDetail = CRUD(db, BillDetailDBModel)
+#
+#     oldBillMasterData = crudBillMaster.get_with_condition(
+#         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
+#     )[0]
+#     oldBillDetailDataList = crudBillDetail.get_with_condition(
+#         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
+#     )
+#
+#     newBilDetailDataList = list()
+#     for newBillDetailDictData in newBillDetailDictDataList:
+#         oldBillDetailData = next(
+#             filter(
+#                 lambda x: x.BillDetailID == newBillDetailDictData["BillDetailID"],
+#                 oldBillDetailDataList,
+#             )
+#         )
+#         newBillDetailDictData["ReceivedAmount"] += oldBillDetailData.ReceivedAmount
+#         newBillDetailData = crudBillDetail.update(
+#             oldBillDetailData, newBillDetailDictData
+#         )
+#         newBilDetailDataList.append(newBillDetailData)
+#
+#     if oldBillMasterData.Status != newBillMasterDictData["Status"]:
+#         newBillMasterData = crudBillMaster.update(
+#             oldBillMasterData, newBillMasterDictData
+#         )
+#         return {
+#             "message": "success",
+#             "newBillMaster": newBillMasterData,
+#             "newBillDetail": newBilDetailDataList,
+#         }
+#     return {"message": "success", "newBillDetail": newBilDetailDataList}
 
 
 @app.get(ROOT_URL + "/test")
@@ -1758,6 +1980,156 @@ async def test(request: Request, db: Session = Depends(get_db)):
     crud = CRUD(db, CreditNoteDBModel)
     data = crud.get_all()
     return data
+
+
+@app.get(ROOT_URL + "/test_download_docx")
+async def test_download_docx(request: Request, db: Session = Depends(get_db)):
+    info_dict = {
+        "ContactWindowAndSupervisorInformation": {
+            "Company": "International Business Group,\nChunghwa Telecom Co., Ltd.",
+            "Address": "No. 31, Ai-kuo East Road, Taipei, 106, Taiwan",
+            "Tel": "02-23443897",
+            "Fax": "",
+            "DirectorName": "Hsuan-Lung Liu",
+            "DTel": "+886-2-2344-3912",
+            "DFax": "+886-2-2344-5940",
+            "DEmail": "lsl008@cht.com.tw",
+        },
+        "PartyInformation": {
+            "Company": "SK Broadband Co., Ltd. (SKB)",
+            "Address": "8F, SK Namsan Green Bldg., 24, Toegye-ro, Jung-gu, Seoul 04637, Korea",
+            "Contact": "SUN JIN KUK (Chris)",
+            "Email": "chris.sun@sk.com",
+            "Tel": "+82-10-3702-0461",
+        },
+        "CorporateInformation": {
+            "BankName": "Bank of Taiwan, Hsinyi Branch",
+            "Branch": "",
+            "BranchAddress": "88, Sec. 2, Sinyi Road, Taipei",
+            "BankAcctName": "SJC2 Central Billing Party of Chunghwa Telecom (International Business Group)",
+            "BankAcctNo": "054007501968",
+            "SavingAcctNo": "",
+            "IBAN": "",
+            "SWIFTCode": "BKTWTWTP054",
+            "ACHNo": "",
+            "WireRouting": "",
+            "Address": "31 Aikuo E. Rd., Taipei, Taiwan, 106",
+        },
+        "DetailInformation": [
+            {
+                "Supplier": "NEC Corporation, Submarine Network Division",
+                "InvNumber": "DT0170168-1",
+                "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
+                "BilledAmount": 1288822.32,
+                "Liability": 7.1428571429,
+                "ShareAmount": 92058.74,
+            },
+            {
+                "Supplier": "NEC Corporation, Submarine Network Division",
+                "InvNumber": "DT0170168-1",
+                "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
+                "BilledAmount": 1178227.94,
+                "Liability": 7.1428571429,
+                "ShareAmount": 84159.14,
+            },
+            {
+                "Supplier": "NEC Corporation, Submarine Network Division",
+                "InvNumber": "DT0170168-1",
+                "Description": "BM12 Branching Units (100%)-Equipment",
+                "BilledAmount": 1627300.92,
+                "Liability": 7.1428571429,
+                "ShareAmount": 116235.78,
+            },
+            {
+                "Supplier": "NEC Corporation, Submarine Network Division",
+                "InvNumber": "DT0170168-1",
+                "Description": "BM12 Branching Units (100%)-Service",
+                "BilledAmount": 1487661.54,
+                "Liability": 7.1428571429,
+                "ShareAmount": 106261.54,
+            },
+            {
+                "Supplier": "NEC Corporation, Submarine Network Division",
+                "InvNumber": "CN02CO-KT202304020431",
+                "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
+                "BilledAmount": -10,
+                "Liability": 100,
+                "ShareAmount": -10,
+            },
+            {
+                "Supplier": "NEC Corporation, Submarine Network Division",
+                "InvNumber": "CN02CO-KT202304020431",
+                "Description": "BM12 Branching Units (100%)-Equipment",
+                "BilledAmount": -10,
+                "Liability": 100,
+                "ShareAmount": -10,
+            },
+            {
+                "Supplier": "NEC Corporation, Submarine Network Division",
+                "InvNumber": "CN02CO-KT202304020431",
+                "Description": "BM12 Branching Units (100%)-Service",
+                "BilledAmount": -10,
+                "Liability": 100,
+                "ShareAmount": -10,
+            },
+        ],
+        "InvoiceNo": "02CO-SK2304020432",
+        "IssueDate": "2021/03/31",
+        "DueDate": "2021/04/30",
+    }
+
+    BillingInfo = info_dict["DetailInformation"]
+    for item in BillingInfo:
+        item["BilledAmount"] = "{:.2f}".format(item["BilledAmount"])
+        item["Liability"] = "{:.10f}".format(item["Liability"])
+        item["ShareAmount"] = "{:.2f}".format(item["ShareAmount"])
+
+    doc = DocxTemplate("bill_draft_tpl.docx")
+    context = {
+        "submarinecable": "SJC2",
+        "worktitle": "Construction",
+        "invoicename": "",
+        "PartyCompany": info_dict["PartyInformation"]["Company"],
+        "PartyAddress": info_dict["PartyInformation"]["Address"],
+        "PartyContact": info_dict["PartyInformation"]["Contact"],
+        "PartyEmail": info_dict["PartyInformation"]["Email"],
+        "PartyTel": info_dict["PartyInformation"]["Tel"],
+        "BillingInfo": BillingInfo,
+        "TotalAmount": "{:.2f}".format(
+            sum([float(i["ShareAmount"]) for i in BillingInfo])
+        ),
+        "ContactWindowCompany": info_dict["ContactWindowAndSupervisorInformation"][
+            "Company"
+        ],
+        "ContactWindowAddress": info_dict["ContactWindowAndSupervisorInformation"][
+            "Address"
+        ],
+        "ContactWindowTel": info_dict["ContactWindowAndSupervisorInformation"]["Tel"],
+        "ContactWindowFax": info_dict["ContactWindowAndSupervisorInformation"]["Fax"],
+        "ContactWindowDirectorName": info_dict["ContactWindowAndSupervisorInformation"][
+            "DirectorName"
+        ],
+        "ContactWindowDTel": info_dict["ContactWindowAndSupervisorInformation"]["DTel"],
+        "ContactWindowDFax": info_dict["ContactWindowAndSupervisorInformation"]["DFax"],
+        "ContactWindowDEmail": info_dict["ContactWindowAndSupervisorInformation"][
+            "DEmail"
+        ],
+        "CorporateBankName": info_dict["CorporateInformation"]["BankName"],
+        "CorporateBranch": info_dict["CorporateInformation"]["Branch"],
+        "CorporateBranchAddress": info_dict["CorporateInformation"]["BranchAddress"],
+        "CorporateBankAcctName": info_dict["CorporateInformation"]["BankAcctName"],
+        "CorporateBankAcctNo": info_dict["CorporateInformation"]["BankAcctNo"],
+        "CorporateSavingAcctNo": info_dict["CorporateInformation"]["SavingAcctNo"],
+        "CorporateSWIFTCode": info_dict["CorporateInformation"]["SWIFTCode"],
+        "IssueDate": info_dict["IssueDate"],
+        "DueDate": info_dict["DueDate"],
+        "InvoiceNo": info_dict["InvoiceNo"],
+    }
+    doc.render(context)
+    doc.save("generated_doc.docx")
+    res = FileResponse(path="generated_doc.docx", filename="generated_doc.docx")
+    pprint(res.__dict__)
+    return res
 
 
 # -------------------------------------------------------------------------------------

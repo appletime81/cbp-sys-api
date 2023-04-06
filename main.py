@@ -1556,6 +1556,7 @@ async def returnToInvalidBillMasterAndBillDetail(
       "Confirm": true
     }
     """
+    dataRecord = {"newCBStatement": [], "newBillDetailData": []}
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
@@ -1614,23 +1615,23 @@ async def returnToInvalidBillMasterAndBillDetail(
                 totalDedAmount = 0
                 if CBStatementDataList:
                     for oldCBStatementData in CBStatementDataList:
-
                         # ---------------------------- 加總DedAmount ----------------------------
                         totalDedAmount += oldCBStatementData.TransAmount
 
                         # ---------------------------- 取得舊的CB資料 ----------------------------
-                        olDCBData = crudCreditBalance.get_with_condition(
+                        oldCBData = crudCreditBalance.get_with_condition(
                             {"CBID": oldCBStatementData.CBID}
                         )[0]
-                        newCBData = deepcopy(olDCBData)
+                        newCBData = deepcopy(oldCBData)
+                        newCBDictData = orm_to_dict(newCBData)
 
                         # ---------------------------- 產生新的CBStatement ----------------------------
                         newCBStatementDictData = {
-                            "CBID": olDCBData.CBID,
+                            "CBID": oldCBData.CBID,
                             "BillingNo": oldBillMasterData.BillingNo,
                             "BLDetailID": oldBillDetailData.BillDetailID,
                             "TransItem": "RETURN",
-                            "OrgAmount": olDCBData.OrgAmount,
+                            "OrgAmount": oldCBData.OrgAmount,
                             "TransAmount": abs(oldCBStatementData.TransAmount),
                             "Note": "",
                             "CreateDate": convert_time_to_str(datetime.now()),
@@ -1641,6 +1642,27 @@ async def returnToInvalidBillMasterAndBillDetail(
                         newCBStatementData = crudCreditBalanceStatement.create(
                             newCBStatementPydanticData
                         )
+                        dataRecord["newCBStatement"].append(newCBStatementData)
+
+                        # ---------------------------- 更新CB ----------------------------
+                        newCBDictData["CurrAmount"] += newCBStatementData.TransAmount
+                        newCBDictData["LastUpdDate"] = convert_time_to_str(
+                            datetime.now()
+                        )
+                        newCBData = crudCreditBalance.update(oldCBData, newCBDictData)
+
+                    # ---------------------------- 更新BillDetail ----------------------------
+                    newBillDetailDictData = orm_to_dict(deepcopy(oldBillDetailData))
+                    newBillDetailDictData["DedAmount"] += totalDedAmount
+                    newBillDetailDictData["FeeAmount"] = (
+                        newBillDetailDictData["OrgFeeAmount"]
+                        - newBillDetailDictData["DedAmount"]
+                    )
+                    newBillDetailDictData["Status"] = "INVALID"
+                    newBillDetailData = crudBillDetail.update(
+                        oldBillDetailData, newBillDetailDictData
+                    )
+                    dataRecord["newBillDetailData"].append(newBillDetailData)
 
         return {"message": "success"}
 
@@ -1655,11 +1677,11 @@ async def getBillMasterDraftStream(
     {
       "BillMasterID": 1,
       "UserID": "username",
+      "GetTemplate": true
       "IssueDate": "2023/04/01",
       "DueDate": "2023/04/30",
       "WorkTitle": "Construction #11",
       "InvoiceName": "",
-      "SubmarineCable": "SJC2"
       "logo": 1
     }
     """
@@ -1819,6 +1841,10 @@ async def getBillMasterDraftStream(
         "DetailInformation": DetailInformationDictDataList,
         "InvoiceNo": BillMasterData.BillingNo,
     }
+    # if (await request.json())["GetTemplate"]:
+    #     return getResult
+    if not (await request.json()).get("logo"):
+        return getResult
 
     # --------- generate word file ---------
     doc = DocxTemplate("bill_draft_tpl.docx")
@@ -1890,7 +1916,7 @@ async def getBillMasterDraftStream(
     else:
         fileName = f"{fileName} Invoice"
     doc.save(f"{fileName}.docx")
-    resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx", headers={"filename": "dsfdffdss"})
+    resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx")
     return resp
 
 
@@ -1917,215 +1943,6 @@ async def updateBillMasterByDraftStream(
     newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
 
     return {"newBillMaster": newBillMasterData}
-
-
-# 銷帳
-# @app.get(ROOT_URL + "/writeOffBillMaster")
-# async def writeOffBillMaster(request: Request, db: Session = Depends(get_db)):
-#     """
-#     {
-#         "BillMaster": {...},
-#         "BillDetail": [
-#             {...},
-#             {...}
-#         ]
-#
-#     }
-#     """
-#     newBillMasterDictData = (await request.json())["BillMaster"]
-#     newBillDetailDictDataList = (await request.json())["BillDetail"]
-#
-#     crudBillMaster = CRUD(db, BillMasterDBModel)
-#     crudBillDetail = CRUD(db, BillDetailDBModel)
-#
-#     oldBillMasterData = crudBillMaster.get_with_condition(
-#         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
-#     )[0]
-#     oldBillDetailDataList = crudBillDetail.get_with_condition(
-#         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
-#     )
-#
-#     newBilDetailDataList = list()
-#     for newBillDetailDictData in newBillDetailDictDataList:
-#         oldBillDetailData = next(
-#             filter(
-#                 lambda x: x.BillDetailID == newBillDetailDictData["BillDetailID"],
-#                 oldBillDetailDataList,
-#             )
-#         )
-#         newBillDetailDictData["ReceivedAmount"] += oldBillDetailData.ReceivedAmount
-#         newBillDetailData = crudBillDetail.update(
-#             oldBillDetailData, newBillDetailDictData
-#         )
-#         newBilDetailDataList.append(newBillDetailData)
-#
-#     if oldBillMasterData.Status != newBillMasterDictData["Status"]:
-#         newBillMasterData = crudBillMaster.update(
-#             oldBillMasterData, newBillMasterDictData
-#         )
-#         return {
-#             "message": "success",
-#             "newBillMaster": newBillMasterData,
-#             "newBillDetail": newBilDetailDataList,
-#         }
-#     return {"message": "success", "newBillDetail": newBilDetailDataList}
-
-
-@app.get(ROOT_URL + "/test")
-async def test(request: Request, db: Session = Depends(get_db)):
-    crud = CRUD(db, CreditNoteDBModel)
-    data = crud.get_all()
-    return data
-
-
-@app.get(ROOT_URL + "/test_download_docx")
-async def test_download_docx(request: Request, db: Session = Depends(get_db)):
-    info_dict = {
-        "ContactWindowAndSupervisorInformation": {
-            "Company": "International Business Group,\nChunghwa Telecom Co., Ltd.",
-            "Address": "No. 31, Ai-kuo East Road, Taipei, 106, Taiwan",
-            "Tel": "02-23443897",
-            "Fax": "",
-            "DirectorName": "Hsuan-Lung Liu",
-            "DTel": "+886-2-2344-3912",
-            "DFax": "+886-2-2344-5940",
-            "DEmail": "lsl008@cht.com.tw",
-        },
-        "PartyInformation": {
-            "Company": "SK Broadband Co., Ltd. (SKB)",
-            "Address": "8F, SK Namsan Green Bldg., 24, Toegye-ro, Jung-gu, Seoul 04637, Korea",
-            "Contact": "SUN JIN KUK (Chris)",
-            "Email": "chris.sun@sk.com",
-            "Tel": "+82-10-3702-0461",
-        },
-        "CorporateInformation": {
-            "BankName": "Bank of Taiwan, Hsinyi Branch",
-            "Branch": "",
-            "BranchAddress": "88, Sec. 2, Sinyi Road, Taipei",
-            "BankAcctName": "SJC2 Central Billing Party of Chunghwa Telecom (International Business Group)",
-            "BankAcctNo": "054007501968",
-            "SavingAcctNo": "",
-            "IBAN": "",
-            "SWIFTCode": "BKTWTWTP054",
-            "ACHNo": "",
-            "WireRouting": "",
-            "Address": "31 Aikuo E. Rd., Taipei, Taiwan, 106",
-        },
-        "DetailInformation": [
-            {
-                "Supplier": "NEC Corporation, Submarine Network Division",
-                "InvNumber": "DT0170168-1",
-                "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
-                "BilledAmount": 1288822.32,
-                "Liability": 7.1428571429,
-                "ShareAmount": 92058.74,
-            },
-            {
-                "Supplier": "NEC Corporation, Submarine Network Division",
-                "InvNumber": "DT0170168-1",
-                "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Service",
-                "BilledAmount": 1178227.94,
-                "Liability": 7.1428571429,
-                "ShareAmount": 84159.14,
-            },
-            {
-                "Supplier": "NEC Corporation, Submarine Network Division",
-                "InvNumber": "DT0170168-1",
-                "Description": "BM12 Branching Units (100%)-Equipment",
-                "BilledAmount": 1627300.92,
-                "Liability": 7.1428571429,
-                "ShareAmount": 116235.78,
-            },
-            {
-                "Supplier": "NEC Corporation, Submarine Network Division",
-                "InvNumber": "DT0170168-1",
-                "Description": "BM12 Branching Units (100%)-Service",
-                "BilledAmount": 1487661.54,
-                "Liability": 7.1428571429,
-                "ShareAmount": 106261.54,
-            },
-            {
-                "Supplier": "NEC Corporation, Submarine Network Division",
-                "InvNumber": "CN02CO-KT202304020431",
-                "Description": "BM9a Sea cable manufactured (except 8.5km spare cable))- Equipment",
-                "BilledAmount": -10,
-                "Liability": 100,
-                "ShareAmount": -10,
-            },
-            {
-                "Supplier": "NEC Corporation, Submarine Network Division",
-                "InvNumber": "CN02CO-KT202304020431",
-                "Description": "BM12 Branching Units (100%)-Equipment",
-                "BilledAmount": -10,
-                "Liability": 100,
-                "ShareAmount": -10,
-            },
-            {
-                "Supplier": "NEC Corporation, Submarine Network Division",
-                "InvNumber": "CN02CO-KT202304020431",
-                "Description": "BM12 Branching Units (100%)-Service",
-                "BilledAmount": -10,
-                "Liability": 100,
-                "ShareAmount": -10,
-            },
-        ],
-        "InvoiceNo": "02CO-SK2304020432",
-        "IssueDate": "2021/03/31",
-        "DueDate": "2021/04/30",
-    }
-
-    BillingInfo = info_dict["DetailInformation"]
-    for item in BillingInfo:
-        item["BilledAmount"] = "{:.2f}".format(item["BilledAmount"])
-        item["Liability"] = "{:.10f}".format(item["Liability"])
-        item["ShareAmount"] = "{:.2f}".format(item["ShareAmount"])
-
-    doc = DocxTemplate("bill_draft_tpl.docx")
-    context = {
-        "submarinecable": "SJC2",
-        "worktitle": "Construction",
-        "invoicename": "",
-        "PartyCompany": info_dict["PartyInformation"]["Company"],
-        "PartyAddress": info_dict["PartyInformation"]["Address"],
-        "PartyContact": info_dict["PartyInformation"]["Contact"],
-        "PartyEmail": info_dict["PartyInformation"]["Email"],
-        "PartyTel": info_dict["PartyInformation"]["Tel"],
-        "BillingInfo": BillingInfo,
-        "TotalAmount": "{:.2f}".format(
-            sum([float(i["ShareAmount"]) for i in BillingInfo])
-        ),
-        "ContactWindowCompany": info_dict["ContactWindowAndSupervisorInformation"][
-            "Company"
-        ],
-        "ContactWindowAddress": info_dict["ContactWindowAndSupervisorInformation"][
-            "Address"
-        ],
-        "ContactWindowTel": info_dict["ContactWindowAndSupervisorInformation"]["Tel"],
-        "ContactWindowFax": info_dict["ContactWindowAndSupervisorInformation"]["Fax"],
-        "ContactWindowDirectorName": info_dict["ContactWindowAndSupervisorInformation"][
-            "DirectorName"
-        ],
-        "ContactWindowDTel": info_dict["ContactWindowAndSupervisorInformation"]["DTel"],
-        "ContactWindowDFax": info_dict["ContactWindowAndSupervisorInformation"]["DFax"],
-        "ContactWindowDEmail": info_dict["ContactWindowAndSupervisorInformation"][
-            "DEmail"
-        ],
-        "CorporateBankName": info_dict["CorporateInformation"]["BankName"],
-        "CorporateBranch": info_dict["CorporateInformation"]["Branch"],
-        "CorporateBranchAddress": info_dict["CorporateInformation"]["BranchAddress"],
-        "CorporateBankAcctName": info_dict["CorporateInformation"]["BankAcctName"],
-        "CorporateBankAcctNo": info_dict["CorporateInformation"]["BankAcctNo"],
-        "CorporateSavingAcctNo": info_dict["CorporateInformation"]["SavingAcctNo"],
-        "CorporateSWIFTCode": info_dict["CorporateInformation"]["SWIFTCode"],
-        "IssueDate": info_dict["IssueDate"],
-        "DueDate": info_dict["DueDate"],
-        "InvoiceNo": info_dict["InvoiceNo"],
-    }
-    doc.render(context)
-    doc.save("generated_doc.docx")
-    res = FileResponse(path="generated_doc.docx", filename="generated_doc.docx")
-    pprint(res.__dict__)
-    return res
 
 
 # -------------------------------------------------------------------------------------
