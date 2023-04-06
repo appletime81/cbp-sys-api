@@ -1614,7 +1614,6 @@ async def returnToInvalidBillMasterAndBillDetail(
                 totalDedAmount = 0
                 if CBStatementDataList:
                     for oldCBStatementData in CBStatementDataList:
-
                         # ---------------------------- 加總DedAmount ----------------------------
                         totalDedAmount += oldCBStatementData.TransAmount
 
@@ -1894,7 +1893,11 @@ async def getBillMasterDraftStream(
     else:
         fileName = f"{fileName} Invoice"
     doc.save(f"{fileName}.docx")
-    resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx", headers={"filename": "dsfdffdss"})
+    resp = FileResponse(
+        path=f"{fileName}.docx",
+        filename=f"{fileName}.docx",
+        headers={"filename": "dsfdffdss"},
+    )
     return resp
 
 

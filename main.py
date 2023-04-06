@@ -1827,7 +1827,7 @@ async def getBillMasterDraftStream(
         DetailInformationDictDataList.append(
             {
                 "Supplier": supplier,
-                "InvNumber": invNumber,
+                "InvNumber": invNumber if invNumber else "",
                 "Description": description,
                 "BilledAmount": amountBilled,
                 "Liability": liability,
@@ -1915,7 +1915,7 @@ async def getBillMasterDraftStream(
         "IssueDate": (await request.json())["IssueDate"],
         "DueDate": (await request.json())["DueDate"],
         "InvoiceNo": getResult["InvoiceNo"],
-        "logo": InlineImage(doc, logo_path, width=Mm(50), height=Mm(20)),
+        "logo": InlineImage(doc, logo_path),
     }
     doc.render(context)
     fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"

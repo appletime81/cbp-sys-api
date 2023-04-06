@@ -1,6 +1,6 @@
 import os
 import shutil
-
+import time
 from fastapi import APIRouter, Request, status, Depends, File, UploadFile
 from crud import *
 from get_db import get_db
@@ -38,27 +38,32 @@ async def uploadSignedBillMaster(
     """
     BillMasterID = int(BillMasterID)
     crudBillMaster = CRUD(db, BillMasterDBModel)
-    BillMasterID = (await request.json())["BillMasterID"]
     BillMasterData = crudBillMaster.get_with_condition({"BillMasterID": BillMasterID})[
         0
     ]
 
     with open(file.filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-
-    os.system(f"aws s3 cp {file.filename} s3://cht-deploy-bucket-1/{file.filename}")
-
-    # get URI
-    URI, _ = os.system(f"aws s3 presign s3://cht-deploy-bucket-1/{file.filename}")
+    try:
+        os.system(
+            f"aws s3 cp '{file.filename}' 's3://cht-deploy-bucket-1/{file.filename}'"
+        )
+    except Exception as e:
+        print(e)
 
     # update BillMaster
     newBillMasterData = deepcopy(BillMasterData)
-    newBillMasterData.URI = URI
+    newBillMasterData.URI = f"s3://cht-deploy-bucket-1/{file.filename}"
+    newBillMasterData.Status = "SIGNED"
 
     newBillMasterData = crudBillMaster.update(
         BillMasterData, orm_to_dict(newBillMasterData)
     )
-    return {"message": "success", "file_name": file.filename, "URI": URI}
+    return {
+        "message": "success",
+        "file_name": file.filename,
+        "URI": newBillMasterData.URI,
+    }
 
 
 # -------------------------------------------------------------------------

@@ -145,8 +145,8 @@
 
 import requests
 
-url = 'http://localhost:8000/api/v1/getBillMasterDraftStream'
-headers = {'Content-Type': 'application/json'}
+url = "http://localhost:8000/api/v1/getBillMasterDraftStream"
+headers = {"Content-Type": "application/json"}
 data = {
     "BillMasterID": 1,
     "UserID": "chang_ty",
@@ -155,12 +155,12 @@ data = {
     "WorkTitle": "Construction #11",
     "InvoiceName": "",
     "SubmarineCable": "SJC2",
-    "logo": 2
+    "logo": 2,
 }
 
 response = requests.post(url, headers=headers, json=data)
 
 if response.ok:
-    print('User created successfully', response.status_code, response.headers)
+    print("User created successfully", response.status_code, response.headers)
 else:
-    print('Failed to create user:', response.status_code, response.text)
+    print("Failed to create user:", response.status_code, response.text)
