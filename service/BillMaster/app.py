@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 from copy import deepcopy
+import os
+from fastapi.responses import FileResponse
 
 router = APIRouter()
 
@@ -129,3 +131,44 @@ async def checkBillingNoConvert(
     # {0}{1}-{2}{3}
     newBillingNo = f"{newBillingNoList[0]}{newBillingNoList[1]}-{newBillingNoList[2]}{newBillingNoList[3]}"
     return {"BillingNo": newBillingNo}
+
+
+# 檢視已簽核
+@router.get("/BillMaster/signedDraft/{BillMasterID}")
+async def getSignedDraft(
+    request: Request,
+    BillMasterID: str,
+    db: Session = Depends(get_db),
+):
+    BillMasterID = int(BillMasterID)
+    crud = CRUD(db, BillMasterDBModel)
+    BillMasterData = crud.get_with_condition({"BillMasterID": BillMasterID})[0]
+
+    draftURI = BillMasterData.URI
+
+    try:
+        os.system(f"aws s3 cp {draftURI} .")
+        fileName = draftURI.split("/")[-1]
+        fileResponse = FileResponse(path=fileName, filename=fileName)
+        return fileResponse
+    except:
+        return {"message": "failed to get file"}
+
+
+@router.post("/updateBillMaster")
+async def updateBillMaster(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    request_data = await request.json()
+    Status = request_data["Status"]
+    crud = CRUD(db, BillMasterDBModel)
+
+    BillMasterID = int(request_data["BillMasterID"])
+    BillMasterData = crud.get_with_condition({"BillMasterID": BillMasterID})[0]
+
+    newBillMasterData = deepcopy(BillMasterData)
+    newBillMasterData.Status = Status
+
+    crud.update(BillMasterData, orm_to_dict(newBillMasterData))
+    return {"message": "update success"}

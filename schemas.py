@@ -294,12 +294,13 @@ class CreditBalanceSchema(BaseModel):
     CBID: Optional[int]
     CBType: str
     BillingNo: Optional[str]
+    InvoiceNo: Optional[str]
     BLDetailID: Optional[int]
-    SubmarineCable: str
-    WorkTitle: str
-    BillMilestone: str
-    CurrAmount: float
-    PartyName: str
+    SubmarineCable: Optional[str]
+    WorkTitle: Optional[str]
+    BillMilestone: Optional[str]
+    CurrAmount: Optional[float]
+    PartyName: Optional[str]
     CNNo: Optional[str]
     CreateDate: datetime
     LastUpdDate: Optional[datetime]

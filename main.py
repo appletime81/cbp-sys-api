@@ -1910,12 +1910,15 @@ async def getBillMasterDraftStream(
         "CorporateBranchAddress": getResult["CorporateInformation"]["BranchAddress"],
         "CorporateBankAcctName": getResult["CorporateInformation"]["BankAcctName"],
         "CorporateBankAcctNo": getResult["CorporateInformation"]["BankAcctNo"],
-        "CorporateSavingAcctNo": getResult["CorporateInformation"]["SavingAcctNo"],
+        "CorporateSavingAcctNo": getResult["CorporateInformation"]["SavingAcctNo"]
+        if getResult["CorporateInformation"]["SavingAcctNo"]
+        else "",
         "CorporateSWIFTCode": getResult["CorporateInformation"]["SWIFTCode"],
         "IssueDate": (await request.json())["IssueDate"],
         "DueDate": (await request.json())["DueDate"],
         "InvoiceNo": getResult["InvoiceNo"],
         "logo": InlineImage(doc, logo_path),
+        "PONo": f"PO No.: {BillMasterData.PONo}" if BillMasterData.PONo else "",
     }
     doc.render(context)
     fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
@@ -1924,6 +1927,17 @@ async def getBillMasterDraftStream(
     else:
         fileName = f"{fileName} Invoice"
     doc.save(f"{fileName}.docx")
+
+    # --------- 更新BillMaster IssueDate、DueDate ---------
+    newBillMasterDictData = orm_to_dict(deepcopy(BillMasterData))
+    newBillMasterDictData["IssueDate"] = (await request.json())["IssueDate"].replace(
+        "/", "-"
+    ) + " 00:00:00"
+    newBillMasterDictData["DueDate"] = (await request.json())["DueDate"].replace(
+        "/", "-"
+    ) + " 00:00:00"
+    crudBillMaster.update(BillMasterData, newBillMasterDictData)
+
     resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx")
     return resp
 

@@ -213,6 +213,7 @@ async def addCreditBalance(
     crud = CRUD(db, CreditBalanceDBModel)
     CreditBalanceDictData = CreditBalancePydanticData.dict()
     CreditBalanceDictData["CreateDate"] = convert_time_to_str(datetime.now())
+    CreditBalanceDictData["CBType"] = "USER_ADD"
     CreditBalancePydanticData = CreditBalanceSchema(**CreditBalanceDictData)
     CreditBalanceData = crud.create(CreditBalancePydanticData)
     return {

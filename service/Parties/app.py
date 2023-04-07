@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from utils.utils import *
 from utils.orm_pydantic_convert import orm_to_pydantic
 from copy import deepcopy
+from sqlalchemy.sql import func
 
 router = APIRouter()
 
@@ -23,7 +24,22 @@ async def getParties(
     else:
         dictCondition = convert_url_condition_to_dict_ignore_date(urlCondition)
         PartiesDataList = crud.get_with_condition(dictCondition)
-    return PartiesDataList
+    newPartiesDataList = []
+
+    # get unique PartyName
+    for i, PartiesData in enumerate(PartiesDataList):
+        if i == 0:
+            newPartiesDataList.append(PartiesData)
+        else:
+            filter_result = list(
+                filter(
+                    lambda x: x.PartyName == PartiesData.PartyName, newPartiesDataList
+                )
+            )
+            if not filter_result:
+                newPartiesDataList.append(PartiesData)
+
+    return newPartiesDataList
 
 
 @router.post("/Parties", status_code=status.HTTP_201_CREATED)

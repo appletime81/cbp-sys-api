@@ -358,6 +358,7 @@ class CreditBalanceDBModel(Base):
     CBID = Column(Integer, primary_key=True, index=True)
     CBType = Column(String(20))
     BillingNo = Column(String(64))
+    InvoiceNo = Column(String(64))
     BLDetailID = Column(Integer)
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
