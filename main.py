@@ -195,12 +195,12 @@ async def searchInvoiceWKMaster(
                 for InvoiceWKMasterData in InvoiceWKMasterDataList
                 if InvoiceWKMasterData.Status == status_condition["Status"]
             ]
-        else:
-            InvoiceWKMasterDataList = [
-                InvoiceWKMasterData
-                for InvoiceWKMasterData in InvoiceWKMasterDataList
-                if InvoiceWKMasterData.Status in status_condition["Status"]
-            ]
+        # else:
+        #     InvoiceWKMasterDataList = [
+        #         InvoiceWKMasterData
+        #         for InvoiceWKMasterData in InvoiceWKMasterDataList
+        #         if InvoiceWKMasterData.Status in status_condition["Status"]
+        #     ]
 
     if date_condition:
         key = list(date_condition.keys())[0]
@@ -299,9 +299,10 @@ async def getInvoiceMasterInvoiceDetailStream(
         )  # remove duplicates
         LiabilityDataFrameData.to_csv("LiabilityDataFrameData.csv", index=False)
         # get all PartyName
-        PartyNameList = list(
-            set([LiabilityData.PartyName for LiabilityData in LiabilityDataList])
-        )
+        # PartyNameList = list(
+        #     set([LiabilityData.PartyName for LiabilityData in LiabilityDataList])
+        # )
+        PartyNameList = list(set(LiabilityDataFrameData["PartyName"].tolist()))
 
         InvoiceMasterDictDataList = []
         for i, PartyName in enumerate(PartyNameList):
@@ -1025,11 +1026,6 @@ async def returnBillMasterAndBillDetail(
 async def returnToValidatedBillMasterAndBillDetailChoiceBillMaster(
     request: Request, db: Session = Depends(get_db)
 ):
-    """
-    {
-        "BillMaster": {},
-    }
-    """
     crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
@@ -1544,8 +1540,6 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
         )
         crudCreditBalanceStatement.create(newCBStatementPydanticData)
     return {"message": "success"}
-
-
 
 
 # 產製帳單draft(初始化)

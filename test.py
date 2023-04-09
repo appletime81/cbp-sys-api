@@ -143,24 +143,30 @@
 # doc.save("generated_doc.docx")
 
 
-import requests
+# import requests
+#
+# url = "http://localhost:8000/api/v1/getBillMasterDraftStream"
+# headers = {"Content-Type": "application/json"}
+# data = {
+#     "BillMasterID": 1,
+#     "UserID": "chang_ty",
+#     "IssueDate": "2023/04/01",
+#     "DueDate": "2023/04/30",
+#     "WorkTitle": "Construction #11",
+#     "InvoiceName": "",
+#     "SubmarineCable": "SJC2",
+#     "logo": 2,
+# }
+#
+# response = requests.post(url, headers=headers, json=data)
+#
+# if response.ok:
+#     print("User created successfully", response.status_code, response.headers)
+# else:
+#     print("Failed to create user:", response.status_code, response.text)
 
-url = "http://localhost:8000/api/v1/getBillMasterDraftStream"
-headers = {"Content-Type": "application/json"}
-data = {
-    "BillMasterID": 1,
-    "UserID": "chang_ty",
-    "IssueDate": "2023/04/01",
-    "DueDate": "2023/04/30",
-    "WorkTitle": "Construction #11",
-    "InvoiceName": "",
-    "SubmarineCable": "SJC2",
-    "logo": 2,
-}
+import pandas as pd
 
-response = requests.post(url, headers=headers, json=data)
-
-if response.ok:
-    print("User created successfully", response.status_code, response.headers)
-else:
-    print("Failed to create user:", response.status_code, response.text)
+df = pd.read_csv("LiabilityDataFrameData.csv")
+PartyNameList = list(set(df["PartyName"].tolist()))
+print(PartyNameList)
