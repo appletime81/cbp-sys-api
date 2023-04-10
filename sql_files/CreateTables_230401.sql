@@ -551,6 +551,8 @@ VALUES (9, 'SJC2', 'Construction', 'BM9a', 'TICC', 7.1428571429, '2022-12-27 14:
 INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
                               ModifyNote, EndDate)
 VALUES (10, 'SJC2', 'Construction', 'BM9a', 'VNPT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
+
+
 INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
                               ModifyNote, EndDate)
 VALUES (11, 'SJC2', 'Construction', 'BM12', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
