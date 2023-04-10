@@ -174,6 +174,7 @@ class SuppliersSchema(BaseModel):
     SubmarineCable: Optional[str]
     WorkTitle: Optional[str]
     SupplierName: Optional[str]
+    CompanyName: Optional[str]
     BankAcctName: Optional[str]
     BankAcctNo: Optional[str]
     SavingAcctNo: Optional[str]

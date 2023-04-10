@@ -268,6 +268,7 @@ class SuppliersDBModel(Base):
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
     SupplierName = Column(String(100))
+    CompanyName = Column(String(256))
     BankAcctName = Column(String(100))
     BankAcctNo = Column(String(32))
     SavingAcctNo = Column(String(32))

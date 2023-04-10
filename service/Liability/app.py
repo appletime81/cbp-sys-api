@@ -58,23 +58,6 @@ async def getLiability(
     return LiabilityDataList
 
 
-# @router.post("/searchLiability")
-# async def getLiability(
-#     request: Request,
-#     db: Session = Depends(get_db),
-# ):
-#     table_name = "Liability"
-#     dictCondition = await request.json()
-#     dictCondition = convert_dict_with_date_to_range_format(dictCondition)
-#     sql_condition = convert_dict_to_sql_condition(dictCondition, table_name)
-#
-#     print(sql_condition)
-#
-#     crud = CRUD(db, LiabilityDBModel)
-#     LiabilityDataList = crud.get_all_by_sql(sql_condition)
-#     return LiabilityDataList
-
-
 @router.post("/addLiability", status_code=status.HTTP_201_CREATED)
 async def addLiability(
     request: Request,
