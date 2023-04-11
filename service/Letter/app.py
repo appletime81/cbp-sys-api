@@ -20,7 +20,7 @@ async def getLetter(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    doc = DocxTemplate("template.docx")
+    doc = DocxTemplate("templates/template.docx")
     context = {
         "file_num": "TPE112013001",
         "conteact_person ": "張增懿",

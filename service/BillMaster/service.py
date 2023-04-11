@@ -305,6 +305,20 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
                     "BillDetail": BillDetailDataList,
                 }
             )
+    elif "start" in urlCondition and "end" in urlCondition:
+        dictCondition = convert_url_condition_to_dict(urlCondition)
+        sqlCondition = convert_dict_to_sql_condition(dictCondition)
+        BillMasterDataList = crudBillMaster.get_all_by_sql(sqlCondition)
+        for BillMasterData in BillMasterDataList:
+            BillDetailDataList = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillMasterData.BillMasterID}
+            )
+            getResult.append(
+                {
+                    "BillMaster": BillMasterData,
+                    "BillDetail": BillDetailDataList,
+                }
+            )
     else:
         dictCondition = convert_url_condition_to_dict(urlCondition)
         BillMasterDataList = crudBillMaster.get_with_condition(dictCondition)
@@ -659,7 +673,7 @@ async def getBillMasterDraftStream(
         return getResult
 
     # --------- generate word file ---------
-    doc = DocxTemplate("bill_draft_tpl.docx")
+    doc = DocxTemplate("templates/bill_draft_tpl.docx")
     docxFiles = os.listdir(os.getcwd())
     for docxFile in docxFiles:
         if docxFile.endswith(".docx") and "Network" in docxFile:
@@ -1370,3 +1384,61 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
 
 
 # ----------------------------------------------------------------------
+
+
+# --------------------------------- 銷帳 ---------------------------------
+@router.post("/BillMaster&BillDetail/toWriteOff")
+async def billWriteOff(request: Request, db: Session = Depends(get_db)):
+    """
+     [
+        {
+            "BillMaster": {...},
+            "BillDetail": [
+                {...},
+                {...}
+            ]
+        }
+    ]
+    """
+    BillMasterDictData = (await request.json())[0]["BillMaster"]
+    BillDetailDictDataList = (await request.json())[0]["BillDetail"]
+
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+
+    newBillDetailDataList = []
+
+    for BillDetailDictData in BillDetailDictDataList:
+        oldBillDetailData = crudBillDetail.get_with_condition(
+            {"BillDetailID": BillDetailDictData["BillDetailID"]}
+        )[0]
+
+        if BillMasterDictData["Status"] == "COMPLETE":
+            BillDetailDictData["WriteOffDate"] = convert_time_to_str(datetime.now())
+
+        newBillDetailData = crudBillDetail.update(oldBillDetailData, BillDetailDictData)
+        newBillDetailDataList.append(newBillDetailData)
+
+    oldBillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+    )[0]
+    ReceivedAmountSum = sum(
+        [
+            newBillDetailData.ReceivedAmount
+            for newBillDetailData in newBillDetailDataList
+        ]
+    )
+    BillMasterDictData["ReceivedAmountSum"] = ReceivedAmountSum
+
+    newBillMasterData = crudBillMaster.update(oldBillMasterData, BillMasterDictData)
+
+    # ---------------------------- 溢繳 -------------------------------
+    for newBillDetailData in newBillDetailDataList:
+        if newBillDetailData.OverAmount > 0:
+            newCBDictData = {
+                "BLDetailID": newBillDetailData.BillDetailID,
+            }
+
+    return

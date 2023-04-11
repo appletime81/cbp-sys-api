@@ -293,7 +293,7 @@ class CreditBalanceSchema(BaseModel):
     """
 
     CBID: Optional[int]
-    CBType: str
+    CBType: Optional[str]
     BillingNo: Optional[str]
     InvoiceNo: Optional[str]
     BLDetailID: Optional[int]
@@ -303,7 +303,7 @@ class CreditBalanceSchema(BaseModel):
     CurrAmount: Optional[float]
     PartyName: Optional[str]
     CNNo: Optional[str]
-    CreateDate: datetime
+    CreateDate: Optional[datetime]
     LastUpdDate: Optional[datetime]
     Note: Optional[str]
 
@@ -323,8 +323,8 @@ class CreditBalanceStatementSchema(BaseModel):
 
     CBStateID: Optional[int]
     CBID: int
-    BillingNo: str
-    BLDetailID: int
+    BillingNo: Optional[str]
+    BLDetailID: Optional[int]
     TransItem: str
     OrgAmount: float
     TransAmount: float

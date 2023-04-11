@@ -207,18 +207,64 @@ async def getCreditBalanceStatement(
 @router.post("/CreditBalance", status_code=status.HTTP_201_CREATED)
 async def addCreditBalance(
     request: Request,
-    CreditBalancePydanticData: CreditBalanceSchema,
     db: Session = Depends(get_db),
 ):
-    crud = CRUD(db, CreditBalanceDBModel)
-    CreditBalanceDictData = CreditBalancePydanticData.dict()
+    CreditBalanceDictData = await request.json()
+    if isinstance(CreditBalanceDictData["CurrAmount"], str):
+        CreditBalanceDictData["CurrAmount"] = float(
+            CreditBalanceDictData["CurrAmount"].replace(",", "")
+        )
+
+    pprint(CreditBalanceDictData)
+
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+    crudParties = CRUD(db, PartiesDBModel)
+    crudSubmarineCables = CRUD(db, SubmarineCablesDBModel)
+
+    PartyCode = crudParties.get_with_condition(
+        {"PartyName": CreditBalanceDictData["PartyName"]}
+    )[0].PartyCode
+
+    CableCode = crudSubmarineCables.get_with_condition(
+        {"CableName": CreditBalanceDictData["SubmarineCable"]}
+    )[0].CableCode
+
+    timestamp = (
+        convert_time_to_str(datetime.now())
+        .replace(" ", "")
+        .replace(":", "")
+        .replace("-", "")[2:12]
+    )
+    WorkTitleMapping = {"Upgrade": "UP", "Construction": "CO", "O&M": "OM"}
+
+    # 新增CB
     CreditBalanceDictData["CreateDate"] = convert_time_to_str(datetime.now())
-    CreditBalanceDictData["CBType"] = "USER_ADD"
+    CreditBalanceDictData[
+        "CNNo"
+    ] = f"{CableCode}{WorkTitleMapping[CreditBalanceDictData['WorkTitle']]}-{PartyCode}{timestamp}"
     CreditBalancePydanticData = CreditBalanceSchema(**CreditBalanceDictData)
-    CreditBalanceData = crud.create(CreditBalancePydanticData)
+    newCreditBalanceData = crudCreditBalance.create(CreditBalancePydanticData)
+
+    # 新增CBStatement
+    CBStatementDictData = {
+        "CBID": newCreditBalanceData.CBID,
+        "BillingNo": newCreditBalanceData.BillingNo,
+        "TransItem": "USER_ADD",
+        "OrgAmount": newCreditBalanceData.CurrAmount,
+        "TransAmount": 0,
+        "Note": newCreditBalanceData.Note,
+        "CreateDate": convert_time_to_str(datetime.now()),
+    }
+
+    newCBStatementData = crudCreditBalanceStatement.create(
+        CreditBalanceStatementSchema(**CBStatementDictData)
+    )
+
     return {
         "message": "CreditBalance successfully created",
-        "CreditBalance": CreditBalanceData,
+        "CreditBalance": newCreditBalanceData,
+        "CBStatement": newCBStatementData,
     }
 
 
