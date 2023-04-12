@@ -37,6 +37,7 @@ from service.PartiesByContract.app import router as PartiesByContractRouter
 from service.SuppliersByContract.app import router as SuppliersByContractRouter
 from service.UploadFile.app import router as UploadFileRouter
 from service.Users.app import router as UsersRouter
+from service.Payment.app import router as PaymentRouter
 from utils.utils import *
 from utils.orm_pydantic_convert import *
 
@@ -70,6 +71,7 @@ app.include_router(
 app.include_router(UploadFileRouter, prefix=ROOT_URL, tags=["ReceiveFile"])
 app.include_router(UsersRouter, prefix=ROOT_URL, tags=["Users"])
 app.include_router(BillMasterServiceRouter, prefix=ROOT_URL, tags=["BillMasterService"])
+app.include_router(PaymentRouter, prefix=ROOT_URL, tags=["Payment"])
 
 # allow middlewares
 app.add_middleware(

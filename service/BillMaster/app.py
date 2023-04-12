@@ -192,7 +192,7 @@ async def updateBillMaster(
         WKMasterIDList = list(
             set([BillDetailData.WKMasterID for BillDetailData in BillDetailDataList])
         )
-        InvoiceWKMasterDataList = crudBillDetail.get_value_if_in_a_list(
+        InvoiceWKMasterDataList = crudInvoiceWKMaster.get_value_if_in_a_list(
             InvoiceWKMasterDBModel.WKMasterID, WKMasterIDList
         )
         # ----------------- 更新狀態為PAYING -----------------
