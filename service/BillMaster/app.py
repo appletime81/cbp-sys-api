@@ -147,6 +147,13 @@ async def getSignedDraft(
     draftURI = BillMasterData.URI
 
     try:
+        # --------- 先清空pdf檔案 ---------
+        files = os.listdir(os.getcwd())
+        for file in files:
+            if file.endswith(".pdf"):
+                os.system(f"rm -rf {file}")
+        # -------------------------------
+
         os.system(f"aws s3 cp {draftURI} .")
         fileName = draftURI.split("/")[-1]
         fileResponse = FileResponse(path=fileName, filename=fileName)
@@ -162,13 +169,45 @@ async def updateBillMaster(
 ):
     request_data = await request.json()
     Status = request_data["Status"]
-    crud = CRUD(db, BillMasterDBModel)
+
+    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
 
     BillMasterID = int(request_data["BillMasterID"])
-    BillMasterData = crud.get_with_condition({"BillMasterID": BillMasterID})[0]
+    BillMasterData = crudBillMaster.get_with_condition({"BillMasterID": BillMasterID})[
+        0
+    ]
 
     newBillMasterData = deepcopy(BillMasterData)
     newBillMasterData.Status = Status
+    newBillMasterData = crudBillMaster.update(
+        BillMasterData, orm_to_dict(newBillMasterData)
+    )
 
-    crud.update(BillMasterData, orm_to_dict(newBillMasterData))
-    return {"message": "update success"}
+    if Status == "TO_WRITEOFF":
+        BillDetailDataList = crudBillDetail.get_with_condition(
+            {"BillMasterID": newBillMasterData.BillMasterID}
+        )
+        WKMasterIDList = list(
+            set([BillDetailData.WKMasterID for BillDetailData in BillDetailDataList])
+        )
+        InvoiceWKMasterDataList = crudBillDetail.get_value_if_in_a_list(
+            InvoiceWKMasterDBModel.WKMasterID, WKMasterIDList
+        )
+        # ----------------- 更新狀態為PAYING -----------------
+        newInvoiceWKMasterDataList = []
+        for InvoiceWKMasterData in InvoiceWKMasterDataList:
+            newInvoiceWKMasterData = deepcopy(InvoiceWKMasterData)
+            newInvoiceWKMasterData.Status = "PAYING"
+            newInvoiceWKMasterData = crudInvoiceWKMaster.update(
+                InvoiceWKMasterData, orm_to_dict(newInvoiceWKMasterData)
+            )
+            newInvoiceWKMasterDataList.append(newInvoiceWKMasterData)
+
+        return {
+            "message": "update success",
+            "BillMaster": newBillMasterData,
+            "InvoiceWKMaster": newInvoiceWKMasterDataList,
+        }
+    return {"message": "update success", "BillMaster": newBillMasterData}

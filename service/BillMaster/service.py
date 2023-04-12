@@ -672,8 +672,7 @@ async def getBillMasterDraftStream(
     if not (await request.json()).get("logo"):
         return getResult
 
-    # --------- generate word file ---------
-    doc = DocxTemplate("templates/bill_draft_tpl.docx")
+    # ----------- 先清空所有的docx文件 -----------
     docxFiles = os.listdir(os.getcwd())
     for docxFile in docxFiles:
         if docxFile.endswith(".docx") and "Network" in docxFile:
@@ -681,6 +680,11 @@ async def getBillMasterDraftStream(
                 os.system(f"rm -rf {docxFile}")
             except Exception as e:
                 print(e)
+    # -----------------------------------------
+
+    # --------- generate word file ---------
+    doc = DocxTemplate("templates/bill_draft_tpl.docx")
+
     logo_path = (
         "images/logo_001.png"
         if (await request.json())["logo"] == 1
