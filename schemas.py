@@ -105,7 +105,6 @@ class BillMasterSchema(BaseModel):
     BillMasterID: Optional[int]
     BillingNo: str
     PONo: Optional[str]
-    SupplierName: str
     PartyName: str
     SubmarineCable: str
     WorkTitle: str

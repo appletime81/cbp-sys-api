@@ -526,7 +526,7 @@ INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone,
 VALUES (1, 'SJC2', 'Construction', 'BM9a', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
 INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
                               ModifyNote, EndDate)
-VALUES (2, 'SJC2', 'Construction', 'BM9a', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
+VALUES (2, 'SJC2', 'Construction', 'BM9a', 'CM', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
 INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
                               ModifyNote, EndDate)
 VALUES (3, 'SJC2', 'Construction', 'BM9a', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null, null);
@@ -558,7 +558,7 @@ INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone,
 VALUES (11, 'SJC2', 'Construction', 'BM12', 'CHT', 7.1428571429, '2022-12-27 14:30:00', null, null, null);
 INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
                               ModifyNote, EndDate)
-VALUES (12, 'SJC2', 'Construction', 'BM12', 'CMI', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
+VALUES (12, 'SJC2', 'Construction', 'BM12', 'CM', 28.5714285714, '2022-12-27 14:30:00', null, null, null);
 INSERT INTO cbp_db.Liability (LBRawID, SubmarineCable, WorkTitle, BillMilestone, PartyName, LBRatio, CreateDate, Note,
                               ModifyNote, EndDate)
 VALUES (13, 'SJC2', 'Construction', 'BM12', 'DHT', 3.5714285714, '2022-12-27 14:30:00', null, null, null);

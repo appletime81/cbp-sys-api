@@ -117,7 +117,6 @@ class BillMasterDBModel(Base):
     BillMasterID = Column(Integer, primary_key=True, index=True)
     BillingNo = Column(String(20))
     PONo = Column(String(20))
-    SupplierName = Column(String(100))
     SubmarineCable = Column(String(10))
     WorkTitle = Column(String(50))
     PartyName = Column(String(100))

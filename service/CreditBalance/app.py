@@ -242,7 +242,7 @@ async def addCreditBalance(
     CreditBalanceDictData["CreateDate"] = convert_time_to_str(datetime.now())
     CreditBalanceDictData[
         "CNNo"
-    ] = f"{CableCode}{WorkTitleMapping[CreditBalanceDictData['WorkTitle']]}-{PartyCode}{timestamp}"
+    ] = f"CN{CableCode}{WorkTitleMapping[CreditBalanceDictData['WorkTitle']]}-{PartyCode}{timestamp}"
     CreditBalancePydanticData = CreditBalanceSchema(**CreditBalanceDictData)
     newCreditBalanceData = crudCreditBalance.create(CreditBalancePydanticData)
 
