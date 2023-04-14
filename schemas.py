@@ -422,7 +422,6 @@ class UsersSchema(BaseModel):
     UserID: Optional[str]
     UserName: Optional[str]
     UserCName: Optional[str]
-    PCode: Optional[str]
     Email: Optional[str]
     Tel: Optional[str]
     Fax: Optional[str]

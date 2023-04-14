@@ -84,6 +84,25 @@ app.add_middleware(
 
 
 # ------------------------------ InvoiceWKMaster and InvoiceWKDetail and InvoiceMaster and InvoiceDetail ------------------------------
+# for InvoiceWKMaster
+@app.post(f"{ROOT_URL}/checkInvoiceNo")
+async def checkInoviceNo(request: Request, db: Session = Depends(get_db)):
+    """
+    input:
+    {"InvoiceNo": "1234567890"}
+    """
+    crudInvoiceWKMaster = CRUD(db, InvoiceWKMasterDBModel)
+    InvoiceNo = (await request.json())["InvoiceNo"]
+
+    InvoiceWKMasterData = crudInvoiceWKMaster.get_with_condition(
+        {"InvoiceNo": InvoiceNo}
+    )
+    if InvoiceWKMasterData:
+        return {"message": "InvoiceNo already exist", "isExist": True}
+    else:
+        return {"message": "InvoiceNo not exist", "isExist": False}
+
+
 @app.post(f"{ROOT_URL}/generateInvoiceWKMaster&InvoiceWKDetail")
 async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     request: Request,

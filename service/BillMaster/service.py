@@ -734,17 +734,31 @@ async def getBillMasterDraftStream(
             "DEmail"
         ],
         "CorporateBankName": getResult["CorporateInformation"]["BankName"],
-        "CorporateBranch": getResult["CorporateInformation"]["Branch"],
-        "CorporateBranchAddress": getResult["CorporateInformation"]["BranchAddress"],
-        "CorporateBankAcctName": getResult["CorporateInformation"]["BankAcctName"],
-        "CorporateBankAcctNo": getResult["CorporateInformation"]["BankAcctNo"],
+        "CorporateBranch": getResult["CorporateInformation"]["Branch"]
+        if getResult["CorporateInformation"]["Branch"]
+        else "",
+        "CorporateBranchAddress": getResult["CorporateInformation"]["BranchAddress"]
+        if getResult["CorporateInformation"]["BranchAddress"]
+        else "",
+        "CorporateBankAcctName": getResult["CorporateInformation"]["BankAcctName"]
+        if getResult["CorporateInformation"]["BankAcctName"]
+        else "",
+        "CorporateBankAcctNo": getResult["CorporateInformation"]["BankAcctNo"]
+        if getResult["CorporateInformation"]["BankAcctNo"]
+        else "",
         "CorporateSavingAcctNo": getResult["CorporateInformation"]["SavingAcctNo"]
         if getResult["CorporateInformation"]["SavingAcctNo"]
         else "",
-        "CorporateIBAN": getResult["CorporateInformation"]["IBAN"],
+        "CorporateIBAN": getResult["CorporateInformation"]["IBAN"]
+        if getResult["CorporateInformation"]["IBAN"]
+        else "",
         "CorporateSWIFTCode": getResult["CorporateInformation"]["SWIFTCode"],
-        "CorporateACHNo": getResult["CorporateInformation"]["ACHNo"],
-        "CorporateWireRouting": getResult["CorporateInformation"]["WireRouting"],
+        "CorporateACHNo": getResult["CorporateInformation"]["ACHNo"]
+        if getResult["CorporateInformation"]["ACHNo"]
+        else "",
+        "CorporateWireRouting": getResult["CorporateInformation"]["WireRouting"]
+        if getResult["CorporateInformation"]["WireRouting"]
+        else "",
         "IssueDate": (await request.json())["IssueDate"],
         "DueDate": (await request.json())["DueDate"],
         "InvoiceNo": getResult["InvoiceNo"],

@@ -526,7 +526,6 @@ class UsersDBModel(Base):
     __tablename__ = "Users"
     UserID = Column(String(16), primary_key=True, index=True)
     UserName = Column(String(16))
-    PCode = Column(String(16))
     Email = Column(String(128))
     Tel = Column(String(20))
     Fax = Column(String(20))
