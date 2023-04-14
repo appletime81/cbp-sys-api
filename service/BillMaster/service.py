@@ -290,8 +290,8 @@ async def generateInitBillMasterAndBillDetail(
 async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(get_db)):
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    table_name = "BillMaster"
     getResult = []
-    print(urlCondition)
     if urlCondition == "all":
         BillMasterDataList = crudBillMaster.get_all()
         for BillMasterData in BillMasterDataList:
@@ -306,7 +306,7 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
             )
     elif "start" in urlCondition and "end" in urlCondition:
         dictCondition = convert_url_condition_to_dict(urlCondition)
-        sqlCondition = convert_dict_to_sql_condition(dictCondition)
+        sqlCondition = convert_dict_to_sql_condition(dictCondition, table_name)
         BillMasterDataList = crudBillMaster.get_all_by_sql(sqlCondition)
         for BillMasterData in BillMasterDataList:
             BillDetailDataList = crudBillDetail.get_with_condition(
