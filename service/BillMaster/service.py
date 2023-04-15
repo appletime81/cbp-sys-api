@@ -15,8 +15,10 @@ from docxtpl import DocxTemplate, InlineImage
 router = APIRouter()
 
 
-# ----------------------------------------------- 合併帳單 -----------------------------------------------
+# region:  ------------------------------ 合併帳單 ------------------------------
 # 顯示InvoiceMaster、InvoiceDetail資料
+
+
 @router.get("/getInvoiceMaster&InvoiceDetail/{urlCondition}")
 async def getInvoiceMasterAndInvoiceDetail(
     request: Request, urlCondition: str, db: Session = Depends(get_db)
@@ -490,11 +492,13 @@ async def getBillMasterAndBillDetailWithCBData(
     return getResult
 
 
-# -------------------------------------------------------------------------------------------------------
+# endregion:  -----------------------------------------------------------------
 
 
-# ------------------------------ 產製帳單 ------------------------------
+# region: ------------------------------- 產製帳單 -------------------------------
 # 產製帳單draft(初始化)
+
+
 @router.post("/getBillMasterDraftStream")
 async def getBillMasterDraftStream(
     request: Request,
@@ -814,8 +818,13 @@ async def updateBillMasterByDraftStream(
     return {"newBillMaster": newBillMasterData}
 
 
-# ------------------------------ 退回及作廢 ------------------------------
+# endregion: --------------------------------------------------------------------
+
+
+# region: ------------------------------ 退回及作廢 ------------------------------
 # 待抵扣階段退回
+
+
 @router.post("/returnBillMaster&BillDetail/beforeDeduct")
 async def returnBillMasterAndBillDetail(
     request: Request, db: Session = Depends(get_db)
@@ -1402,13 +1411,15 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
     return {"message": "success"}
 
 
-# ----------------------------------------------------------------------
+# endregion: -------------------------------------------------------------------
 
 
-# --------------------------------- 銷帳 ---------------------------------
+# region: ----------------------------------- 銷帳 -----------------------------------
+
+
 @router.post("/BillMaster&BillDetail/toWriteOff")
 async def billWriteOff(request: Request, db: Session = Depends(get_db)):
-    """ 
+    """
     {
         "BillMaster": {...},
         "BillDetail": [
@@ -1459,3 +1470,6 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
             }
 
     return
+
+
+# endregion: ------------------------------------------------------------------------
