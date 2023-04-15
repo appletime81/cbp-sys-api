@@ -1408,19 +1408,17 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
 # --------------------------------- 銷帳 ---------------------------------
 @router.post("/BillMaster&BillDetail/toWriteOff")
 async def billWriteOff(request: Request, db: Session = Depends(get_db)):
+    """ 
+    {
+        "BillMaster": {...},
+        "BillDetail": [
+            {...},
+            {...}
+        ]
+    }
     """
-     [
-        {
-            "BillMaster": {...},
-            "BillDetail": [
-                {...},
-                {...}
-            ]
-        }
-    ]
-    """
-    BillMasterDictData = (await request.json())[0]["BillMaster"]
-    BillDetailDictDataList = (await request.json())[0]["BillDetail"]
+    BillMasterDictData = (await request.json())["BillMaster"]
+    BillDetailDictDataList = (await request.json())["BillDetail"]
 
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
