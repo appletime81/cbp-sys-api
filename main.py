@@ -423,9 +423,11 @@ async def getInvoiceMasterInvoiceDetailStream(
                 "WorkTitle": WorkTitle,
                 "BillMilestone": InvoiceWKDetailDictData["BillMilestone"],
                 "FeeItem": InvoiceWKDetailDictData["FeeItem"],
-                "LBRatio": 1,
+                "LBRatio": 100,
                 "FeeAmountPre": InvoiceWKDetailDictData["FeeAmount"],
-                "FeeAmountPost": InvoiceWKDetailDictData["FeeAmount"],
+                "FeeAmountPost": cal_fee_amount_post(
+                    100, InvoiceWKDetailDictData["FeeAmount"]
+                ),
                 "Difference": 0,
             }
             InvoiceDetailDictDataList.append(InvoiceDetailDictData)
@@ -454,6 +456,7 @@ async def addInvoiceMasterAndInvoiceDetail(
 
     # add InvoiceDetail data to database
     for InvoiceDetailDictData in InvoiceDetailDictDataList:
+        InvoiceDetailDictData["FeeAmountPost"] += InvoiceDetailDictData["Difference"]
         InvoiceDetailPydanticData = InvoiceDetailSchema(**InvoiceDetailDictData)
         await InvoiceDetailApp.addInvoiceDetail(request, InvoiceDetailPydanticData, db)
 

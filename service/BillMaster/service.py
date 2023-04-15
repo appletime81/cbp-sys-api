@@ -94,6 +94,8 @@ async def checkInitBillMasterAndBillDetail(
         alert_msg["SubmarineCable"] = "SubmarineCable is not unique"
     if len(set(WorkTitleList)) > 1:
         alert_msg["WorkTitle"] = "WorkTitle is not unique"
+    if not alert_msg:
+        alert_msg["isUnique"] = True
     return alert_msg
 
 
