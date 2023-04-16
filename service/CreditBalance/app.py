@@ -217,6 +217,8 @@ async def generateReport(
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCreditNote = CRUD(db, CreditNoteDBModel)
+    crudCreditNoteDetail = CRUD(db, CreditNoteDetailDBModel)
 
     CBData = crudCreditBalance.get_with_condition({"CBID": request.json()["CBID"]})[0]
     CBStatementDataList = crudCreditBalanceStatement.get_with_condition(
@@ -225,8 +227,9 @@ async def generateReport(
 
     BillMilestoneList = []
     InvNoList = []
-    IssueDateList = []
+    BillIssueDateList = []
     CNNoList = []
+    CNIssueDateList = []
     DescriptionList = []
     DebitList = []
     CreditList = []
@@ -238,8 +241,14 @@ async def generateReport(
                 CBData.BillMilestone if CBData.BillMilestone else ""
             )
             InvNoList.append(CBData.BillingNo if CBData.InvNo else "")
-            IssueDateList.append(CBData.CreateDate if CBData.CreateDate else "")
+            BillIssueDateList.append(CBData.CreateDate if CBData.CreateDate else "")
             CNNoList.append(CBData.CNNo if CBData.CNNo else "")
+
+            if CBData.CNNo:
+                CNData = crudCreditNote.get_with_condition({"CNNo": CBData.CNNo})[0]
+                CNIssueDateList.append(CNData.CreateDate)
+            else:
+                CNIssueDateList.append("")
 
             BillDetailData = crudBillDetail.get_with_condition(
                 {"BillDetailID": CBData.BLDetailID}
@@ -249,7 +258,16 @@ async def generateReport(
             DebitList.append("")
             CreditList.append(CBStatementData.OrgAmount)
             BalanceList.append(CBStatementData.OrgAmount)
-            # TODO: Continue
+        else:
+            # TODO: Continue here
+            if CBStatementData.Status == "USER_ADD":
+                pass
+            elif CBStatementData.Status == "RETURN":
+                pass
+            elif CBStatementData.Status == "DEDUCT":
+                pass
+            elif CBStatementData.Status == "BANK_FEE":
+                pass
     return
 
 
