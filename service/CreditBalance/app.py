@@ -474,10 +474,10 @@ async def addCreditBalance(
             CreditBalanceDictData["CurrAmount"].replace(",", "")
         )
 
-    pprint(CreditBalanceDictData)
-
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+    crudCreditNote = CRUD(db, CreditNoteDBModel)
+    crudCreditNoteDetail = CRUD(db, CreditNoteDetailDBModel)
     crudParties = CRUD(db, PartiesDBModel)
     crudSubmarineCables = CRUD(db, SubmarineCablesDBModel)
 
@@ -519,6 +519,19 @@ async def addCreditBalance(
     newCBStatementData = crudCreditBalanceStatement.create(
         CreditBalanceStatementSchema(**CBStatementDictData)
     )
+
+    # # 新增CN
+    # newCNDictData = {
+    #     "CNNo": CreditBalanceDictData["CNNo"],
+    #     "CNType": CBStatementDictData["TransItem"],
+    #     "SubmarineCable": CreditBalanceDictData["SubmarineCable"],
+    #     "WorkTitle": CreditBalanceDictData["WorkTitle"],
+    #     "PartyName": CreditBalanceDictData["PartyName"],
+    #     "CurrAmount": CreditBalanceDictData["CurrAmount"],
+    #     "IssyeDate": convert_time_to_str(datetime.now()),
+    #     "Note": "",
+    #     "URI": ""
+    # }
 
     return {
         "message": "CreditBalance successfully created",
