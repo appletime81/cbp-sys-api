@@ -225,6 +225,8 @@ async def generateReport(
         {"CBID": request.json()["CBID"]}
     )
 
+    SubmarineCableList = []
+    WorkTitleList = []
     BillMilestoneList = []
     InvNoList = []
     BillIssueDateList = []
@@ -236,36 +238,179 @@ async def generateReport(
     BalanceList = []
 
     for i, CBStatementData in enumerate(CBStatementDataList):
-        if i == 0:
-            if CBStatementData.Status == "BM_ADD":
-                BillMilestoneList.append(CBData.BillMilestone)
-                InvNoList.append(CBStatementData.BillingNo)
+        if CBStatementData.Status == "BM_ADD":
+            BillMilestoneList.append(CBData.BillMilestone)
+            InvNoList.append(CBStatementData.BillingNo)
 
-                # get BillMaster
-                BillDetailData = crudBillDetail.get_with_condition(
-                    {"BillDetailID": CBStatementData.BLDetailID}
-                )[0]
-                BillMasterData = crudBillDetail.get_with_condition(
-                    {"BillMasterID": BillDetailData.BillMasterID}
-                )[0]
+            # get BillMaster
+            BillDetailData = crudBillDetail.get_with_condition(
+                {"BillDetailID": CBStatementData.BLDetailID}
+            )[0]
+            BillMasterData = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillDetailData.BillMasterID}
+            )[0]
 
-                # append BillMaster's IssueDate
-                BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
+            SubmarineCableList.append(CBData.SubmarineCable)
+            WorkTitleList.append(CBData.WorkTitle)
 
-                # BM_ADD no CNNo
-                CNNoList.append("")
+            # append BillMaster's IssueDate
+            BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
+
+            # BM_ADD no CNNo
+            CNNoList.append("")
+            CNIssueDateList.append("")
+
+            # append BillDetail's FeeItem
+            DescriptionList.append(BillDetailData.FeeItem)
+
+            # No Debit
+            DebitList.append("")
+
+            CreditList.append(CBStatementData.OrgAmount)
+            BalanceList.append(CBData.CurrAmount)
+        elif CBStatementData.Status == "USER_ADD":
+            BillMilestoneList.append(
+                CBData.BillMilestone if CBData.BillMilestone else ""
+            )
+            SubmarineCableList.append(
+                CBData.SubmarineCable if CBData.SubmarineCable else ""
+            )
+            WorkTitleList.append(CBData.WorkTitle if CBData.WorkTitle else "")
+
+            InvNoList.append(
+                CBStatementData.BillingNo if CBStatementData.BillingNo else ""
+            )
+            BillIssueDateList.append(orm_to_dict(CBStatementData)["CreateDate"])
+
+            # get CNNo
+            CNDetailData = crudCreditNoteDetail.get_with_condition(
+                {"CBStateID": CBStatementData.CBStateID}
+            )
+            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+
+            # get CN IssueDate
+            if CNDetailData:
+                CNData = crudCreditNote.get_with_condition({"CNID": CNDetailData.CNID})
+                CNIssueDateList.append(orm_to_dict(CNData[0]).IssueDate)
+            else:
                 CNIssueDateList.append("")
 
-                # append BillDetail's FeeItem
-                DescriptionList.append(BillDetailData.FeeItem)
+            DescriptionList.append(CBStatementData.Note if CBStatementData.Note else "")
+            DebitList.append("")
+            CreditList.append(CBStatementData.OrgAmount)
+            BalanceList.append(CBData.CurrAmount)
+        elif CBStatementData.Status == "RETURN":
+            BillMilestoneList.append(
+                CBData.BillMilestone if CBData.BillMilestone else ""
+            )
+            InvNoList.append(CBData.BillingNo if CBData.BillingNo else "")
+            SubmarineCableList.append(CBData.SubmarineCable)
+            WorkTitleList.append(CBData.WorkTitle)
 
-                # No Debit
-                DebitList.append("")
+            # get BillMaster
+            BillDetailData = crudBillDetail.get_with_condition(
+                {"BillDetailID": CBStatementData.BLDetailID}
+            )[0]
+            BillMasterData = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillDetailData.BillMasterID}
+            )[0]
+            BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
 
-                CreditList.append(CBStatementData.OrgAmount)
-                BalanceList.append(CBData.CurrAmount)
-            elif CBStatementData.Status == "USER_ADD":
-                pass
+            # get CN info
+            CNDetailData = crudCreditNoteDetail.get_with_condition(
+                {"CBStateID": CBStatementData.CBStateID}
+            )
+            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+
+            # get CN IssueDate
+            if CNDetailData:
+                CNData = crudCreditNote.get_with_condition({"CNID": CNDetailData.CNID})
+                CNIssueDateList.append(orm_to_dict(CNData[0]).IssueDate)
+            else:
+                CNIssueDateList.append("")
+
+            DescriptionList.append(
+                BillDetailData.FeeItem if BillDetailData.FeeItem else ""
+            )
+            DebitList.append(
+                abs(CBStatementData.TransAmount) if CBStatementData.TransAmount else ""
+            )
+            CreditList.append("")
+            BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
+        elif CBStatementData.Status == "DEDUCT":
+            BillDetailData = crudBillDetail.get_with_condition(
+                {"BillDetailID": CBStatementData.BLDetailID}
+            )[0]
+            BillMasterData = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillDetailData.BillMasterID}
+            )[0]
+            BillMilestoneList.append(
+                BillDetailData.BillMilestone if BillDetailData.BillMilestone else ""
+            )
+            WorkTitleList.append(
+                BillDetailData.WorkTitle if BillDetailData.WorkTitle else ""
+            )
+            BillMilestoneList.append(
+                BillDetailData.BillMilestone if BillDetailData.BillMilestone else ""
+            )
+            InvNoList.append(
+                BillMasterData.BillingNo if BillMasterData.BillingNo else ""
+            )
+            BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
+            CNNoList.append("")
+            CNIssueDateList.append("")
+            DescriptionList.append(
+                BillDetailData.FeeItem if BillDetailData.FeeItem else ""
+            )
+            DebitList.append(
+                abs(CBStatementData.TransAmount) if CBStatementData.TransAmount else ""
+            )
+            CreditList.append("")
+            BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
+        elif CBStatementData.Status == "REFUND":
+            BillDetailData = crudBillDetail.get_with_condition(
+                {"BillDetailID": CBStatementData.BLDetailID}
+            )[0]
+            BillMasterData = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillDetailData.BillMasterID}
+            )[0]
+            SubmarineCableList.append(
+                BillDetailData.SubmarineCable if BillDetailData.SubmarineCable else ""
+            )
+            WorkTitleList.append(
+                BillDetailData.WorkTitle if BillDetailData.WorkTitle else ""
+            )
+            BillMilestoneList.append(
+                BillDetailData.BillMilestone if BillDetailData.BillMilestone else ""
+            )
+            InvNoList.append(
+                BillMasterData.BillingNo if BillMasterData.BillingNo else ""
+            )
+            BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
+
+            # get CN info
+            CNDetailData = crudCreditNoteDetail.get_with_condition(
+                {"CBStateID": CBStatementData.CBStateID}
+            )
+            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+
+            # get CN IssueDate
+            if CNDetailData:
+                CNData = crudCreditNote.get_with_condition({"CNID": CNDetailData.CNID})
+                CNIssueDateList.append(orm_to_dict(CNData[0]).IssueDate)
+            else:
+                CNIssueDateList.append("")
+
+            DescriptionList.append(
+                BillDetailData.FeeItem if BillDetailData.FeeItem else ""
+            )
+            DebitList.append(
+                abs(CBStatementData.TransAmount) if CBStatementData.TransAmount else ""
+            )
+            CreditList.append("")
+            BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
+        elif CBStatementData.Status == "BANK_FEE":
+            pass
 
     return
 
