@@ -410,9 +410,57 @@ async def generateReport(
             CreditList.append("")
             BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
         elif CBStatementData.Status == "BANK_FEE":
-            pass
+            BillDetailData = crudBillDetail.get_with_condition(
+                {"BillDetailID": CBStatementData.BLDetailID}
+            )[0]
+            BillMasterData = crudBillDetail.get_with_condition(
+                {"BillMasterID": BillDetailData.BillMasterID}
+            )[0]
+            SubmarineCableList.append(
+                BillDetailData.SubmarineCable if BillDetailData.SubmarineCable else ""
+            )
+            WorkTitleList.append(
+                BillDetailData.WorkTitle if BillDetailData.WorkTitle else ""
+            )
+            BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
 
-    return
+            # get CNNo
+            CNDetailData = crudCreditNoteDetail.get_with_condition(
+                {"CBStateID": CBStatementData.CBStateID}
+            )
+            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+
+            # get CN IssueDate
+            if CNDetailData:
+                CNData = crudCreditNote.get_with_condition({"CNID": CNDetailData.CNID})
+                CNIssueDateList.append(orm_to_dict(CNData[0]).IssueDate)
+            else:
+                CNIssueDateList.append("")
+
+            DescriptionList.append(
+                BillDetailData.FeeItem if BillDetailData.FeeItem else ""
+            )
+            DebitList.append(
+                abs(CBStatementData.TransAmount) if CBStatementData.TransAmount else ""
+            )
+            CreditList.append("")
+            BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
+
+    dict_data = {
+        "SubmarineCable": SubmarineCableList,
+        "WorkTitle": WorkTitleList,
+        "BillMilestone": BillMilestoneList,
+        "InvNo": InvNoList,
+        "BillIssueDate": BillIssueDateList,
+        "CNNo": CNNoList,
+        "CNIssueDate": CNIssueDateList,
+        "Description": DescriptionList,
+        "Debit": DebitList,
+        "Credit": CreditList,
+        "Balance": BalanceList,
+    }
+
+    return dict_data
 
 
 @router.post("/CreditBalance", status_code=status.HTTP_201_CREATED)
