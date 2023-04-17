@@ -2,9 +2,11 @@
 from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
 import pandas as pd
 from pprint import pprint
+import numpy as np
+from fastapi.responses import FileResponse
 
 
-def generate_credit_balance_report(df: pd.DataFrame):
+def generate_credit_balance_report(df: pd.DataFrame, partyName: str = "KT"):
     org_col_names = df.columns.tolist()
     converted_col_names = [
         "海纜名稱",
@@ -29,27 +31,24 @@ def generate_credit_balance_report(df: pd.DataFrame):
     ws = wb.active
     ws.title = "Credit Balance Report"
 
+    # let all grid are transparent
+    ws.sheet_view.showGridLines = False
+
     # set column width
     ws.column_dimensions["A"].width = 20
     ws.column_dimensions["B"].width = 20
     ws.column_dimensions["C"].width = 20
-    ws.column_dimensions["D"].width = 20
-    ws.column_dimensions["E"].width = 20
-    ws.column_dimensions["F"].width = 20
+    ws.column_dimensions["D"].width = 40
+    ws.column_dimensions["E"].width = 40
+    ws.column_dimensions["F"].width = 40
     ws.column_dimensions["G"].width = 20
-    ws.column_dimensions["H"].width = 20
+    ws.column_dimensions["H"].width = 50
     ws.column_dimensions["I"].width = 20
     ws.column_dimensions["J"].width = 20
     ws.column_dimensions["K"].width = 20
 
     for row in range(1, max_row + 1):
         for col in range(1, max_col + 1):
-            # ws.cell(row=row, column=col).border = Border(
-            #     left=Side(border_style="thin", color="FF000000"),
-            #     right=Side(border_style="thin", color="FF000000"),
-            #     top=Side(border_style="thin", color="FF000000"),
-            #     bottom=Side(border_style="thin", color="FF000000"),
-            # )
             if row == 1:
                 # no borderline(transparent)
                 ws.cell(row=row, column=col).border = Border(
@@ -58,6 +57,14 @@ def generate_credit_balance_report(df: pd.DataFrame):
                     top=Side(border_style="thin", color="00FFFFFF"),
                     bottom=Side(border_style="thin", color="00FFFFFF"),
                 )
+                if col == 1:
+                    ws.cell(
+                        row=row, column=col
+                    ).value = (
+                        f"{df.iloc[0, 0]} {df.iloc[0, 1]}_Credit Balance_{partyName}"
+                    )
+                    # set font be Bold
+                    ws.cell(row=row, column=col).font = Font(bold=True)
                 if col == 11:
                     # set comment
                     ws.cell(row=row, column=col).value = "Currency: USD"
@@ -78,10 +85,56 @@ def generate_credit_balance_report(df: pd.DataFrame):
                     horizontal="center", vertical="center"
                 )
 
+                # set borderline and color is black
+                ws.cell(row=row, column=col).border = Border(
+                    left=Side(border_style="thin", color="FF000000"),
+                    right=Side(border_style="thin", color="FF000000"),
+                    top=Side(border_style="thin", color="FF000000"),
+                    bottom=Side(border_style="thin", color="FF000000"),
+                )
+
+                if col > 9:
+                    # set align right
+                    ws.cell(row=row, column=col).alignment = Alignment(
+                        horizontal="right", vertical="center"
+                    )
+
+    # set row = max_row + 1, col = A to J merged and set value "Sub-total Balance", and K = sum of Balance
+    ws.merge_cells(
+        start_row=max_row + 1, start_column=1, end_row=max_row + 1, end_column=10
+    )
+    ws.cell(row=max_row + 1, column=1).value = "Sub-total Balance"
+    ws.cell(row=max_row + 1, column=11).value = df.iloc[max_row - 3, max_col - 1]
+
+    # set all number value have ,
+    for row in range(1, max_row + 2):
+        for col in range(1, max_col + 1):
+            if ws.cell(row=row, column=col).value is not None and isinstance(
+                ws.cell(row=row, column=col).value, (float)
+            ):
+                ws.cell(row=row, column=col).number_format = "#,##0.00"
+            # 如果沒有小數點 也要有三位一個逗號
+            elif ws.cell(row=row, column=col).value is not None and isinstance(
+                ws.cell(row=row, column=col).value, (np.int64)
+            ):
+                ws.cell(row=row, column=col).number_format = "#,##0.00"
+
+    # set all fontstyle are Arial
+    for row in range(1, max_row + 2):
+        for col in range(1, max_col + 1):
+            ws.cell(row=row, column=col).font = Font(name="Arial")
+            if row > max_row:
+                # set font Color blue and bold
+                ws.cell(row=row, column=col).font = Font(
+                    color="FF0000FF", bold=True, name="Arial"
+                )
+
+                # set "ws.cell(row=max_row + 1, column=1).font = Font(color="FF0000FF", bold=True)" align to left
+                ws.cell(row=row, column=col).alignment = Alignment(
+                    horizontal="right", vertical="center"
+                )
+
     file_name = f"CB歷程.xlsx"
     wb.save(file_name)
-
-
-if __name__ == "__main__":
-    df = pd.read_excel("CreditBalanceReport_20230417142422.xlsx")
-    generate_credit_balance_report(df)
+    resp = FileResponse(path=f"{file_name}", filename=f"{file_name}")
+    return resp

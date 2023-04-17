@@ -11,6 +11,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
 from fastapi.responses import StreamingResponse, FileResponse
 
+from .utils import generate_credit_balance_report
+
 router = APIRouter()
 
 
@@ -212,6 +214,7 @@ async def generateReport(
     """
     {
         "CBID": 1
+        "Download": True
     }
     """
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
@@ -464,13 +467,13 @@ async def generateReport(
         "Credit": CreditList,
         "Balance": BalanceList,
     }
-    df = pd.DataFrame(dict_data)
 
-    # save to excel
-    # 時間戳
-    timestamp = convert_time_to_str(datetime.now(), "%Y%m%d%H%M%S")
-    df.to_excel(f"CreditBalanceReport_{timestamp}.xlsx", index=False)
+    if (await request.json())["Download"]:
+        df = pd.DataFrame(dict_data)
 
+        # 產製CB歷程
+        fileResponse = generate_credit_balance_report(df, CBData.PartyName)
+        return fileResponse
     return dict_data
 
 
