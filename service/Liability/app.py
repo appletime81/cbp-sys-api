@@ -117,18 +117,18 @@ async def deleteLiability(
 
 # for dropdown list
 # 會員名稱
-@router.get("/dropdownmenuParties")
-async def getDropdownMenuParties(
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    crud = CRUD(db, LiabilityDBModel)
-    LiabilityDataList = crud.get_all()
-    PartyNameList = []
-    for LiabilityData in LiabilityDataList:
-        PartyNameList.append(LiabilityData.PartyName)
-    PartyNameList = list(set(PartyNameList))
-    return PartyNameList
+# @router.get("/dropdownmenuParties")
+# async def getDropdownMenuParties(
+#     request: Request,
+#     db: Session = Depends(get_db),
+# ):
+#     crud = CRUD(db, LiabilityDBModel)
+#     LiabilityDataList = crud.get_all()
+#     PartyNameList = []
+#     for LiabilityData in LiabilityDataList:
+#         PartyNameList.append(LiabilityData.PartyName)
+#     PartyNameList = list(set(PartyNameList))
+#     return PartyNameList
 
 
 # 記帳段號(BillMilestone)
