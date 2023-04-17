@@ -237,37 +237,36 @@ async def generateReport(
 
     for i, CBStatementData in enumerate(CBStatementDataList):
         if i == 0:
-            BillMilestoneList.append(
-                CBData.BillMilestone if CBData.BillMilestone else ""
-            )
-            InvNoList.append(CBData.BillingNo if CBData.InvNo else "")
-            BillIssueDateList.append(CBData.CreateDate if CBData.CreateDate else "")
-            CNNoList.append(CBData.CNNo if CBData.CNNo else "")
+            if CBStatementData.Status == "BM_ADD":
+                BillMilestoneList.append(CBData.BillMilestone)
+                InvNoList.append(CBStatementData.BillingNo)
 
-            if CBData.CNNo:
-                CNData = crudCreditNote.get_with_condition({"CNNo": CBData.CNNo})[0]
-                CNIssueDateList.append(CNData.CreateDate)
-            else:
+                # get BillMaster
+                BillDetailData = crudBillDetail.get_with_condition(
+                    {"BillDetailID": CBStatementData.BLDetailID}
+                )[0]
+                BillMasterData = crudBillDetail.get_with_condition(
+                    {"BillMasterID": BillDetailData.BillMasterID}
+                )[0]
+
+                # append BillMaster's IssueDate
+                BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
+
+                # BM_ADD no CNNo
+                CNNoList.append("")
                 CNIssueDateList.append("")
 
-            BillDetailData = crudBillDetail.get_with_condition(
-                {"BillDetailID": CBData.BLDetailID}
-            )
-            DescriptionList.append(BillDetailData[0].FeeItem if BillDetailData else "")
+                # append BillDetail's FeeItem
+                DescriptionList.append(BillDetailData.FeeItem)
 
-            DebitList.append("")
-            CreditList.append(CBStatementData.OrgAmount)
-            BalanceList.append(CBStatementData.OrgAmount)
-        else:
-            # TODO: Continue here
-            if CBStatementData.Status == "USER_ADD":
+                # No Debit
+                DebitList.append("")
+
+                CreditList.append(CBStatementData.OrgAmount)
+                BalanceList.append(CBData.CurrAmount)
+            elif CBStatementData.Status == "USER_ADD":
                 pass
-            elif CBStatementData.Status == "RETURN":
-                pass
-            elif CBStatementData.Status == "DEDUCT":
-                pass
-            elif CBStatementData.Status == "BANK_FEE":
-                pass
+
     return
 
 
