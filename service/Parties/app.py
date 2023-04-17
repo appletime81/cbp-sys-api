@@ -63,7 +63,7 @@ async def updateParties(
     return {"message": "Party successfully updated", "newPartiesData": newPartiesData}
 
 
-@router.post("/dropdownmenuParties")
+@router.get("/dropdownmenuParties")
 async def dropdownmenuParties(
     request: Request,
     db: Session = Depends(get_db),
