@@ -217,12 +217,15 @@ async def generateReport(
     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudBillMaster = CRUD(db, BillMasterDBModel)
     crudCreditNote = CRUD(db, CreditNoteDBModel)
     crudCreditNoteDetail = CRUD(db, CreditNoteDetailDBModel)
 
-    CBData = crudCreditBalance.get_with_condition({"CBID": request.json()["CBID"]})[0]
+    CBData = crudCreditBalance.get_with_condition(
+        {"CBID": (await request.json())["CBID"]}
+    )[0]
     CBStatementDataList = crudCreditBalanceStatement.get_with_condition(
-        {"CBID": request.json()["CBID"]}
+        {"CBID": (await request.json())["CBID"]}
     )
 
     SubmarineCableList = []
@@ -238,7 +241,8 @@ async def generateReport(
     BalanceList = []
 
     for i, CBStatementData in enumerate(CBStatementDataList):
-        if CBStatementData.Status == "BM_ADD":
+        pprint(orm_to_dict(CBStatementData))
+        if CBStatementData.TransItem == "BM_ADD":
             BillMilestoneList.append(CBData.BillMilestone)
             InvNoList.append(CBStatementData.BillingNo)
 
@@ -246,7 +250,7 @@ async def generateReport(
             BillDetailData = crudBillDetail.get_with_condition(
                 {"BillDetailID": CBStatementData.BLDetailID}
             )[0]
-            BillMasterData = crudBillDetail.get_with_condition(
+            BillMasterData = crudBillMaster.get_with_condition(
                 {"BillMasterID": BillDetailData.BillMasterID}
             )[0]
 
@@ -268,7 +272,7 @@ async def generateReport(
 
             CreditList.append(CBStatementData.OrgAmount)
             BalanceList.append(CBData.CurrAmount)
-        elif CBStatementData.Status == "USER_ADD":
+        elif CBStatementData.TransItem == "USER_ADD":
             BillMilestoneList.append(
                 CBData.BillMilestone if CBData.BillMilestone else ""
             )
@@ -286,7 +290,7 @@ async def generateReport(
             CNDetailData = crudCreditNoteDetail.get_with_condition(
                 {"CBStateID": CBStatementData.CBStateID}
             )
-            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+            CNNoList.append(CBData.CNNo if CBData.CNNo else "")
 
             # get CN IssueDate
             if CNDetailData:
@@ -298,8 +302,8 @@ async def generateReport(
             DescriptionList.append(CBStatementData.Note if CBStatementData.Note else "")
             DebitList.append("")
             CreditList.append(CBStatementData.OrgAmount)
-            BalanceList.append(CBData.CurrAmount)
-        elif CBStatementData.Status == "RETURN":
+            BalanceList.append(CBStatementData.OrgAmount)
+        elif CBStatementData.TransItem == "RETURN":
             BillMilestoneList.append(
                 CBData.BillMilestone if CBData.BillMilestone else ""
             )
@@ -320,7 +324,7 @@ async def generateReport(
             CNDetailData = crudCreditNoteDetail.get_with_condition(
                 {"CBStateID": CBStatementData.CBStateID}
             )
-            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+            CNNoList.append(CBData.CNNo if CBData.CNNo else "")
 
             # get CN IssueDate
             if CNDetailData:
@@ -337,21 +341,19 @@ async def generateReport(
             )
             CreditList.append("")
             BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
-        elif CBStatementData.Status == "DEDUCT":
+        elif CBStatementData.TransItem == "DEDUCT":
             BillDetailData = crudBillDetail.get_with_condition(
                 {"BillDetailID": CBStatementData.BLDetailID}
             )[0]
-            BillMasterData = crudBillDetail.get_with_condition(
+            BillMasterData = crudBillMaster.get_with_condition(
                 {"BillMasterID": BillDetailData.BillMasterID}
             )[0]
+            SubmarineCableList.append(CBData.SubmarineCable)
             BillMilestoneList.append(
                 BillDetailData.BillMilestone if BillDetailData.BillMilestone else ""
             )
             WorkTitleList.append(
                 BillDetailData.WorkTitle if BillDetailData.WorkTitle else ""
-            )
-            BillMilestoneList.append(
-                BillDetailData.BillMilestone if BillDetailData.BillMilestone else ""
             )
             InvNoList.append(
                 BillMasterData.BillingNo if BillMasterData.BillingNo else ""
@@ -367,11 +369,11 @@ async def generateReport(
             )
             CreditList.append("")
             BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
-        elif CBStatementData.Status == "REFUND":
+        elif CBStatementData.TransItem == "REFUND":
             BillDetailData = crudBillDetail.get_with_condition(
                 {"BillDetailID": CBStatementData.BLDetailID}
             )[0]
-            BillMasterData = crudBillDetail.get_with_condition(
+            BillMasterData = crudBillMaster.get_with_condition(
                 {"BillMasterID": BillDetailData.BillMasterID}
             )[0]
             SubmarineCableList.append(
@@ -392,7 +394,7 @@ async def generateReport(
             CNDetailData = crudCreditNoteDetail.get_with_condition(
                 {"CBStateID": CBStatementData.CBStateID}
             )
-            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+            CNNoList.append(CBData.CNNo if CBData.CNNo else "")
 
             # get CN IssueDate
             if CNDetailData:
@@ -409,11 +411,11 @@ async def generateReport(
             )
             CreditList.append("")
             BalanceList.append(CBStatementData.OrgAmount + CBStatementData.TransAmount)
-        elif CBStatementData.Status == "BANK_FEE":
+        elif CBStatementData.TransItem == "BANK_FEE":
             BillDetailData = crudBillDetail.get_with_condition(
                 {"BillDetailID": CBStatementData.BLDetailID}
             )[0]
-            BillMasterData = crudBillDetail.get_with_condition(
+            BillMasterData = crudBillMaster.get_with_condition(
                 {"BillMasterID": BillDetailData.BillMasterID}
             )[0]
             SubmarineCableList.append(
@@ -422,13 +424,16 @@ async def generateReport(
             WorkTitleList.append(
                 BillDetailData.WorkTitle if BillDetailData.WorkTitle else ""
             )
+            BillMilestoneList.append(
+                BillDetailData.BillMilestone if BillDetailData.BillMilestone else ""
+            )
             BillIssueDateList.append(orm_to_dict(BillMasterData)["IssueDate"])
 
             # get CNNo
             CNDetailData = crudCreditNoteDetail.get_with_condition(
                 {"CBStateID": CBStatementData.CBStateID}
             )
-            CNNoList.append(CNDetailData[0].CNNo if CNDetailData else "")
+            CNNoList.append(CBData.CNNo if CBData.CNNo else "")
 
             # get CN IssueDate
             if CNDetailData:
@@ -459,6 +464,12 @@ async def generateReport(
         "Credit": CreditList,
         "Balance": BalanceList,
     }
+    df = pd.DataFrame(dict_data)
+
+    # save to excel
+    # 時間戳
+    timestamp = convert_time_to_str(datetime.now(), "%Y%m%d%H%M%S")
+    df.to_excel(f"CreditBalanceReport_{timestamp}.xlsx", index=False)
 
     return dict_data
 

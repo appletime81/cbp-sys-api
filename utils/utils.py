@@ -5,8 +5,8 @@ from typing import List, Dict
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-def convert_time_to_str(datetime_data):
-    return datetime_data.strftime(TIME_FORMAT)
+def convert_time_to_str(datetime_data, time_format=TIME_FORMAT):
+    return datetime_data.strftime(time_format)
 
 
 def str_time_convert_to_int(str_time):
