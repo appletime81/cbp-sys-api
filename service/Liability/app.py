@@ -138,10 +138,14 @@ async def getDropdownMenuBillMilestone(
     db: Session = Depends(get_db),
 ):
     crud = CRUD(db, LiabilityDBModel)
-    BillMilestoneList = crud.get_all_distinct(LiabilityDBModel.BillMilestone)
+    LiabilityDataList = crud.get_all()
     BillMilestoneList = [
-        BillMilestone.BillMilestone for BillMilestone in BillMilestoneList
+        # if LiabilityData.EndDate have value, then put it into list
+        LiabilityData.BillMilestone
+        for LiabilityData in LiabilityDataList
+        if not LiabilityData.EndDate
     ]
+    BillMilestoneList = list(set(BillMilestoneList))
     return BillMilestoneList
 
 
