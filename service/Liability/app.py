@@ -81,24 +81,16 @@ async def updateLiability(
 ):
     LiabilityDictData = await request.json()
     LBRawID = LiabilityDictData.get("LBRawID")
+    Note = LiabilityDictData.get("Note")
     ModifyNote = LiabilityDictData.get("ModifyNote")
     crud = CRUD(db, LiabilityDBModel)
     LiabilityData = crud.get_with_condition({"LBRawID": LBRawID})[0]
 
-    LiabilityDataList = crud.get_with_condition(
-        {
-            "BillMilestone": LiabilityData.BillMilestone,
-            "WorkTitle": LiabilityData.WorkTitle,
-            "SubmarineCable": LiabilityData.SubmarineCable,
-        }
-    )
-
     # update LiabilityData
-    for LiabilityData in LiabilityDataList:
-        LiabilityDictData = orm_to_dict(deepcopy(LiabilityData))
-        LiabilityDictData["EndDate"] = convert_time_to_str(datetime.now())
-        LiabilityDictData["ModifyNote"] = ModifyNote
-        crud.update(LiabilityData, LiabilityDictData)
+    LiabilityDictData = orm_to_dict(deepcopy(LiabilityData))
+    LiabilityDictData["Note"] = Note
+    LiabilityDictData["ModifyNote"] = ModifyNote
+    crud.update(LiabilityData, LiabilityDictData)
 
     return {"message": "Liability successfully updated"}
 
@@ -110,9 +102,26 @@ async def deleteLiability(
 ):
     LiabilityDictData = await request.json()
     LBRawID = LiabilityDictData.get("LBRawID")
+    ModifyNote = LiabilityDictData.get("ModifyNote")
+    EndDate = convert_time_to_str(datetime.now())
     crud = CRUD(db, LiabilityDBModel)
-    crud.remove(LBRawID)
-    return {"message": "Liability successfully deleted"}
+    LiabilityData = crud.get_with_condition({"LBRawID": LBRawID})[0]
+    LiabilityDataList = crud.get_with_condition(
+        {
+            "BillMilestone": LiabilityData.BillMilestone,
+            "WorkTitle": LiabilityData.WorkTitle,
+            "SubmarineCable": LiabilityData.SubmarineCable,
+        }
+    )
+
+    # terminate LiabilityData
+    for LiabilityData in LiabilityDataList:
+        LiabilityDictData = orm_to_dict(deepcopy(LiabilityData))
+        LiabilityDictData["EndDate"] = EndDate
+        LiabilityDictData["ModifyNote"] = ModifyNote
+        crud.update(LiabilityData, LiabilityDictData)
+
+    return {"message": "Liability successfully terminated"}
 
 
 # for dropdown list
