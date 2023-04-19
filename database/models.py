@@ -118,6 +118,7 @@ class BillMasterDBModel(Base):
     BillingNo = Column(String(20))
     PONo = Column(String(20))
     SubmarineCable = Column(String(10))
+    SupplierName = Column(String(100))
     WorkTitle = Column(String(50))
     PartyName = Column(String(100))
     IssueDate = Column(String(20))

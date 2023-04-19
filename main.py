@@ -43,6 +43,7 @@ from utils.orm_pydantic_convert import *
 
 # import logic service function
 from service.BillMaster.service import router as BillMasterServiceRouter
+from service.Users.service import router as UsersServiceRouter
 
 app = FastAPI()
 
@@ -70,6 +71,7 @@ app.include_router(
 )
 app.include_router(UploadFileRouter, prefix=ROOT_URL, tags=["ReceiveFile"])
 app.include_router(UsersRouter, prefix=ROOT_URL, tags=["Users"])
+app.include_router(UsersServiceRouter, prefix=ROOT_URL, tags=["UsersService"])
 app.include_router(BillMasterServiceRouter, prefix=ROOT_URL, tags=["BillMasterService"])
 app.include_router(PaymentRouter, prefix=ROOT_URL, tags=["Payment"])
 
@@ -320,9 +322,8 @@ async def getInvoiceMasterInvoiceDetailStream(
         )  # remove duplicates
         # LiabilityDataFrameData.to_csv("LiabilityDataFrameData.csv", index=False)
         # get all PartyName
-        PartyNameList = list(
-            set([LiabilityData.PartyName for LiabilityData in LiabilityDataList])
-        )
+        PartyNameList = [LiabilityData.PartyName for LiabilityData in LiabilityDataList]
+        PartyNameList = sorted(set(PartyNameList), key=PartyNameList.index)
 
         InvoiceMasterDictDataList = []
         for i, PartyName in enumerate(PartyNameList):
@@ -447,6 +448,8 @@ async def addInvoiceMasterAndInvoiceDetail(
     request_data = await request.json()
     InvoiceMasterDictDataList = request_data["InvoiceMaster"]
     InvoiceDetailDictDataList = request_data["InvoiceDetail"]
+    pprint(InvoiceMasterDictDataList)
+    pprint(InvoiceDetailDictDataList)
 
     # add InvoiceMaster data to database
     for InvoiceMasterDictData in InvoiceMasterDictDataList:

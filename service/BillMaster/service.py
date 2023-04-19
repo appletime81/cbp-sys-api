@@ -242,8 +242,12 @@ async def generateInitBillMasterAndBillDetail(
     PONo = request_data["PONo"]
 
     # convert BillMasterDictData to BillMasterPydanticData and insert to db
+    IssueDate = convert_time_to_str(datetime.now())
+    if DueDate[:10] == IssueDate[:10]:
+        replace_str = DueDate[11:]
+        DueDate = DueDate.replace(replace_str, IssueDate[11:])
+    BillMasterDictData["IssueDate"] = IssueDate
     BillMasterDictData["DueDate"] = DueDate
-    BillMasterDictData["IssueDate"] = convert_time_to_str(datetime.now())
     BillMasterDictData["PONo"] = PONo
     BillMasterPydanticData = BillMasterSchema(**BillMasterDictData)
     BillMasterData = crudBillMaster.create(BillMasterPydanticData)
