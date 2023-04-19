@@ -125,6 +125,11 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
 
     # save InvoiceWKMaster to db
     crud = CRUD(db, InvoiceWKMasterDBModel)
+    isInvoiced = crud.get_with_condition(
+        {"InvoiceNo": InvoiceWKMasterSchemaData.InvoiceNo}
+    )
+    if isInvoiced:
+        return {"message": "InvoiceNo already exist"}
     addResponse = crud.create(InvoiceWKMasterSchemaData)
     print("-" * 25 + " addResponse " + "-" * 25)
     print(addResponse.WKMasterID)
