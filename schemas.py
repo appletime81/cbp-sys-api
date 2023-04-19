@@ -32,7 +32,7 @@ class InvoiceWKMasterSchema(BaseModel):
     ContractType: str
     IssueDate: datetime
     DueDate: datetime
-    PartyName: str
+    PartyName: Optional[str]
     IsPro: bool
     IsRecharge: bool
     IsLiability: bool
