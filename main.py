@@ -123,13 +123,16 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
     # covert InvoiceWKMasterDictData to Pydantic model
     InvoiceWKMasterSchemaData = InvoiceWKMasterSchema(**InvoiceWKMasterDictData)
 
-    # save InvoiceWKMaster to db
     crud = CRUD(db, InvoiceWKMasterDBModel)
+
+    # check if InvoiceNo is existed
     isInvoiced = crud.get_with_condition(
         {"InvoiceNo": InvoiceWKMasterSchemaData.InvoiceNo}
     )
     if isInvoiced:
         return {"message": "InvoiceNo already exist"}
+
+    # save InvoiceWKMaster to db
     addResponse = crud.create(InvoiceWKMasterSchemaData)
     print("-" * 25 + " addResponse " + "-" * 25)
     print(addResponse.WKMasterID)
