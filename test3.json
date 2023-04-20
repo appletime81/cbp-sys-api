@@ -1,0 +1,22 @@
+﻿{
+    "BillMaster": {
+        "BillMasterID": 1,
+        "BillingNo": "TPEUP-KT2304171904",
+        "PONo": "",
+        "PartyName": "KT",
+        "SubmarineCable": "TPE",
+        "WorkTitle": "Upgrade",
+        "IssueDate": "2023-04-18T00:00:00",
+        "DueDate": "2023-04-18T00:00:00",
+        "FeeAmountSum": 0,
+        "ReceivedAmountSum": 0,
+        "BankFees": 0,
+        "IsPro": false,
+        "URI": "",
+        "Status": "COMPLETE"
+    },
+    "BillDetail": [
+          {...},
+          {...}
+    ]
+}

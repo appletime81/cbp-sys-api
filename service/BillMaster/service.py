@@ -444,6 +444,125 @@ async def generateBillMasterAndBillDetail(
     }
 
 
+# 待抵扣階段(for 執行抵扣，預覽)
+@router.post("/generateBillMaster&BillDetail/preview")
+async def generateBillMasterAndBillDetail(
+    request: Request, db: Session = Depends(get_db)
+):
+    """
+    {
+        "BillMaster": {...},
+        "Deduct": [
+            {
+                "BillDetailID": 1,
+                "CB": [
+                    {
+                        "CBID": 1,
+                        "TransAmount": 1000
+                    },
+                    {...},
+                    {...}
+                ]
+            },
+            {...},
+            {...}
+        ]
+    }
+    -------------------------------------------------------------
+    dataProcessRecord = {
+        "BillDetail": None,
+        "CBList": [
+            {
+                "CB": {...},
+                "CBStatement": {...}
+            },
+            {...}
+        ]
+    }
+    """
+    crudBillMaster = CRUD(db, BillMasterDBModel)
+    crudBillDetail = CRUD(db, BillDetailDBModel)
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+
+    BillMasterDictData = (await request.json())["BillMaster"]
+    oldBillMasterData = crudBillMaster.get_with_condition(
+        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+    )[0]
+    newBillMasterData = deepcopy(oldBillMasterData)
+
+    deductDataList = (await request.json())["Deduct"]
+    deductDataList = sorted(deductDataList, key=lambda x: x["BillDetailID"])
+
+    recordDeductProcess = {
+        "BillMaster": None,
+        "BillDetailProcess": []
+    }
+
+    newBillDetailDataList = []
+    for deductData in deductDataList:
+        dataProcessRecord = {
+            "BillDetail": None,
+            "CBList": [],
+        }
+        oldBillDetailData = crudBillDetail.get_with_condition(
+            {"BillDetailID": deductData["BillDetailID"]}
+        )[0]
+        newBillDetailData = deepcopy(oldBillDetailData)
+
+        reqCBDataList = deductData["CB"]
+        tempTotalDedAmount = 0
+        for reqCBData in reqCBDataList:
+            oldCBData = crudCreditBalance.get_with_condition(
+                {"CBID": reqCBData["CBID"]}
+            )[0]
+            newCBData = deepcopy(oldCBData)
+            newCBDictData = orm_to_dict(newCBData)
+            newCBDictData["CurrAmount"] -= reqCBData["TransAmount"]
+            newCBDictData["LastUpdDate"] = convert_time_to_str(datetime.now())
+            newCBStatementDictData = {
+                "CBID": newCBDictData["CBID"],
+                "BillingNo": BillMasterDictData["BillingNo"],
+                "BLDetailID": newBillDetailData.BillDetailID,
+                "TransItem": "DEDUCT",
+                "OrgAmount": oldCBData.CurrAmount,
+                "TransAmount": reqCBData["TransAmount"] * (-1),
+                "Note": "",
+                "CreateDate": convert_time_to_str(datetime.now()),
+            }
+
+            tempTotalDedAmount += reqCBData["TransAmount"]
+
+            # update CreditBalance
+            dataProcessRecord["CBList"].append(
+                {
+                    "CB": newCBDictData,
+                    "CBStatement": newCBStatementDictData
+                }
+            )
+
+        # update BillDetail
+        newBillDetailData.DedAmount = tempTotalDedAmount
+        newBillDetailData.FeeAmount = (
+            newBillDetailData.OrgFeeAmount - newBillDetailData.DedAmount
+        )
+        newBillDetailDataList.append(newBillDetailData)
+
+        dataProcessRecord["BillDetail"] = orm_to_dict(newBillDetailData)
+        recordDeductProcess["BillDetailProcess"].append(dataProcessRecord)
+    # update BillMaster
+    newBillMasterData.FeeAmountSum -= sum(
+        [newBillDetailData.DedAmount for newBillDetailData in newBillDetailDataList]
+    )
+    newBillMasterData.Status = "RATED"
+    recordDeductProcess["BillMaster"] = orm_to_dict(newBillMasterData)
+
+    return {
+        "message": "success",
+        "previewData": recordDeductProcess
+    }
+
+
 # 抓取帳單主檔及可抵扣CB
 @router.get("/getBillMaster&BillDetailWithCBData/{urlCondition}")
 async def getBillMasterAndBillDetailWithCBData(
@@ -765,7 +884,7 @@ async def getBillMasterDraftStream(
         "CorporateSWIFTCode": getResult["CorporateInformation"]["SWIFTCode"],
         "CorporateACHNo": getResult["CorporateInformation"]["ACHNo"]
         if getResult["CorporateInformation"]["ACHNo"]
-        else "",
+        else "\b\b",
         "CorporateWireRouting": getResult["CorporateInformation"]["WireRouting"]
         if getResult["CorporateInformation"]["WireRouting"]
         else "",
@@ -776,11 +895,12 @@ async def getBillMasterDraftStream(
         "PONo": f"PO No.: {BillMasterData.PONo}" if BillMasterData.PONo else "",
     }
     doc.render(context)
-    fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
-    if context["invoicename"]:
-        fileName = f"{fileName} {context['invoicename']}"
-    else:
-        fileName = f"{fileName} Invoice"
+    # fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
+    # if context["invoicename"]:
+    #     fileName = f"{fileName} {context['invoicename']}"
+    # else:
+    #     fileName = f"{fileName} Invoice"
+    fileName = getResult["InvoiceNo"]
     doc.save(f"{fileName}.docx")
 
     # --------- 更新BillMaster IssueDate、DueDate ---------
