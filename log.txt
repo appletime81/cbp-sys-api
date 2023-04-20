@@ -1,0 +1,6 @@
+--------------------------------------------------
+2023-04-21 06:26:35.331849: Eva Change created InvoiceWKMaster, the InvoiceNo is test
+--------------------------------------------------
+2023-04-21 06:29:23.003649: Eva Change created InvoiceWKMaster, the InvoiceNo is 555
+--------------------------------------------------
+2023-04-21 06:34:15.352749: Eva Change update InvoiceWKMaster: {'WKMasterID': 3, 'Status': 'VALIDATED'}

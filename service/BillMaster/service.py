@@ -494,10 +494,7 @@ async def generateBillMasterAndBillDetail(
     deductDataList = (await request.json())["Deduct"]
     deductDataList = sorted(deductDataList, key=lambda x: x["BillDetailID"])
 
-    recordDeductProcess = {
-        "BillMaster": None,
-        "BillDetailProcess": []
-    }
+    recordDeductProcess = {"BillMaster": None, "BillDetailProcess": []}
 
     newBillDetailDataList = []
     for deductData in deductDataList:
@@ -535,10 +532,7 @@ async def generateBillMasterAndBillDetail(
 
             # update CreditBalance
             dataProcessRecord["CBList"].append(
-                {
-                    "CB": newCBDictData,
-                    "CBStatement": newCBStatementDictData
-                }
+                {"CB": newCBDictData, "CBStatement": newCBStatementDictData}
             )
 
         # update BillDetail
@@ -557,10 +551,7 @@ async def generateBillMasterAndBillDetail(
     newBillMasterData.Status = "RATED"
     recordDeductProcess["BillMaster"] = orm_to_dict(newBillMasterData)
 
-    return {
-        "message": "success",
-        "previewData": recordDeductProcess
-    }
+    return {"message": "success", "previewData": recordDeductProcess}
 
 
 # 抓取帳單主檔及可抵扣CB

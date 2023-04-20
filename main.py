@@ -39,6 +39,7 @@ from service.UploadFile.app import router as UploadFileRouter
 from service.Users.app import router as UsersRouter
 from service.Payment.app import router as PaymentRouter
 from utils.utils import *
+from utils.log import *
 from utils.orm_pydantic_convert import *
 
 # import logic service function
@@ -161,7 +162,9 @@ async def generateInvoiceWKMasterInvoiceWKDetailInvoiceMasterInvoiceDetail(
         # save InvoiceWKDetail to db
         crud = CRUD(db, InvoiceWKDetailDBModel)
         crud.create(InvoiceWKDetailSchemaData)
-
+    record_log(
+        f"{user_name} created InvoiceWKMaster, the InvoiceNo is {InvoiceWKMasterDictData['InvoiceNo']}"
+    )
     return {"message": "success"}
 
 
@@ -464,6 +467,7 @@ async def addInvoiceMasterAndInvoiceDetail(
         InvoiceMasterDictData["Status"] = "TO_MERGE"
         InvoiceMasterPydanticData = InvoiceMasterSchema(**InvoiceMasterDictData)
         await InvoiceMasterApp.addInvoiceMaster(request, InvoiceMasterPydanticData, db)
+        record_log(f"{user_name} add InvoiceMaster {InvoiceMasterDictData}")
 
     # add InvoiceDetail data to database
     for InvoiceDetailDictData in InvoiceDetailDictDataList:
