@@ -5,6 +5,7 @@ from crud import *
 from get_db import get_db
 from sqlalchemy.orm import Session
 from utils.utils import *
+from utils.log import *
 from utils.orm_pydantic_convert import *
 
 import os
@@ -286,6 +287,11 @@ async def generateInitBillMasterAndBillDetail(
             oldInvoiceMasterData, orm_to_dict(newInvoiceMasterData)
         )
 
+    # 紀錄使用者操作log
+    record_log(
+        f"{user_name} generated BillMaster, BillingNo is {BillMasterData.BillingNo}"
+    )
+
     return {
         "message": "success",
         "BillMaster": BillMasterData,
@@ -436,6 +442,11 @@ async def generateBillMasterAndBillDetail(
     )
     newBillMasterData.Status = "RATED"
     crudBillMaster.update(oldBillMasterData, orm_to_dict(newBillMasterData))
+
+    # 紀錄使用者操作
+    record_log(
+        f"{user_name} completed the deduction of the BillMaster: {orm_to_dict(newBillMasterData)}"
+    )
 
     return {
         "message": "success",
@@ -904,33 +915,36 @@ async def getBillMasterDraftStream(
     ) + " 00:00:00"
     crudBillMaster.update(BillMasterData, newBillMasterDictData)
 
+    # 紀錄使用者下載紀錄
+    record_log(f"{user_name} downloaded {fileName}.docx")
+
     resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx")
     return resp
 
 
-@router.get("/updateBillMasterByDraftStream")
-async def updateBillMasterByDraftStream(
-    request: Request, db: Session = Depends(get_db)
-):
-    """
-    {
-        "BillMasterID": 1,
-        "IssueDate": "2020-01-01 00:00:00",
-        "DueDate": "2020-01-01 00:00:00",
-    }
-    """
-    request_data = await request.json()
-    crudBillMaster = CRUD(db, BillMasterDBModel)
-    BillMasterData = crudBillMaster.get_with_condition(
-        {"BillMasterID": request_data["BillMasterID"]}
-    )[0]
-    BillMasterDictData = orm_to_dict(BillMasterData)
-    BillMasterDictData["IssueDate"] = request_data["IssueDate"]
-    BillMasterDictData["DueDate"] = request_data["DueDate"]
-
-    newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
-
-    return {"newBillMaster": newBillMasterData}
+# @router.get("/updateBillMasterByDraftStream")
+# async def updateBillMasterByDraftStream(
+#     request: Request, db: Session = Depends(get_db)
+# ):
+#     """
+#     {
+#         "BillMasterID": 1,
+#         "IssueDate": "2020-01-01 00:00:00",
+#         "DueDate": "2020-01-01 00:00:00",
+#     }
+#     """
+#     request_data = await request.json()
+#     crudBillMaster = CRUD(db, BillMasterDBModel)
+#     BillMasterData = crudBillMaster.get_with_condition(
+#         {"BillMasterID": request_data["BillMasterID"]}
+#     )[0]
+#     BillMasterDictData = orm_to_dict(BillMasterData)
+#     BillMasterDictData["IssueDate"] = request_data["IssueDate"]
+#     BillMasterDictData["DueDate"] = request_data["DueDate"]
+#
+#     newBillMasterData = crudBillMaster.update(BillMasterData, BillMasterDictData)
+#
+#     return {"newBillMaster": newBillMasterData}
 
 
 # endregion: --------------------------------------------------------------------

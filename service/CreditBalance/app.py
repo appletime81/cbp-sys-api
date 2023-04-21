@@ -12,6 +12,7 @@ from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
 from fastapi.responses import StreamingResponse, FileResponse
 
 from .utils import generate_credit_balance_report
+from utils.log import *
 
 router = APIRouter()
 
@@ -546,6 +547,9 @@ async def addCreditBalance(
     #     "Note": "",
     #     "URI": ""
     # }
+
+    # 記錄使用者操作紀錄
+    record_log(f"{user_name} added CB: {orm_to_dict(newCreditBalanceData)}")
 
     return {
         "message": "CreditBalance successfully created",
