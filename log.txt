@@ -2,3 +2,5 @@
 2023-04-21 18:08:49.834650: Eva Change completed the deduction of the BillMaster: {'SubmarineCable': 'SJC2', 'BillMasterID': 1, 'WorkTitle': 'Construction', 'IssueDate': '2023-04-20T00:00:00', 'DueDate': '2023-04-20T00:00:00', 'ReceivedAmountSum': 0.0, 'IsPro': False, 'URI': None, 'BillingNo': '02CO-SK2304191623', 'PONo': 'SKB-DT0170168-1&2-NEC-SJC2', 'SupplierName': None, 'PartyName': 'SKB', 'FeeAmountSum': 398695.2, 'BankFees': None, 'Status': 'RATED'}
 --------------------------------------------------
 2023-04-21 18:26:32.817657: Eva Change added CB: {'BLDetailID': None, 'CBType': '¨ä¥L', 'BillingNo': 'jsdfhdjkfsdhfskdfh', 'SubmarineCable': 'SJC2', 'BillMilestone': None, 'PartyName': 'SKB', 'CreateDate': '2023-04-21T18:26:32', 'Note': 'sdjfds', 'InvoiceNo': 'fjdksfdskl', 'CBID': 3, 'WorkTitle': 'Construction', 'CurrAmount': 300000.0, 'CNNo': 'CN02CO-SK2304211826', 'LastUpdDate': None}
+--------------------------------------------------
+2023-04-21 18:55:37.341251: Eva Change update InvoiceWKMaster: {'WKMasterID': 2, 'Status': 'INVALID'}
