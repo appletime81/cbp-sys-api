@@ -1549,59 +1549,92 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
 # region: ----------------------------------- 銷帳 -----------------------------------
 
 
+# @router.post("/BillMaster&BillDetail/toWriteOff")
+# async def billWriteOff(request: Request, db: Session = Depends(get_db)):
+#     """
+#     {
+#         "BillMaster": {...},
+#         "BillDetail": [
+#             {...},
+#             {...}
+#         ]
+#     }
+#     """
+#     BillMasterDictData = (await request.json())["BillMaster"]
+#     BillDetailDictDataList = (await request.json())["BillDetail"]
+#
+#     crudBillMaster = CRUD(db, BillMasterDBModel)
+#     crudBillDetail = CRUD(db, BillDetailDBModel)
+#     crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+#     crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+#
+#     newBillDetailDataList = []
+#
+#     for BillDetailDictData in BillDetailDictDataList:
+#         oldBillDetailData = crudBillDetail.get_with_condition(
+#             {"BillDetailID": BillDetailDictData["BillDetailID"]}
+#         )[0]
+#
+#         if BillMasterDictData["Status"] == "COMPLETE":
+#             BillDetailDictData["WriteOffDate"] = convert_time_to_str(datetime.now())
+#
+#         newBillDetailData = crudBillDetail.update(oldBillDetailData, BillDetailDictData)
+#         newBillDetailDataList.append(newBillDetailData)
+#
+#     oldBillMasterData = crudBillMaster.get_with_condition(
+#         {"BillMasterID": BillMasterDictData["BillMasterID"]}
+#     )[0]
+#     ReceivedAmountSum = sum(
+#         [
+#             newBillDetailData.ReceivedAmount
+#             for newBillDetailData in newBillDetailDataList
+#         ]
+#     )
+#     BillMasterDictData["ReceivedAmountSum"] = ReceivedAmountSum
+#
+#     newBillMasterData = crudBillMaster.update(oldBillMasterData, BillMasterDictData)
+#
+#     # ---------------------------- 溢繳 -------------------------------
+#     for newBillDetailData in newBillDetailDataList:
+#         if newBillDetailData.OverAmount > 0:
+#             newCBDictData = {
+#                 "BLDetailID": newBillDetailData.BillDetailID,
+#             }
+#
+#     return
+
 @router.post("/BillMaster&BillDetail/toWriteOff")
 async def billWriteOff(request: Request, db: Session = Depends(get_db)):
     """
+    input data:
+
     {
         "BillMaster": {...},
         "BillDetail": [
             {...},
-            {...}
+            {...},
         ]
     }
     """
-    BillMasterDictData = (await request.json())["BillMaster"]
-    BillDetailDictDataList = (await request.json())["BillDetail"]
-
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
-    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
-    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
 
-    newBillDetailDataList = []
-
-    for BillDetailDictData in BillDetailDictDataList:
-        oldBillDetailData = crudBillDetail.get_with_condition(
-            {"BillDetailID": BillDetailDictData["BillDetailID"]}
-        )[0]
-
-        if BillMasterDictData["Status"] == "COMPLETE":
-            BillDetailDictData["WriteOffDate"] = convert_time_to_str(datetime.now())
-
-        newBillDetailData = crudBillDetail.update(oldBillDetailData, BillDetailDictData)
-        newBillDetailDataList.append(newBillDetailData)
+    newBillMasterDictData = (await request.json())["BillMaster"]
+    newBillDetailDictDataList = (await request.json())["BillDetail"]
 
     oldBillMasterData = crudBillMaster.get_with_condition(
-        {"BillMasterID": BillMasterDictData["BillMasterID"]}
+        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
     )[0]
-    ReceivedAmountSum = sum(
-        [
-            newBillDetailData.ReceivedAmount
-            for newBillDetailData in newBillDetailDataList
-        ]
+
+    oldBillDetailDataList = crudBillDetail.get_with_condition(
+        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
     )
-    BillMasterDictData["ReceivedAmountSum"] = ReceivedAmountSum
 
-    newBillMasterData = crudBillMaster.update(oldBillMasterData, BillMasterDictData)
-
-    # ---------------------------- 溢繳 -------------------------------
-    for newBillDetailData in newBillDetailDataList:
-        if newBillDetailData.OverAmount > 0:
-            newCBDictData = {
-                "BLDetailID": newBillDetailData.BillDetailID,
-            }
-
-    return
+    newBillMasterDictData["BankFees"] = (
+        oldBillMasterData.BankFees + newBillMasterDictData["BankFees"]
+        if oldBillMasterData.BankFees
+        else newBillMasterDictData["BankFees"]
+    )
 
 
 # endregion: ------------------------------------------------------------------------
