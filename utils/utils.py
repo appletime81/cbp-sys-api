@@ -150,8 +150,6 @@ def re_search_url_condition_value(urlCondition: str, conditionKey: str):
     return urlCondition, value
 
 
-
-
 def convert_number_to_string(numbers: List[str]):
     decimal_part = numbers[1]
     integer_part = numbers[0]
