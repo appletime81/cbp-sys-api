@@ -471,3 +471,8 @@ class DownloadBillDraftSchema(BaseModel):
     DueDate: str
     WorkTitle: str
     InvoiceName: str
+
+
+class LoginSchema(BaseModel):
+    username: str
+    password: str

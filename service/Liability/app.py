@@ -4,6 +4,7 @@ from get_db import get_db
 from sqlalchemy.orm import Session
 from utils.utils import *
 from utils.orm_pydantic_convert import *
+from utils.log import *
 from copy import deepcopy
 
 router = APIRouter()
@@ -147,6 +148,9 @@ async def deleteLiability(
         LiabilityDictData["EndDate"] = EndDate
         LiabilityDictData["ModifyNote"] = ModifyNote
         crud.update(LiabilityData, LiabilityDictData)
+        record_log(
+            f"{user_name} terminate LiabilityData, LBRawID: {LiabilityData.LBRawID}"
+        )
 
     return {"message": "Liability successfully terminated"}
 

@@ -63,6 +63,7 @@ async def deleteInvoiceWKMaster(
     print("WKMasterID: ", request_data.get("WKMasterID"))
     crud = CRUD(db, InvoiceWKMasterDBModel)
     crud.remove({"WKMasterID": request_data.get("WKMasterID")})
+    record_log(f"{user_name} delete InvoiceWKMaster: {request_data.get('WKMasterID')}")
     return {"message": "InvoiceWKMaster successfully deleted"}
 
 

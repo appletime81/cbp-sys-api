@@ -289,7 +289,7 @@ async def generateInitBillMasterAndBillDetail(
 
     # 紀錄使用者操作log
     record_log(
-        f"{user_name} generated BillMaster, BillingNo is {BillMasterData.BillingNo}"
+        f"{user_name} initial BillMaster, BillingNo is {BillMasterData.BillingNo}"
     )
 
     return {
@@ -886,7 +886,7 @@ async def getBillMasterDraftStream(
         "CorporateSWIFTCode": getResult["CorporateInformation"]["SWIFTCode"],
         "CorporateACHNo": getResult["CorporateInformation"]["ACHNo"]
         if getResult["CorporateInformation"]["ACHNo"]
-        else "\b\b",
+        else "",
         "CorporateWireRouting": getResult["CorporateInformation"]["WireRouting"]
         if getResult["CorporateInformation"]["WireRouting"]
         else "",
@@ -897,11 +897,12 @@ async def getBillMasterDraftStream(
         "PONo": f"PO No.: {BillMasterData.PONo}" if BillMasterData.PONo else "",
     }
     doc.render(context)
-    # fileName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
-    # if context["invoicename"]:
-    #     fileName = f"{fileName} {context['invoicename']}"
-    # else:
-    #     fileName = f"{fileName} Invoice"
+    titleName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"
+    titleName = (
+        f"{titleName} {context['invoicename']} Invoice"
+        if context["invoicename"]
+        else f"{titleName} Invoice"
+    )
     fileName = getResult["InvoiceNo"]
     doc.save(f"{fileName}.docx")
 
@@ -916,7 +917,9 @@ async def getBillMasterDraftStream(
     crudBillMaster.update(BillMasterData, newBillMasterDictData)
 
     # 紀錄使用者下載紀錄
-    record_log(f"{user_name} downloaded {fileName}.docx")
+    record_log(
+        f"{user_name} downloaded {fileName}.docx, title is {titleName}, logo is {(await request.json()).get('logo')}"
+    )
 
     resp = FileResponse(path=f"{fileName}.docx", filename=f"{fileName}.docx")
     return resp

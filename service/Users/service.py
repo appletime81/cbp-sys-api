@@ -1,4 +1,5 @@
-﻿from fastapi import APIRouter, Request, status, Depends
+﻿from fastapi import APIRouter, Request, Depends
+
 from crud import *
 from get_db import get_db
 from sqlalchemy.orm import Session
@@ -11,12 +12,14 @@ router = APIRouter()
 
 
 @router.post("/login")
-async def login(request: Request, db: Session = Depends(get_db)):
+async def login(
+    request: Request, LogonPydanticData: LoginSchema, db: Session = Depends(get_db)
+):
     """
     {"username": xxx}
     """
     crud = CRUD(db, UsersDBModel)
-    error_message = {"status": "false", "message": "error username or password"}
+    error_message = {"status": False, "message": "error username or password"}
 
     config = configparser.ConfigParser()
     config.read("userinfo.ini")
@@ -28,10 +31,6 @@ async def login(request: Request, db: Session = Depends(get_db)):
     correctPassword = config[f"{username}"]["password"]
 
     userData = crud.get_with_condition({"UserID": username})
-    if userData:
-        if inputPassword == correctPassword:
-            return {"status": "true", "user": userData.UserID}
-        else:
-            return error_message
-    else:
-        return error_message
+    if userData and inputPassword == correctPassword:
+        return {"status": True, "user": userData[0].UserID}
+    return error_message

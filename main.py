@@ -532,6 +532,9 @@ async def batchAddLiability(request: Request, db: Session = Depends(get_db)):
         LiabilityDictData["CreateDate"] = convert_time_to_str(datetime.now())
         LiabilityPydanticData = LiabilitySchema(**LiabilityDictData)
         crud.create(LiabilityPydanticData)
+
+    # 紀錄使用者操作log
+    record_log(f"{user_name} add Liability: {LiabilityDictDataList}")
     return {"message": "success add Liability"}
 
 
