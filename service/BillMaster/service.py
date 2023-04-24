@@ -186,7 +186,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         ReceivedAmount(累計實收(會員繳)金額(初始為0))
         OverAmount(重溢繳金額 銷帳介面會自動計算帶出)
         ShortAmount(短繳金額 銷帳介面會自動計算帶出)
-        BankFees(自行輸入)
+        BankFee(自行輸入)
         ShortOverReason(短繳原因 自行輸入)
         WriteOffDate(銷帳日期)
         ReceiveDate(最新收款日期 自行輸入)
@@ -1603,6 +1603,7 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
 #
 #     return
 
+
 @router.post("/BillMaster&BillDetail/toWriteOff")
 async def billWriteOff(request: Request, db: Session = Depends(get_db)):
     """
@@ -1618,6 +1619,7 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
     """
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    writeOffDate = convert_time_to_str(datetime.now())
 
     newBillMasterDictData = (await request.json())["BillMaster"]
     newBillDetailDictDataList = (await request.json())["BillDetail"]
@@ -1630,11 +1632,31 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
     )
 
-    newBillMasterDictData["BankFees"] = (
-        oldBillMasterData.BankFees + newBillMasterDictData["BankFees"]
-        if oldBillMasterData.BankFees
-        else newBillMasterDictData["BankFees"]
+    newBillMasterDictData["BankFee"] = (
+        oldBillMasterData.BankFee + newBillMasterDictData["BankFee"]
+        if oldBillMasterData.BankFee
+        else newBillMasterDictData["BankFee"]
     )
+
+    # -------------------------------- Update BillMaster to DB --------------------------------
+    newBillMasterData = crudBillMaster.update(oldBillMasterData, newBillMasterDictData)
+
+    # -------------------------------- Update BillDetail to DB --------------------------------
+    newBillDetailDataList = []
+    for oldBillDetailData, newBillDetailDictData in zip(
+        sorted(oldBillDetailDataList, key=lambda x: x.BillDetailID),
+        sorted(newBillDetailDictDataList, key=lambda x: x["BillDetailID"]),
+    ):
+        newBillDetailDictData["WriteOffDate"] = writeOffDate
+        newBillDetailData = crudBillDetail.update(
+            oldBillDetailData, newBillDetailDictData
+        )
+        newBillDetailDataList.append(newBillDetailData)
+
+    # -------------------------------- Create CollectStatement to DB --------------------------------
+    newCollectStatementDataList = []
+    for newBillDetailData in newBillDetailDataList:
+        pass
 
 
 # endregion: ------------------------------------------------------------------------

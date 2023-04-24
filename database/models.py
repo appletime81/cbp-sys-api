@@ -125,7 +125,7 @@ class BillMasterDBModel(Base):
     DueDate = Column(String(20))
     FeeAmountSum = Column(Float)
     ReceivedAmountSum = Column(Float)
-    BankFees = Column(Float)
+    BankFee = Column(Float)
     IsPro = Column(Boolean)
     Status = Column(String(20))
     URI = Column(String(128))
@@ -150,7 +150,7 @@ class BillDetailDBModel(Base):
     ReceivedAmount  decimal(12, 2),
     OverAmount      decimal(12, 2),
     ShortAmount     decimal(12, 2),
-    BankFees        decimal(12, 2),
+    BankFee        decimal(12, 2),
     ShortOverReason varchar(128),
     WriteOffDate    datetime,
     ReceiveDate     datetime,

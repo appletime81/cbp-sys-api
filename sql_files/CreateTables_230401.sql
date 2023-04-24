@@ -85,7 +85,7 @@ CREATE TABLE BillMaster
     DueDate           datetime       DEFAULT NULL,
     FeeAmountSum      decimal(12, 2) DEFAULT NULL,
     ReceivedAmountSum decimal(12, 2) DEFAULT NULL,
-    BankFees          decimal(12, 2) DEFAULT NULL,
+    BankFee          decimal(12, 2) DEFAULT NULL,
     IsPro             tinyint(1) DEFAULT NULL,
     Status            varchar(20)    DEFAULT NULL,
     URI               varchar(128),

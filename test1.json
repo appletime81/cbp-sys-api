@@ -32,7 +32,7 @@
                     "ReceivedAmount": 123.45,
                     "OverAmount": 123.45,
                     "ShortAmount": 123.45,
-                    "BankFees": 123.45,
+                    "BankFee": 123.45,
                     "ShortOverReason": "string",
                     "WriteOffDate": "2023-03-01 00:00:00",
                     "ReceiveDate": "2023-03-01 00:00:00",

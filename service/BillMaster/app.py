@@ -206,7 +206,9 @@ async def updateBillMaster(
             )
             newInvoiceWKMasterDataList.append(newInvoiceWKMasterData)
 
-        record_log(f"{user_name} update BillMaster, BillMasterID: {BillMasterID} to {Status}")
+        record_log(
+            f"{user_name} update BillMaster, BillMasterID: {BillMasterID} to {Status}"
+        )
 
         return {
             "message": "update success",
