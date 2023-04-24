@@ -130,8 +130,8 @@ CREATE TABLE CollectStatement
     WorkTitle         varchar(50)    DEFAULT NULL,
     FeeAmount         decimal(12, 2) DEFAULT NULL,
     ReceivedAmountSum decimal(12, 2) DEFAULT NULL,
-    BankFees          decimal(12, 2) DEFAULT NULL,
-    ReceivedDate      datetime       DEFAULT NULL,
+    BankFee           decimal(12, 2) DEFAULT NULL,
+    ReceiveDate       datetime       DEFAULT NULL,
     Note              varchar(128)   DEFAULT NULL,
     PRIMARY KEY (CollectID)
 );
