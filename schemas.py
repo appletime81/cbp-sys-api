@@ -145,6 +145,19 @@ class BillDetailSchema(BaseModel):
     Status: str
 
 
+class CollectStatementSchema(BaseModel):
+    CollectID: Optional[int]
+    BillingNo: str
+    PartyName: str
+    SubmarineCable: str
+    WorkTitle: str
+    FeeAmount: float
+    ReceivedAmountSum: float
+    BankFee: float
+    ReceiveDate: datetime
+    Note: Optional[str]
+
+
 class LiabilitySchema(BaseModel):
     LBRawID: Optional[int]
     SubmarineCable: str

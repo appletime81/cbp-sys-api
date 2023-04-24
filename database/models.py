@@ -186,6 +186,20 @@ class BillDetailDBModel(Base):
     Status = Column(String(20))
 
 
+class CollectStatementDBModel(Base):
+    __tablename__ = "CollectStatement"
+    CollectID = Column(Integer, primary_key=True, index=True)
+    BillingNo = Column(String(64))
+    PartyName = Column(String(100))
+    SubmarineCable = Column(String(10))
+    WorkTitle = Column(String(50))
+    FeeAmount = Column(Float)
+    ReceivedAmountSum = Column(Float)
+    BankFee = Column(Float)
+    ReceiveDate = Column(String(20))
+    Note = Column(String(128))
+
+
 class LiabilityDBModel(Base):
     __tablename__ = "Liability"
     LBRawID = Column(Integer, primary_key=True, index=True)
