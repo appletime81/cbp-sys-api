@@ -150,14 +150,12 @@ class BillDetailDBModel(Base):
     ReceivedAmount  decimal(12, 2),
     OverAmount      decimal(12, 2),
     ShortAmount     decimal(12, 2),
-    BankFee        decimal(12, 2),
+    ToCBAmount      decimal(12, 2),
     ShortOverReason varchar(128),
     WriteOffDate    datetime,
     ReceiveDate     datetime,
     Note            varchar(128),
-    ToCB            varchar(10),
-    Status          varchar(20),
-    PRIMARY KEY (BillDetailID)
+    Status          varchar(20)
     """
 
     __tablename__ = "BillDetail"
@@ -178,11 +176,11 @@ class BillDetailDBModel(Base):
     ReceivedAmount = Column(Float)
     OverAmount = Column(Float)
     ShortAmount = Column(Float)
+    ToCBAmount = Column(Float)
     ShortOverReason = Column(String(128))
     WriteOffDate = Column(String(20))
     ReceiveDate = Column(String(20))
     Note = Column(String(128))
-    ToCBAmount = Column(Float)
     Status = Column(String(20))
 
 

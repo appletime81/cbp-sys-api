@@ -113,7 +113,7 @@ class BillMasterSchema(BaseModel):
     DueDate: datetime
     FeeAmountSum: float
     ReceivedAmountSum: float
-    BankFee: Optional[float]
+    BankFees: Optional[float]
     IsPro: bool
     URI: Optional[str]
     Status: str

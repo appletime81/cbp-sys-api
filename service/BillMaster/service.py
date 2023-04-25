@@ -186,7 +186,6 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
         ReceivedAmount(累計實收(會員繳)金額(初始為0))
         OverAmount(重溢繳金額 銷帳介面會自動計算帶出)
         ShortAmount(短繳金額 銷帳介面會自動計算帶出)
-        BankFee(自行輸入)
         ShortOverReason(短繳原因 自行輸入)
         WriteOffDate(銷帳日期)
         ReceiveDate(最新收款日期 自行輸入)
@@ -1632,10 +1631,10 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
         {"BillMasterID": newBillMasterDictData["BillMasterID"]}
     )
 
-    newBillMasterDictData["BankFee"] = (
-        oldBillMasterData.BankFee + newBillMasterDictData["BankFee"]
-        if oldBillMasterData.BankFee
-        else newBillMasterDictData["BankFee"]
+    newBillMasterDictData["BankFees"] = (
+        oldBillMasterData.BankFees + newBillMasterDictData["BankFees"]
+        if oldBillMasterData.BankFees
+        else newBillMasterDictData["BankFees"]
     )
 
     # -------------------------------- Update BillMaster to DB --------------------------------
