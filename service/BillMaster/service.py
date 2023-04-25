@@ -866,34 +866,34 @@ async def getBillMasterDraftStream(
         "CorporateBankName": getResult["CorporateInformation"]["BankName"],
         "CorporateBranch": getResult["CorporateInformation"]["Branch"]
         if getResult["CorporateInformation"]["Branch"]
-        else "",
+        else "n/a",
         "CorporateBranchAddress": getResult["CorporateInformation"]["BranchAddress"]
         if getResult["CorporateInformation"]["BranchAddress"]
-        else "",
+        else "n/a",
         "CorporateBankAcctName": getResult["CorporateInformation"]["BankAcctName"]
         if getResult["CorporateInformation"]["BankAcctName"]
-        else "",
+        else "n/a",
         "CorporateBankAcctNo": getResult["CorporateInformation"]["BankAcctNo"]
         if getResult["CorporateInformation"]["BankAcctNo"]
-        else "",
+        else "n/a",
         "CorporateSavingAcctNo": getResult["CorporateInformation"]["SavingAcctNo"]
         if getResult["CorporateInformation"]["SavingAcctNo"]
-        else "",
+        else "n/a",
         "CorporateIBAN": getResult["CorporateInformation"]["IBAN"]
         if getResult["CorporateInformation"]["IBAN"]
-        else "",
+        else "n/a",
         "CorporateSWIFTCode": getResult["CorporateInformation"]["SWIFTCode"],
         "CorporateACHNo": getResult["CorporateInformation"]["ACHNo"]
         if getResult["CorporateInformation"]["ACHNo"]
-        else "",
+        else "n/a",
         "CorporateWireRouting": getResult["CorporateInformation"]["WireRouting"]
         if getResult["CorporateInformation"]["WireRouting"]
-        else "",
+        else "n/a",
         "IssueDate": (await request.json())["IssueDate"],
         "DueDate": (await request.json())["DueDate"],
         "InvoiceNo": getResult["InvoiceNo"],
         "logo": InlineImage(doc, logo_path),
-        "PONo": f"PO No.: {BillMasterData.PONo}" if BillMasterData.PONo else "",
+        "PONo": f"PO No.: {BillMasterData.PONo}" if BillMasterData.PONo else "n/a",
     }
     doc.render(context)
     titleName = f"{context['submarinecable']} Cable Network {context['worktitle']} Central Billing Party"

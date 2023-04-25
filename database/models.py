@@ -125,7 +125,7 @@ class BillMasterDBModel(Base):
     DueDate = Column(String(20))
     FeeAmountSum = Column(Float)
     ReceivedAmountSum = Column(Float)
-    BankFee = Column(Float)
+    BankFees = Column(Float)
     IsPro = Column(Boolean)
     Status = Column(String(20))
     URI = Column(String(128))
