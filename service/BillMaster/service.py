@@ -1606,56 +1606,201 @@ async def returnToInitialBillMasterAndBillDetailAfterDeduct(
 @router.post("/BillMaster&BillDetail/toWriteOff")
 async def billWriteOff(request: Request, db: Session = Depends(get_db)):
     """
-    input data:
-
     {
         "BillMaster": {...},
         "BillDetail": [
             {...},
-            {...},
+            {...}
         ]
     }
     """
+    # 預設前端是傳一個BillMaster與一個BillDetailList
+    BillMasterDictData = (await request.json())["BillMaster"]
+    BillDetailDictDataList = (await request.json())["BillDetail"]
+
+    CollectStatmentDictData = {
+        "BillingNo": BillMasterDictData["BillingNo"],
+        "PartyName": BillMasterDictData["PartyName"],
+        "SubmarineCable": BillMasterDictData["SubmarineCable"],
+        "WorkTitle": BillMasterDictData["WorkTitle"],
+        "FeeAmount": BillMasterDictData["FeeAmountSum"],
+        "ReceivedAmountSum": 0,
+        "BankFee": BillMasterDictData["BankFees"],
+        # 整個帳單的收款日期暫時取系統當下時間
+        "ReceiveDate": convert_time_to_str(datetime.now()),
+        "Note": None,
+    }
+
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
-    writeOffDate = convert_time_to_str(datetime.now())
+    crudCollectStatement = CRUD(db, CollectStatementDBModel)
 
-    newBillMasterDictData = (await request.json())["BillMaster"]
-    newBillDetailDictDataList = (await request.json())["BillDetail"]
+    crudCreditBalance = CRUD(db, CreditBalanceDBModel)
+    crudCreditBalanceStatement = CRUD(db, CreditBalanceStatementDBModel)
+    newBillDetailDataList = []
+    proBankFeeFlag = 0
+    for BillDetailDictData in BillDetailDictDataList:
+        # DB帳單明細檔舊資訊
+        oldBillDetailData = crudBillDetail.get_with_condition(
+            {"BillDetailID": BillDetailDictData["BillDetailID"]}
+        )[0]
 
+        # 本次帳單收款紀錄實收累加
+        CollectStatmentDictData["ReceivedAmountSum"] = (
+            CollectStatmentDictData["ReceivedAmountSum"]
+            + BillDetailDictData["ReceivedAmount"]
+        )
+
+        # 最新銷帳日期
+        BillDetailDictData["WriteOffDate"] = convert_time_to_str(datetime.now())
+
+        # 明細累計實收
+        BillDetailDictData["ReceivedAmount"] = (
+            BillDetailDictData["ReceivedAmount"] + oldBillDetailData.ReceivedAmount
+        )
+
+        # 若有溢繳的明細要進CB帳，有超過已經轉入CB的金額，才會新增CB
+        if (
+            BillMasterDictData["IsPro"] != 1
+            and BillDetailDictData["Status"] == "OVER"
+            and BillDetailDictData["OverAmount"] > BillDetailDictData["ToCBAmount"]
+        ):
+            newCBAmount = (
+                BillDetailDictData["OverAmount"] - BillDetailDictData["ToCBAmount"]
+            )
+            CreditBalanceDictData = {
+                "CBType": "OVERPAID",
+                "BillingNo": BillMasterDictData["BillingNo"],
+                "InvoiceNo": None,
+                "BLDetailID": BillDetailDictData["BillDetailID"],
+                "SubmarineCable": BillMasterDictData["SubmarineCable"],
+                "WorkTitle": BillMasterDictData["WorkTitle"],
+                "BillMilestone": BillDetailDictData["BillMilestone"],
+                "PartyName": BillMasterDictData["PartyName"],
+                "CNNo": None,
+                "CurrAmount": newCBAmount,
+                "CreateDate": convert_time_to_str(datetime.now()),
+                "LastUpdDate": None,
+                "Note": None,
+            }
+            # 新增CB
+            CreditBalanceSchemaData = CreditBalanceSchema(**CreditBalanceDictData)
+            thisCBRecord = crudCreditBalance.create(CreditBalanceSchemaData)
+
+            # 把BillDetailDictData["OverAmount"] update回BillDetailDictData["ToCBAmount"]
+            # 重溢繳的金額理當等於已轉CB的金額
+            BillDetailDictData["ToCBAmount"] = BillDetailDictData["OverAmount"]
+
+            CBStatementDictData = {
+                "CBID": thisCBRecord.CBID,
+                "BillingNo": BillMasterDictData["BillingNo"],
+                "BLDetailID": BillDetailDictData["BillDetailID"],
+                "TransItem": "BM_ADD",
+                "OrgAmount": newCBAmount,
+                "TransAmount": 0,
+                "Note": None,
+                "CreateDate": convert_time_to_str(datetime.now()),
+            }
+            # 新增CB Statement
+            CBStatementSchemaData = CreditBalanceStatementSchema(**CBStatementDictData)
+            crudCreditBalanceStatement.create(CBStatementSchemaData)
+        # 若Pro-forma帳單明細(通常只會有一筆明細)要進CB帳，累計實收已經轉入CB的金額，才會新增CB
+        elif (
+            BillMasterDictData["IsPro"] == 1
+            and BillDetailDictData["ReceivedAmount"] > BillDetailDictData["ToCBAmount"]
+        ):
+            newCBAmount = (
+                BillDetailDictData["ReceivedAmount"] - BillDetailDictData["ToCBAmount"]
+            )
+            CreditBalanceDictData = {
+                "CBType": "PREPAID",
+                "BillingNo": BillMasterDictData["BillingNo"],
+                "InvoiceNo": None,
+                "BLDetailID": BillDetailDictData["BillDetailID"],
+                "SubmarineCable": BillMasterDictData["SubmarineCable"],
+                "WorkTitle": BillMasterDictData["WorkTitle"],
+                "BillMilestone": BillDetailDictData["BillMilestone"],
+                "PartyName": BillMasterDictData["PartyName"],
+                "CNNo": None,
+                "CurrAmount": newCBAmount,
+                "CreateDate": convert_time_to_str(datetime.now()),
+                "LastUpdDate": None,
+                "Note": None,
+            }
+            # 新增CB
+            CreditBalanceSchemaData = CreditBalanceSchema(**CreditBalanceDictData)
+            thisCBRecord = crudCreditBalance.create(CreditBalanceSchemaData)
+
+            # 把BillDetailDictData["ReceivedAmount"] update回BillDetailDictData["ToCBAmount"]
+            # 累計實收的金額理當等於已轉CB的金額
+            BillDetailDictData["ToCBAmount"] = BillDetailDictData["ReceivedAmount"]
+
+            # Proforma 帳單的CBStatement初始就會拆成兩筆
+            # 第一筆為原始金額包含手續費(但兩筆以上的Pro-forma帳單明細，手續費負項只能記錄一次)
+            orgAmount = (
+                newCBAmount + BillMasterDictData["BankFees"]
+                if (proBankFeeFlag == 0)
+                else newCBAmount
+            )
+            CBStatementDictData = {
+                "CBID": thisCBRecord.CBID,
+                "BillingNo": BillMasterDictData["BillingNo"],
+                "BLDetailID": BillDetailDictData["BillDetailID"],
+                "TransItem": "BM_ADD",
+                "OrgAmount": orgAmount,
+                "TransAmount": 0,
+                "Note": None,
+                "CreateDate": convert_time_to_str(datetime.now()),
+            }
+            # 新增CB Statement
+            CBStatementSchemaData = CreditBalanceStatementSchema(**CBStatementDictData)
+            crudCreditBalanceStatement.create(CBStatementSchemaData)
+
+            # 第二筆異動項目為BANK_FEE，異動金額為手續費金額取負值
+            if proBankFeeFlag == 0:
+                CBStatementDictData["TransItem"] = "BANK_FEE"
+                CBStatementDictData["TransAmount"] = -BillMasterDictData["BankFees"]
+                CBStatementSchemaData = CreditBalanceStatementSchema(
+                    **CBStatementDictData
+                )
+                crudCreditBalanceStatement.create(CBStatementSchemaData)
+                proBankFeeFlag = 1
+        # end if
+
+        # 更新帳單明細檔資訊
+        newBillDetailData = crudBillDetail.update(oldBillDetailData, BillDetailDictData)
+        newBillDetailDataList.append(newBillDetailData)
+    # end for BillDetailDictData in BillDetailDictDataList
+
+    # 寫入本次收款紀錄
+    # covert CollectStatementDict to Pydantic model
+    CollectStatementSchemaData = CollectStatementSchema(**CollectStatmentDictData)
+    crudCollectStatement.create(CollectStatementSchemaData)
+
+    # DB帳單主檔舊資訊
     oldBillMasterData = crudBillMaster.get_with_condition(
-        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
+        {"BillMasterID": BillMasterDictData["BillMasterID"]}
     )[0]
 
-    oldBillDetailDataList = crudBillDetail.get_with_condition(
-        {"BillMasterID": newBillMasterDictData["BillMasterID"]}
-    )
-
-    newBillMasterDictData["BankFees"] = (
-        oldBillMasterData.BankFees + newBillMasterDictData["BankFees"]
+    # 累計銀行手續費
+    BillMasterDictData["BankFees"] = (
+        BillMasterDictData["BankFees"] + oldBillMasterData.BankFees
         if oldBillMasterData.BankFees
-        else newBillMasterDictData["BankFees"]
+        else BillMasterDictData["BankFees"]
     )
 
-    # -------------------------------- Update BillMaster to DB --------------------------------
-    newBillMasterData = crudBillMaster.update(oldBillMasterData, newBillMasterDictData)
+    # 累計帳單實收
+    ReceivedAmountSum = sum(
+        [
+            newBillDetailData.ReceivedAmount
+            for newBillDetailData in newBillDetailDataList
+        ]
+    )
+    BillMasterDictData["ReceivedAmountSum"] = ReceivedAmountSum
 
-    # -------------------------------- Update BillDetail to DB --------------------------------
-    newBillDetailDataList = []
-    for oldBillDetailData, newBillDetailDictData in zip(
-        sorted(oldBillDetailDataList, key=lambda x: x.BillDetailID),
-        sorted(newBillDetailDictDataList, key=lambda x: x["BillDetailID"]),
-    ):
-        newBillDetailDictData["WriteOffDate"] = writeOffDate
-        newBillDetailData = crudBillDetail.update(
-            oldBillDetailData, newBillDetailDictData
-        )
-        newBillDetailDataList.append(newBillDetailData)
-
-    # -------------------------------- Create CollectStatement to DB --------------------------------
-    newCollectStatementDataList = []
-    for newBillDetailData in newBillDetailDataList:
-        pass
+    # 更新帳單主檔資訊
+    newBillMasterData = crudBillMaster.update(oldBillMasterData, BillMasterDictData)
+    return
 
 
 # endregion: ------------------------------------------------------------------------
