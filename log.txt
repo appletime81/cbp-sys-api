@@ -64,3 +64,13 @@
 2023-04-25 15:57:32.515182: Eva Change downloaded 02CO-SK2304251536.docx, title is SJC2 Cable Network  Central Billing Party Invoice, logo is 1
 --------------------------------------------------
 2023-04-25 16:04:38.954505: Eva Change downloaded 02CO-SK2304251536.docx, title is SJC2 Cable Network  Central Billing Party Invoice, logo is 1
+--------------------------------------------------
+2023-04-27 11:40:22.883551: Eva Change initial BillMaster, BillingNo is 02CO-CHI2304271140
+--------------------------------------------------
+2023-04-27 11:46:09.030777: Eva Change chose the InvoiceMasters, the PartyName is not unique.
+--------------------------------------------------
+2023-04-27 11:46:23.347068: Eva Change chose the InvoiceMasters, the PartyName is not unique.
+--------------------------------------------------
+2023-04-27 12:30:23.734454: Eva Change chose the InvoiceMasters, the PartyName is not unique.
+--------------------------------------------------
+2023-04-27 12:30:27.224657: Eva Change initial BillMaster, BillingNo is 02CO-CHI2304271230

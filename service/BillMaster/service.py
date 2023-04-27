@@ -102,6 +102,46 @@ async def checkInitBillMasterAndBillDetail(
     return alert_msg
 
 
+async def checkInitBillMasterAndBillDetailFunc(request_data):
+    """
+    {
+        "InvoiceMaster": [
+            {...},
+            {...},
+            {...}
+        ]
+    }
+    """
+    PartyList = []
+    SubmarineCableList = []
+    WorkTitleList = []
+    InvoiceMasterDictDataList = request_data["InvoiceMaster"]
+    for InvoiceMasterDictData in InvoiceMasterDictDataList:
+        PartyList.append(InvoiceMasterDictData["PartyName"])
+        SubmarineCableList.append(InvoiceMasterDictData["SubmarineCable"])
+        WorkTitleList.append(InvoiceMasterDictData["WorkTitle"])
+
+    alert_msg = {}
+    if len(set(PartyList)) > 1:
+        alert_msg["PartyName"] = "PartyName is not unique"
+        record_log(
+            f"{user_name} chose the InvoiceMasters, the PartyName is not unique."
+        )
+    if len(set(SubmarineCableList)) > 1:
+        alert_msg["SubmarineCable"] = "SubmarineCable is not unique"
+        record_log(
+            f"{user_name} chose the InvoiceMasters, the SubmarineCable is not unique."
+        )
+    if len(set(WorkTitleList)) > 1:
+        alert_msg["WorkTitle"] = "WorkTitle is not unique"
+        record_log(
+            f"{user_name} chose the InvoiceMasters, the WorkTitle is not unique."
+        )
+    if not alert_msg:
+        alert_msg["isUnique"] = True
+    return alert_msg
+
+
 # 待抵扣階段(for 點擊合併帳單button後，初始化帳單及帳單明細，顯示預覽畫面)
 @router.post("/getBillMaster&BillDetailStream")
 async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(get_db)):
@@ -128,6 +168,19 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
     InvoiceMasterDataList = crudInvoiceMaster.get_value_if_in_a_list(
         InvoiceMasterDBModel.InvMasterID, InvoiceMasterIdList
     )
+
+    # check PartName or SubmarineCable or WorkTitle is not unique
+    try:
+        _ = await checkInitBillMasterAndBillDetailFunc(
+            {
+                "InvoiceMaster": [
+                    orm_to_dict(InvoiceMasterData)
+                    for InvoiceMasterData in InvoiceMasterDataList
+                ]
+            }
+        )
+    except Exception as e:
+        print(e)
 
     InvoiceDetailDataList = crudInvoiceDetail.get_value_if_in_a_list(
         InvoiceDetailDBModel.InvMasterID, InvoiceMasterIdList
