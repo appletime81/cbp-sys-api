@@ -30,13 +30,34 @@ async def getCreditBalance(
             CreditBalanceDataList = crud.get_all()
         elif "start" in urlCondition or "end" in urlCondition:
             dictCondition = convert_url_condition_to_dict(urlCondition)
+            # pop the key "CurrAmount"
+            if "CurrAmount" in dictCondition:
+                CurrAmountBool = dictCondition.pop("CurrAmount")
             sql_condition = convert_dict_to_sql_condition(dictCondition, table_name)
 
             # get all CreditBalance by sql
             CreditBalanceDataList = crud.get_all_by_sql(sql_condition)
         else:
             dictCondition = convert_url_condition_to_dict(urlCondition)
+            if "CurrAmount" in dictCondition:
+                CurrAmountBool = dictCondition.pop("CurrAmount")
             CreditBalanceDataList = crud.get_with_condition(dictCondition)
+            pprint(dictCondition)
+        try:
+            if CurrAmountBool:
+                CreditBalanceDataList = [
+                    CreditBalanceData
+                    for CreditBalanceData in CreditBalanceDataList
+                    if CreditBalanceData.CurrAmount > 0
+                ]
+            if not CurrAmountBool:
+                CreditBalanceDataList = [
+                    CreditBalanceData
+                    for CreditBalanceData in CreditBalanceDataList
+                    if CreditBalanceData.CurrAmount == 0
+                ]
+        except:
+            pass
     else:
         # urlCondition: SubmarineCable=str&WorkTitle=str&BillMilestone=str&PartyName=str
         urlCondition = urlCondition.replace("getByBillDetail=yes", "")
