@@ -267,7 +267,7 @@ async def initBillMasterAndBillDetail(request: Request, db: Session = Depends(ge
             "WriteOffDate": None,
             "ReceiveDate": None,
             "Note": None,
-            "ToCBAmount": None,
+            "ToCBAmount": 0,
             "Status": "INCOMPLETE",
         }
         # BillDetailData = crudBillDetail.create(BillDetailSchema(**BillDetailDictData))
