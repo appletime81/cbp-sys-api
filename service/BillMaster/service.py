@@ -1671,7 +1671,7 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
     BillMasterDictData = (await request.json())["BillMaster"]
     BillDetailDictDataList = (await request.json())["BillDetail"]
 
-    CollectStatmentDictData = {
+    CollectStatementDictData = {
         "BillingNo": BillMasterDictData["BillingNo"],
         "PartyName": BillMasterDictData["PartyName"],
         "SubmarineCable": BillMasterDictData["SubmarineCable"],
@@ -1699,8 +1699,8 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
         )[0]
 
         # 本次帳單收款紀錄實收累加
-        CollectStatmentDictData["ReceivedAmountSum"] = (
-            CollectStatmentDictData["ReceivedAmountSum"]
+        CollectStatementDictData["ReceivedAmountSum"] = (
+            CollectStatementDictData["ReceivedAmountSum"]
             + BillDetailDictData["ReceivedAmount"]
         )
 
@@ -1827,8 +1827,9 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
 
     # 寫入本次收款紀錄
     # covert CollectStatementDict to Pydantic model
-    CollectStatementSchemaData = CollectStatementSchema(**CollectStatmentDictData)
-    crudCollectStatement.create(CollectStatementSchemaData)
+    if CollectStatementDictData["ReceivedAmountSum"] > 0:
+        CollectStatementSchemaData = CollectStatementSchema(**CollectStatementDictData)
+        crudCollectStatement.create(CollectStatementSchemaData)
 
     # DB帳單主檔舊資訊
     oldBillMasterData = crudBillMaster.get_with_condition(
