@@ -26,12 +26,15 @@ async def getInvoiceMasterAndInvoiceDetail(
 ):
     crudInvoiceMaster = CRUD(db, InvoiceMasterDBModel)
     crudInvoiceDetail = CRUD(db, InvoiceDetailDBModel)
+    InvoiceNo = None
     getResult = []
     if "BillMilestone" in urlCondition:
         newUrlCondition, BillMilestone = re_search_url_condition_value(
             urlCondition, "BillMilestone"
         )
         dictCondition = convert_url_condition_to_dict(newUrlCondition)
+        if "InvoiceNo" in dictCondition:
+            InvoiceNo = dictCondition.pop("InvoiceNo")
         InvoiceMasterDataList = crudInvoiceMaster.get_with_condition(dictCondition)
         for InvoiceMasterData in InvoiceMasterDataList:
             InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(
@@ -42,27 +45,43 @@ async def getInvoiceMasterAndInvoiceDetail(
                     lambda x: x.BillMilestone == BillMilestone, InvoiceDetailDataList
                 )
             )
+            InvoiceDetailDictDataList = [
+                orm_to_dict(InvoiceDetailData)
+                for InvoiceDetailData in InvoiceDetailDataList
+            ]
             if checkBillMilestone:
                 getResult.append(
                     {
-                        "InvoiceMaster": InvoiceMasterData,
-                        "InvoiceDetail": InvoiceDetailDataList,
+                        "InvoiceMaster": orm_to_dict(InvoiceMasterData),
+                        "InvoiceDetail": InvoiceDetailDictDataList,
                     }
                 )
     else:
         dictCondition = convert_url_condition_to_dict(urlCondition)
+        if "InvoiceNo" in dictCondition:
+            InvoiceNo = dictCondition.pop("InvoiceNo")
         InvoiceMasterDataList = crudInvoiceMaster.get_with_condition(dictCondition)
         for InvoiceMasterData in InvoiceMasterDataList:
             InvoiceDetailDataList = crudInvoiceDetail.get_with_condition(
                 {"InvMasterID": InvoiceMasterData.InvMasterID}
             )
+            InvoiceDetailDictDataList = [
+                orm_to_dict(InvoiceDetailData)
+                for InvoiceDetailData in InvoiceDetailDataList
+            ]
             getResult.append(
                 {
-                    "InvoiceMaster": InvoiceMasterData,
-                    "InvoiceDetail": InvoiceDetailDataList,
+                    "InvoiceMaster": orm_to_dict(InvoiceMasterData),
+                    "InvoiceDetail": InvoiceDetailDictDataList,
                 }
             )
 
+    if InvoiceNo:
+        getResult = [
+            getResult[i]
+            for i in range(len(getResult))
+            if InvoiceNo in getResult[i]["InvoiceMaster"]["InvoiceNo"]
+        ]
     return getResult
 
 
@@ -354,8 +373,10 @@ async def generateInitBillMasterAndBillDetail(
 # 查詢帳單主檔&帳單明細檔
 @router.get("/getBillMaster&BillDetail/{urlCondition}")
 async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(get_db)):
+    print(urlCondition)
     crudBillMaster = CRUD(db, BillMasterDBModel)
     crudBillDetail = CRUD(db, BillDetailDBModel)
+    BillingNo = None
     table_name = "BillMaster"
     getResult = []
     if urlCondition == "all":
@@ -372,6 +393,8 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
             )
     elif "start" in urlCondition and "end" in urlCondition:
         dictCondition = convert_url_condition_to_dict(urlCondition)
+        if "BillingNo" in urlCondition:
+            BillingNo = dictCondition.pop("BillingNo")
         sqlCondition = convert_dict_to_sql_condition(dictCondition, table_name)
         BillMasterDataList = crudBillMaster.get_all_by_sql(sqlCondition)
         for BillMasterData in BillMasterDataList:
@@ -386,6 +409,8 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
             )
     else:
         dictCondition = convert_url_condition_to_dict(urlCondition)
+        if "BillingNo" in urlCondition:
+            BillingNo = dictCondition.pop("BillingNo")
         BillMasterDataList = crudBillMaster.get_with_condition(dictCondition)
         for BillMasterData in BillMasterDataList:
             BillDetailDataList = crudBillDetail.get_with_condition(
@@ -397,6 +422,7 @@ async def getBillMasterAndBillDetail(urlCondition: str, db: Session = Depends(ge
                     "BillDetail": BillDetailDataList,
                 }
             )
+
     return getResult
 
 
