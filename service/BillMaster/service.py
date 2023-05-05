@@ -1876,6 +1876,12 @@ async def billWriteOff(request: Request, db: Session = Depends(get_db)):
 
     # 更新帳單主檔資訊
     newBillMasterData = crudBillMaster.update(oldBillMasterData, BillMasterDictData)
+
+    # record log
+    record_log(
+        f"{user_name} writes off {BillMasterDictData['BillingNo']} successfully.",
+    )
+
     return
 
 
